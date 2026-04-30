@@ -28,10 +28,10 @@ public class UserController {
     }
 
 
-@PutMapping("/me/update")
-@PreAuthorize("hasRole('USER')")
-public ResponseEntity<UserResponseDTO> updateSelf(@AuthenticationPrincipal UserDetailsImpl principal,@Valid @RequestBody UserUpdateDTO dto){
-    return ResponseEntity.ok(userService.updateSelf(principal.getId(), dto));
-}
+    @PutMapping("/me/update")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<UserResponseDTO> updateSelf(@AuthenticationPrincipal UserDetailsImpl principal, @Valid @RequestBody UserUpdateDTO dto) {
+        return ResponseEntity.ok(userService.updateSelf(principal.getId(), dto));
+    }
 }
 

@@ -32,23 +32,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain filterChain)throws ServletException, IOException {
-
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         String jwt = null;
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
-
             try {
                 Claims claims = Jwts.parser()
                         .verifyWith(key)
                         .build()
                         .parseSignedClaims(jwt)
                         .getPayload();
-
                 String email = claims.getSubject();
                 String role = (String) claims.get("role");
-
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     userService.findByEmail(email).ifPresent(user -> {
                         var userDetails = new UserDetailsImpl(
@@ -57,23 +52,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 user.getPassword(),
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
                         );
-
                         var authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
                                 userDetails.getAuthorities()
                         );
-
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     });
                 }
-
             } catch (io.jsonwebtoken.ExpiredJwtException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("El token ha expirado");
                 return;
-            } catch (io.jsonwebtoken.security.SignatureException e) { // 👈 cambió package
+            } catch (io.jsonwebtoken.security.SignatureException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Firma del token inválida");
                 return;
@@ -83,7 +75,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

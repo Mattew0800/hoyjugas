@@ -39,6 +39,9 @@ public class User {
     @Size(min = 10,max = 10)
     private String phone;
 
+    @Column(length = 4)
+    private String pin;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false,length = 10)
     private Role role;

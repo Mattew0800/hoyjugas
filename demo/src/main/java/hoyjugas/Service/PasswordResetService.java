@@ -4,6 +4,7 @@ import hoyjugas.Model.PasswordResetToken;
 import hoyjugas.Model.User;
 import hoyjugas.Repository.PasswordResetTokenRepository;
 import hoyjugas.Repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,19 +14,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PasswordResetService {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final GmailService gmailService;
     private final PasswordEncoder passwordEncoder;
-
-    public PasswordResetService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository, GmailService gmailService, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.gmailService = gmailService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public void sendResetLink(String email)  {
@@ -61,7 +56,6 @@ public class PasswordResetService {
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        resetToken.setUsed(true);
         tokenRepository.save(resetToken);
     }
 }
