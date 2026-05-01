@@ -28,7 +28,7 @@ public class Space {
     private SpaceType type;
 
     @Column(nullable = false)
-    private Integer slotDuration;
+    private Integer slotDuration;//duracion del intervalo del espacio (o sea cuanto dura cada turno)
 
     @Column(nullable = false)
     private Boolean isActive = true;
@@ -37,9 +37,9 @@ public class Space {
     private List<SpacePricing> pricings = new ArrayList<>();
 
     @Column(precision = 5, scale = 2)
-    private BigDecimal depositFactor;
+    private BigDecimal depositFactor;//porcentaje del totalll
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal fixedDeposit;
+    private BigDecimal fixedDeposit;//monto minimo de seña
 }
 

@@ -46,18 +46,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("cancelado") BookingStatus cancelado
     );
 
-    @Query("""
-            SELECT b FROM Booking b
-            WHERE b.bookingStatus = :confirmado
-            AND b.startDatetime BETWEEN :from AND :to
-            """)
-    List<Booking> findBookingsForReminder(
-            @Param("from") LocalDateTime from,
-            @Param("to") LocalDateTime to,
-            @Param("confirmado") BookingStatus confirmado
-    );
-
-    List<Booking> findByClientIdOrderByStartDatetimeDesc(Long clientId);
+    List<Booking> findByClientIdOrderByStartDatetimeDesc(Long clientId);//capaz mas adelante pasar a Page y Pageable
 
     @Query("""
         SELECT b FROM Booking b

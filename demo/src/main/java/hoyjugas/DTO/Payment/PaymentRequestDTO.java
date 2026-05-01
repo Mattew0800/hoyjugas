@@ -15,7 +15,6 @@ public class PaymentRequestDTO {
 
     private String transactionId;
 
-    @NotBlank(message = "El PIN es obligatorio")
     private String employeePin;
 
     @DecimalMin(value = "0.01")

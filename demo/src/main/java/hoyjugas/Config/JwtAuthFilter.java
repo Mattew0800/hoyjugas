@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -24,10 +25,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final SecretKey key;
 
-    public JwtAuthFilter(UserService userService,
-                         @Value("${jwt.secret}") String jwtSecret) {
+    public JwtAuthFilter(UserService userService, SecretKey key) {
         this.userService = userService;
-        this.key = Keys.hmacShaKeyFor(java.util.Base64.getDecoder().decode(jwtSecret));
+        this.key = key;
     }
 
     @Override

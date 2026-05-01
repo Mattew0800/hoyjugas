@@ -5,6 +5,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.time.LocalTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@Data
 public class RecurringBookingRequestDTO {
 
     @NotNull(message = "El cliente es obligatorio")
@@ -47,6 +49,8 @@ public class RecurringBookingRequestDTO {
     private PaymentMethod paymentMethod;
 
     private String transactionId;
+
+    private String employeePin;
 
     @AssertTrue(message = "La fecha de fin debe ser posterior a la de inicio")
     public boolean isEndDateValid() {

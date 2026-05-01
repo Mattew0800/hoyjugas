@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import lombok.Setter;
+import org.checkerframework.checker.units.qual.C;
+import org.checkerframework.common.aliasing.qual.Unique;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
@@ -30,16 +32,18 @@ public class User {
     private String password;
 
     @Email(message = "El mail tiene que tener un formato correcto")
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String email;
 
     @Size(min = 7,max = 9)
+    @Column(unique = true,nullable = false)
     private String dni;
 
     @Size(min = 10,max = 10)
+    @Column(unique = true,nullable = false)
     private String phone;
 
-    @Column(length = 4)
+    @Column(length = 60)
     private String pin;
 
     @Enumerated(EnumType.STRING)

@@ -214,7 +214,7 @@ public class BookingService extends BaseBookingService {
     }
 
     @Transactional
-    public BookingResponseDTO cancelBooking(CancelBookingRequestDTO dto) {
+    public BookingResponseDTO cancelBooking(CancelBookingRequestDTO dto, User employee) {
         Long bookingId = dto.getBookingId();
         Booking booking = getBookingOrThrow(bookingId);
 
@@ -235,7 +235,6 @@ public class BookingService extends BaseBookingService {
 
         if (devolution) {
             BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
-
             if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
                 PaymentMethod refundMethod = paymentRepository
                         .findFirstByBookingIdAndStatusOrderByCreatedAtAsc(bookingId, PaymentStatus.PAGADO)
@@ -247,7 +246,7 @@ public class BookingService extends BaseBookingService {
                         refundMethod,
                         totalCollected,
                         null,
-                        null,
+                        employee,
                         PaymentType.DEVOLUCION
                 );
                 refund.setStatus(PaymentStatus.PAGADO);
@@ -255,15 +254,12 @@ public class BookingService extends BaseBookingService {
                 booking.setRefunded(true);
             }
         }
-
         booking.setBookingStatus(BookingStatus.CANCELADO);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(dto.getCancellationReason());
         booking.setPaymentStatus(calculatePaymentStatus(bookingId, booking.getTotalAmount()));
-
         bookingRepository.save(booking);
         scheduleNotification(booking, NotificationType.CANCELACION);
-
         return buildBookingResponseDTO(booking);
     }
 
@@ -287,7 +283,12 @@ public class BookingService extends BaseBookingService {
         return buildBookingResponseDTO(getBookingOrThrow(bookingId));
     }
 
-    public BigDecimal getClientDebt(Long clientId) {
+    public BigDecimal getClientDebt(Long clientId,Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        if (requester.getRole().equals(Role.USER) && !requesterId.equals(clientId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para ver la deuda de otro cliente");
+        }
         return bookingRepository.findDebtByClientId(
                 clientId,
                 PaymentStatus.NO_PAGADO,
@@ -297,7 +298,12 @@ public class BookingService extends BaseBookingService {
         );
     }
 
-    public List<BookingListDTO> getClientHistory(Long clientId) {
+    public List<BookingListDTO> getClientHistory(Long clientId,Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        if (requester.getRole().equals(Role.USER) && !requesterId.equals(clientId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para ver el historial de otro cliente");
+        }
         return bookingRepository
                 .findByClientIdOrderByStartDatetimeDesc(clientId)
                 .stream()

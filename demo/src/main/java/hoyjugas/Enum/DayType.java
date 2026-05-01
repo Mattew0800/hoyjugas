@@ -8,7 +8,7 @@ public enum DayType {
     VIERNES,
     SABADO,
     DOMINGO,
-    FIN_DE_SEMANA,   // por si quiere agrupar sábado y domingo igual
+    FIN_DE_SEMANA,
     DIA_DE_SEMANA,
     FERIADO
 }

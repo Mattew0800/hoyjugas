@@ -1,10 +1,7 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.Booking.CancelBookingRequestDTO;
-import hoyjugas.DTO.RecurringBooking.RecurringBookingRequestDTO;
-import hoyjugas.DTO.RecurringBooking.RecurringBookingResponseDTO;
-import hoyjugas.DTO.RecurringBooking.RecurringBookingSlotDTO;
-import hoyjugas.DTO.RecurringBooking.RecurringCancelResponseDTO;
+import hoyjugas.DTO.RecurringBooking.*;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -156,9 +153,8 @@ public class RecurringBookingService extends BaseBookingService{
         return deposit.min(totalPrice);
     }
 
-
     @Transactional
-    public RecurringCancelResponseDTO cancelOneBooking(Long bookingId, CancelBookingRequestDTO dto) {
+    public RecurringCancelResponseDTO cancelOneBooking(Long bookingId, CancelBookingRequestDTO dto, User employee) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
 
@@ -168,6 +164,10 @@ public class RecurringBookingService extends BaseBookingService{
 
         if (booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno ya está cancelado");
+        }
+        if (employee == null && !booking.getClient().getId().equals(dto.getRequesterId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tenés permiso para cancelar el turno de otro cliente");
         }
 
         RecurringBooking recurring = booking.getRecurringBooking();
@@ -180,7 +180,6 @@ public class RecurringBookingService extends BaseBookingService{
         bookingRepository.save(booking);
 
         recurring.setCancellationCount(recurring.getCancellationCount() + 1);
-
         boolean completedCycle = recurring.getCancellationCount() >= config.getMaxRecurringCancellations();
 
         if (completedCycle) {
@@ -216,20 +215,34 @@ public class RecurringBookingService extends BaseBookingService{
     }
 
     @Transactional
-    public void cancelRecurringCycle(Long recurringId, CancelBookingRequestDTO dto) {
+    public void cancelRecurringCycle(Long recurringId, String cancellationReason, Long requesterId) {
         RecurringBooking recurring = recurringBookingRepository.findById(recurringId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ciclo no encontrado"));
+
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        if (requester.getRole().equals(Role.USER) &&
+                !recurring.getClient().getId().equals(requesterId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tenés permiso para cancelar el ciclo de otro cliente");
+        }
 
         if (recurring.getStatus().equals(RecurringStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ciclo ya está cancelado");
         }
 
-        cancelFutureBookings(recurring, dto.getCancellationReason());
+        cancelFutureBookings(recurring, cancellationReason);
         recurring.setStatus(RecurringStatus.CANCELADO);
         recurringBookingRepository.save(recurring);
     }
 
-    public List<RecurringBookingResponseDTO> getRecurringByClient(Long clientId) {
+    public List<RecurringBookingResponseDTO> getRecurringByClient(Long clientId, Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        if (requester.getRole().equals(Role.USER) && !requesterId.equals(clientId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para ver los turnos de otro cliente");
+        }
         return recurringBookingRepository
                 .findByClientIdOrderByStartDateDesc(clientId)
                 .stream()

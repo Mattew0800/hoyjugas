@@ -15,4 +15,8 @@ public class BookingFilterRequestDTO {
     private LocalDateTime dateFrom;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime dateTo;
+    private int page = 0;
+    private int size = 20;
+    private String sortBy = "startDatetime";
+    private String sortDirection = "desc";
 }

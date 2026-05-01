@@ -1,4 +1,4 @@
-package hoyjugas.DTO.Space;
+package hoyjugas.DTO.SpacePricing;
 
 import hoyjugas.Model.SpacePricing;
 import lombok.Data;

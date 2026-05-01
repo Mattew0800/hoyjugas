@@ -1,5 +1,6 @@
 package hoyjugas.DTO.Space;
 
+import hoyjugas.DTO.SpacePricing.SpacePricingDTO;
 import hoyjugas.Model.Space;
 import lombok.Data;
 
@@ -18,7 +19,7 @@ public class SpaceResponseDTO {
     private BigDecimal depositFactor;
     private BigDecimal fixedDeposit;
     private List<SpacePricingDTO> pricings;
-    private String depositInfo;       // texto legible: "Seña: 30% del total" o "Seña fija: $5.000"
+    private String depositInfo;
 
     public static SpaceResponseDTO fromEntity(Space space) {
         SpaceResponseDTO dto = new SpaceResponseDTO();

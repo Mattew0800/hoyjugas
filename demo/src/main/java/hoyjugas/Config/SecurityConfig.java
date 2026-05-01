@@ -1,6 +1,7 @@
 package hoyjugas.Config;
 
 import hoyjugas.Service.UserService;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,22 +16,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.List;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-
-    private final String jwtSecret;
-
-    public SecurityConfig(@Value("${jwt.secret}") String jwtSecret) {
-        this.jwtSecret = jwtSecret;
-    }
-
-    @Bean
-    public JwtAuthFilter jwtAuthFilter(UserService userService) {
-        return new JwtAuthFilter(userService, jwtSecret);
-    }
 
     @Bean
     public RoleHierarchy roleHierarchy() {
@@ -38,6 +32,16 @@ public class SecurityConfig {
                 "ROLE_ADMIN > ROLE_EMPLOYEE " +
                  "ROLE_EMPLOYEE > ROLE_USER"
         );
+    }
+
+    @Bean
+    public SecretKey jwtKey(@Value("${jwt.secret}") String jwtSecret) {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Bean
+    public JwtAuthFilter jwtAuthFilter(UserService userService, SecretKey key) {
+        return new JwtAuthFilter(userService, key);
     }
 
     @Bean

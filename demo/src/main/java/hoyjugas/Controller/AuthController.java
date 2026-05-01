@@ -37,8 +37,7 @@ public class AuthController {
     @PostMapping("/promote-to-employee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> promoteToEmployee(@Valid @RequestBody EmailRequestDTO dto) {
-        authService.promoteToEmployee(dto.getEmail());
-        return ResponseEntity.ok(Map.of("message","Empleado promocionado correctamente!"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.promoteToEmployee(dto.getEmail()));
     }
 
     @PostMapping("/forgot-password")
@@ -54,7 +53,6 @@ public class AuthController {
     }
 
     @PostMapping("/register-admin")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.registerAdmin(request));

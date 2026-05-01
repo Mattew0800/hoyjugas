@@ -1,5 +1,6 @@
 package hoyjugas.DTO.User;
 
+import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import lombok.*;
 
@@ -24,9 +25,12 @@ public class EmployeeCreatedDTO {
         this.pin = rawPin;
     }
 
-    public EmployeeCreatedDTO(LoginResponseDTO loginResponse, String rawPin) {
+    public EmployeeCreatedDTO(LoginResponseDTO loginResponse, String rawPin,String phone, Long id) {
         this.email = loginResponse.getEmail();
         this.name = loginResponse.getName();
         this.pin = rawPin;
+        this.role = Role.EMPLOYEE.name();
+        this.phone = phone;
+        this.id=id;
     }
 }

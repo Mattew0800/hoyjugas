@@ -26,4 +26,36 @@ public interface SpacePricingRepository extends JpaRepository<SpacePricing, Long
     );
 
     List<SpacePricing> findBySpaceId(Long spaceId);
+
+    @Query("""
+    SELECT p FROM SpacePricing p
+    WHERE p.space.id = :spaceId
+    AND p.dayType = :dayType
+    AND p.id <> :pricingId
+    AND (
+        p.startTime < :endTime AND p.endTime > :startTime
+    )
+""")
+    List<SpacePricing> findOverlappingPricingsExcludingId(
+            Long spaceId,
+            DayType dayType,
+            LocalTime startTime,
+            LocalTime endTime,
+            Long pricingId
+    );
+
+    @Query("""
+    SELECT p FROM SpacePricing p
+    WHERE p.space.id = :spaceId
+    AND p.dayType = :dayType
+    AND (
+        p.startTime < :endTime AND p.endTime > :startTime
+    )
+""")
+    List<SpacePricing> findOverlappingPricings(
+            Long spaceId,
+            DayType dayType,
+            LocalTime startTime,
+            LocalTime endTime
+    );
 }

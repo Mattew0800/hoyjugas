@@ -13,4 +13,8 @@ public class CancelBookingRequestDTO {
 
     @NotNull(message = "El ID del turno es obligatorio")
     private Long bookingId;
+
+    private String employeePin;
+
+    private Long requesterId;
 }

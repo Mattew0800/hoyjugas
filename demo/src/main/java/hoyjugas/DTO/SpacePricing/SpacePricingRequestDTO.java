@@ -1,4 +1,4 @@
-package hoyjugas.DTO.Space;
+package hoyjugas.DTO.SpacePricing;
 
 import hoyjugas.Enum.DayType;
 import jakarta.validation.constraints.AssertTrue;
