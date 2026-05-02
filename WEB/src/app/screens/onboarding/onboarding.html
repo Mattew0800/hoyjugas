@@ -1,15 +1,44 @@
-<h1>ONBOARDING PAGE</h1>
+<div class="ONBOARDING-CONTAINER">
+  <!-- SPLASH SCREEN - Logo (2 segundos) -->
+  @if(currentStep === 'splash'){
+    <div class="SPLASH-CONTAINER">
+      <!-- Header -->
+      <header class="ONBOARDING-HEADER">
+        <div class="STATUS-BAR"></div>
+      </header>
 
-<ul>
-  <li><a routerLink="/">Onboarding</a></li>
-  <li><a routerLink="/sign-in">Sign In</a></li>
-  <li><a routerLink="/sign-up">Sign Up</a></li>
+      <!-- Main Content -->
+      <main class="ONBOARDING-MAIN">
+        <div class="LOGO-WRAPPER">
+          <app-svg-loader svgPath="/assets/AZTK ARENA.svg"></app-svg-loader>
+        </div>
+      </main>
 
-</ul>
+      <!-- Footer -->
+      <p class="FOOTER-TEXT">POWERED BY HoyJugas</p>
 
-<div class="ALERT-CONTAINER">
-  @if(window.innerWidth >= 1024){
-    <h2 class="ALERT-MESSAGE">ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN</h2>
+      <!-- Alert for desktop -->
+      <div class="ALERT-CONTAINER">
+        @if(window.innerWidth >= 1024){
+          <h2 class="ALERT-MESSAGE">ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN</h2>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ONBOARDING SCREEN - Segunda parte -->
+  @if(currentStep === 'onboarding'){
+    <div class="ONBOARDING-CONTENT">
+      <!-- Mitad superior - Contenido principal -->
+      <div class="ONBOARDING-TOP-HALF">
+        <!-- Contenido aquí -->
+      </div>
+
+      <!-- Mitad inferior - Imagen de fondo desenfocada -->
+      <div class="ONBOARDING-BOTTOM-HALF">
+        <div class="ONBOARDING-IMAGE"></div>
+      </div>
+    </div>
   }
 </div>
 
