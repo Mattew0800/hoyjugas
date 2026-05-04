@@ -1,44 +1,24 @@
 <div class="ONBOARDING-CONTAINER">
-  <!-- SPLASH SCREEN - Logo (2 segundos) -->
-  @if(currentStep === 'splash'){
-    <div class="SPLASH-CONTAINER">
-      <!-- Header -->
-      <header class="ONBOARDING-HEADER">
-        <div class="STATUS-BAR"></div>
-      </header>
-
-      <!-- Main Content -->
-      <main class="ONBOARDING-MAIN">
-        <div class="LOGO-WRAPPER">
-          <app-svg-loader svgPath="/assets/AZTK ARENA.svg"></app-svg-loader>
-        </div>
-      </main>
-
-      <!-- Footer -->
-      <p class="FOOTER-TEXT">POWERED BY HoyJugas</p>
-
-      <!-- Alert for desktop -->
-      <div class="ALERT-CONTAINER">
-        @if(window.innerWidth >= 1024){
-          <h2 class="ALERT-MESSAGE">ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN</h2>
-        }
-      </div>
+  <!-- Contenedor superior - Logo -->
+  <div class="ONBOARDING-TOP">
+    <div class="onboarding-logo">
+    <app-svg-loader svgPath="/AZTK ARENA.svg"></app-svg-loader>
     </div>
-  }
+  </div>
 
-  <!-- ONBOARDING SCREEN - Segunda parte -->
-  @if(currentStep === 'onboarding'){
-    <div class="ONBOARDING-CONTENT">
-      <!-- Mitad superior - Contenido principal -->
-      <div class="ONBOARDING-TOP-HALF">
-        <!-- Contenido aquí -->
-      </div>
+  <!-- Contenedor del medio - Imagen -->
+  <div class="ONBOARDING-MIDDLE">
+    <img src="/onboarding_image.png" alt="Onboarding" class="ONBOARDING-IMAGE">
+  </div>
 
-      <!-- Mitad inferior - Imagen de fondo desenfocada -->
-      <div class="ONBOARDING-BOTTOM-HALF">
-        <div class="ONBOARDING-IMAGE"></div>
-      </div>
-    </div>
-  }
+  <!-- Contenedor de la imagen ball - Centrada justo arriba del CTA -->
+  <div class="ONBOARDING-BALL">
+    <img src="/ball_image.png" alt="Ball" class="BALL-IMAGE">
+  </div>
+
+  <!-- Contenedor inferior - Botón -->
+  <div class="ONBOARDING-BOTTOM">
+    <button>Continuar</button>
+  </div>
 </div>
 
