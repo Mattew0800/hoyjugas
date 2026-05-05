@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'MistressBenedict';
+  src: url('/assets/fonts/MistressBenedictBrush.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 // =====================================
 // ONBOARDING - Estructura base
 // =====================================
@@ -72,6 +80,22 @@
   height: 80px;
   object-fit: contain;
   filter: brightness(0.3);
+  transition: all 1s ease-in;
+}
+
+.BALL-IMAGE.shoot {
+  animation: shootBall 1s ease-in forwards;
+}
+
+@keyframes shootBall {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-15vh) scale(0.2);
+    opacity: 0.7;
+  }
 }
 
 // Contenedor inferior - Botón

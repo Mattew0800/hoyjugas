@@ -13,12 +13,12 @@
 
   <!-- Contenedor de la imagen ball - Centrada justo arriba del CTA -->
   <div class="ONBOARDING-BALL">
-    <img src="/ball_image.png" alt="Ball" class="BALL-IMAGE">
+    <img #ballImage src="/ball_image.png" alt="Ball" class="BALL-IMAGE">
   </div>
 
   <!-- Contenedor inferior - Botón -->
   <div class="ONBOARDING-BOTTOM">
-    <button>Continuar</button>
+    <button (click)="onContinueClick()">Continuar</button>
   </div>
 </div>
 

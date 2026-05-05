@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, Renderer2, ViewChild, ElementRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Meta } from '@angular/platform-browser';
 import { SvgLoaderComponent } from '../../components/svg-loader/svg-loader.component';
@@ -11,6 +11,7 @@ import { SvgLoaderComponent } from '../../components/svg-loader/svg-loader.compo
 })
 export class Onboarding implements OnInit, OnDestroy {
   window = window;
+  @ViewChild('ballImage') ballImage!: ElementRef;
 
   constructor(
     private meta: Meta,
@@ -20,11 +21,19 @@ export class Onboarding implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.meta.updateTag({ name: 'theme-color', content: '#181b16' });
-    this.renderer.setStyle(this.document.body, 'background-color', '#181b16');
+    this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
   }
 
   ngOnDestroy() {
     this.meta.updateTag({ name: 'theme-color', content: '#000000' });
     this.renderer.removeStyle(this.document.body, 'background-color');
+  }
+
+  onContinueClick() {
+    if (this.ballImage) {
+      this.renderer.addClass(this.ballImage.nativeElement, 'shoot');
+      // Aquí puedes agregar navegación después de la animación
+      // setTimeout(() => { this.router.navigate(['/next-screen']); }, 1000);
+    }
   }
 }
