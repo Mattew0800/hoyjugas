@@ -1,12 +1,37 @@
+// log-in.ts
+
 import { Component } from '@angular/core';
-import {RouterLink} from '@angular/router';
+import {FormsModule} from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-log-in',
-  imports: [RouterLink],
   templateUrl: './log-in.html',
-  styleUrl: './log-in.scss',
+  imports: [
+    FormsModule
+  ],
+  styleUrls: ['./log-in.scss']
 })
 export class LogIn {
-  window = window;
+
+  screenWidth = window.innerWidth;
+
+  phoneNumber: string = '';
+  password: string = '';
+
+  constructor(private router: Router) {}
+
+  continue(): void {
+    console.log('Número:', this.phoneNumber);
+  }
+
+  goToOnboarding(): void {
+    this.router.navigate(['/onboarding']);
+  }
+
+  goToSignUp(): void {
+    this.router.navigate(['/sign-up']);
+  }
+
+
 }

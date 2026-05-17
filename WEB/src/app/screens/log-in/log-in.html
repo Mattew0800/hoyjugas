@@ -1,14 +1,96 @@
-<h1>SIGN-IN PAGE</h1>
+<!-- log-in.html -->
 
-<ul>
-  <li><a routerLink="/">Onboarding</a></li>
-  <li><a routerLink="/sign-in">Sign In</a></li>
-  <li><a routerLink="/sign-up">Sign Up</a></li>
-</ul>
+@if(screenWidth >= 1024){
 
+  <div class="ALERT-CONTAINER">
+    <h2 class="ALERT-MESSAGE">
+      ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN
+    </h2>
+  </div>
 
-<div class="ALERT-CONTAINER">
-  @if(window.innerWidth >= 1024){
-    <h2 class="ALERT-MESSAGE">ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN</h2>
-  }
-</div>
+} @else {
+
+  <div class="login-page">
+
+    <div class="top-bar">
+      <span class="back-arrow" (click)="goToOnboarding()">
+  ←
+</span>
+    </div>
+
+    <div class="content">
+
+      <div class="title-section">
+        <h1>Iniciar Sesión</h1>
+        <p>Ingresa tus datos</p>
+      </div>
+
+      <div class="form-section">
+
+        <input
+          type="text"
+          placeholder="Número de celular"
+          [(ngModel)]="phoneNumber"
+        />
+
+        <input
+          type="password"
+          placeholder="Contraseña"
+          [(ngModel)]="password"
+        />
+
+        <button (click)="continue()">
+          Continuar
+        </button>
+
+      </div>
+
+      <p class="terms">
+        Al continuar, aceptas los
+
+        <a href="/terminos">
+          términos de servicio
+        </a>
+
+        y la
+
+        <a href="/privacidad">
+          política de privacidad
+        </a>
+
+      </p>
+
+      <div class="divider">
+        <div class="line"></div>
+        <span>or</span>
+        <div class="line"></div>
+      </div>
+
+      <div class="social-buttons">
+
+        <button class="social-btn">
+          G
+        </button>
+
+        <button class="social-btn">
+          
+        </button>
+
+        <button class="social-btn">
+          ✉
+        </button>
+
+      </div>
+
+      <p class="register-text">
+        ¿No tienes una cuenta?
+        <span class="register-link" (click)="goToSignUp()">
+  Regístrate
+</span>
+      </p>
+
+    </div>
+
+  </div>
+
+}

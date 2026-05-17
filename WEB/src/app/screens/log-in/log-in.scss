@@ -36,3 +36,170 @@ body,html{
 
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+/* log-in.component.scss */
+
+.login-page {
+  min-height: 100vh;
+  background-color: #121212;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  height: 88px;
+  background-color: #c9a15c;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.back-arrow {
+  font-size: 24px;
+  color: #121212;
+  cursor: pointer;
+}
+
+.content {
+  flex: 1;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-section {
+  margin-bottom: 30px;
+
+  h1 {
+    color: #c9a15c;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #9b9b9b;
+    font-size: 16px;
+  }
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  input {
+    height: 54px;
+    border-radius: 12px;
+    border: 1px solid #c9a15c;
+    background: transparent;
+    padding: 0 16px;
+    color: white;
+    font-size: 15px;
+    outline: none;
+
+    &::placeholder {
+      color: #7f7f7f;
+    }
+  }
+
+  button {
+    height: 54px;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    color: #121212;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.terms {
+  margin-top: 18px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 30px 0;
+
+  span {
+    color: #8f8f8f;
+    font-size: 13px;
+  }
+
+  .line {
+    flex: 1;
+    height: 1px;
+    background: #333333;
+  }
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.social-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid #c9a15c;
+  background: transparent;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.register-text {
+  margin-top: 42px;
+  text-align: center;
+  color: #9b9b9b;
+  font-size: 15px;
+
+  span {
+    color: #c9a15c;
+    font-weight: 600;
+  }
+}
+
+/* Desktop preview */
+
+@media (min-width: 768px) {
+
+  .content {
+    width: 390px;
+    margin: 0 auto;
+  }
+
+}
+
+.terms {
+
+  a {
+    color: #c9a15c;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+}
+.register-link {
+  cursor: pointer;
+}
+.back-arrow {
+  cursor: pointer;
+}
+
