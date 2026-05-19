@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, Inject, Renderer2, ViewChild, ElementRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Meta } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { SvgLoaderComponent } from '../../components/svg-loader/svg-loader.component';
 
 @Component({
@@ -16,7 +17,8 @@ export class Onboarding implements OnInit, OnDestroy {
   constructor(
     private meta: Meta,
     @Inject(DOCUMENT) private document: Document,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -31,9 +33,15 @@ export class Onboarding implements OnInit, OnDestroy {
 
   onContinueClick() {
     if (this.ballImage) {
-      this.renderer.addClass(this.ballImage.nativeElement, 'shoot');
-      // Aquí puedes agregar navegación después de la animación
-      // setTimeout(() => { this.router.navigate(['/next-screen']); }, 1000);
+
+      this.renderer.addClass(
+        this.ballImage.nativeElement,
+        'shoot'
+      );
+
+      setTimeout(() => {
+        this.router.navigate(['/sign-in']);
+      }, 1000);
     }
   }
 }
