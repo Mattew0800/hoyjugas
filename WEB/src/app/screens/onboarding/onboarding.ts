@@ -41,7 +41,9 @@ export class Onboarding implements OnInit, OnDestroy {
 
       setTimeout(() => {
         this.router.navigate(['/sign-in']);
-      }, 1000);
+      }, 1500);
+
+
     }
   }
 }

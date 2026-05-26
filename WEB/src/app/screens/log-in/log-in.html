@@ -14,83 +14,114 @@
 
     <div class="top-bar">
       <span class="back-arrow" (click)="goToOnboarding()">
-  ←
-</span>
+        ←
+      </span>
     </div>
 
     <div class="content">
 
-      <div class="title-section">
-        <h1>Iniciar Sesión</h1>
-        <p>Ingresa tus datos</p>
-      </div>
+      @if(!continueBoolean){
 
-      <div class="form-section">
+        <div class="title-section">
+          <h1>Iniciar Sesión</h1>
+          <p>Ingresa tu celular</p>
+        </div>
 
-        <input
-          type="text"
-          placeholder="Número de celular"
-          [(ngModel)]="phoneNumber"
-        />
+        <div class="form-section">
 
-        <input
-          type="password"
-          placeholder="Contraseña"
-          [(ngModel)]="password"
-        />
+          <input
+            type="text"
+            placeholder="Número de celular"
+            [(ngModel)]="phoneNumber"
+          />
 
-        <button (click)="continue()">
-          Continuar
-        </button>
+          <button (click)="continue()">
+            Continuar
+          </button>
 
-      </div>
+        </div>
 
-      <p class="terms">
-        Al continuar, aceptas los
+        <p class="terms">
+          Al continuar, aceptas los
 
-        <a href="/terminos">
-          términos de servicio
-        </a>
+          <a href="/terminos">
+            términos de servicio
+          </a>
 
-        y la
+          y la
 
-        <a href="/privacidad">
-          política de privacidad
-        </a>
+          <a href="/privacidad">
+            política de privacidad
+          </a>
 
-      </p>
+        </p>
 
-      <div class="divider">
-        <div class="line"></div>
-        <span>or</span>
-        <div class="line"></div>
-      </div>
+        <div class="divider">
+          <div class="line"></div>
+          <span>or</span>
+          <div class="line"></div>
+        </div>
 
-      <div class="social-buttons">
+        <div class="social-buttons">
 
-        <button class="social-btn">
-          G
-        </button>
+          <button class="social-btn">
+            G
+          </button>
 
-        <button class="social-btn">
-          
-        </button>
+          <button class="social-btn">
+            
+          </button>
 
-        <button class="social-btn">
-          ✉
-        </button>
+          <button class="social-btn">
+            ✉
+          </button>
 
-      </div>
+        </div>
 
-      <p class="register-text">
-        ¿No tienes una cuenta?
-        <span class="register-link" (click)="goToSignUp()">
-  Regístrate
-</span>
-      </p>
+        <p class="register-text">
+          ¿No tienes una cuenta?
+          <span class="register-link" (click)="goToSignUp()">
+        Regístrate
+          </span>
+        </p>
+      }@else{
 
+        <div class="title-section">
+          <h1>Iniciar Sesión</h1>
+          <p>Ingresa tu contraseña</p>
+        </div>
+
+        <div class="form-section">
+
+          <input
+            type="password"
+            placeholder="Contraseña"
+            [(ngModel)]="password"
+          />
+
+          <button (click)="continue()">
+            Continuar
+          </button>
+
+        </div>
+
+        <p class="terms">
+          Al continuar, aceptas los
+
+          <a href="/terminos">
+            términos de servicio
+          </a>
+
+          y la
+
+          <a href="/privacidad">
+            política de privacidad
+          </a>
+
+        </p>
+
+      }
     </div>
 
   </div>
-
 }

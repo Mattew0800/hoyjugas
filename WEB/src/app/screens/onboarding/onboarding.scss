@@ -84,19 +84,61 @@
 }
 
 .BALL-IMAGE.shoot {
-  animation: shootBall 1s ease-in forwards;
+  animation: shootBall 0.5s linear forwards;
 }
 
-@keyframes shootBall {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-15vh) scale(0.2);
-    opacity: 0.7;
+@media (max-height: 587px){
+  @keyframes shootBall {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-5vh) scale(0.2);
+      opacity: 0.7;
+    }
   }
 }
+
+@media (min-height: 588px) and (max-height: 625px){
+  @keyframes shootBall {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-10vh) scale(0.2);
+      opacity: 0.7;
+    }
+  }
+}
+
+@media (min-height: 626px) and (max-height: 733px){
+  @keyframes shootBall {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-15vh) scale(0.2);
+      opacity: 0.7;
+    }
+  }
+}
+
+@media (min-height: 734px){
+  @keyframes shootBall {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-20vh) scale(0.2);
+      opacity: 0.7;
+    }
+  }
+}
+
 
 // Contenedor inferior - Botón
 .ONBOARDING-BOTTOM {

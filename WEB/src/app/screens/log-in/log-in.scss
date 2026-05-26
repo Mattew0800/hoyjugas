@@ -42,15 +42,15 @@ body,html{
 
 .login-page {
   min-height: 100vh;
-  background-color: #121212;
+  background-color: #1c1c1c;
   color: white;
   display: flex;
   flex-direction: column;
 }
 
 .top-bar {
-  height: 88px;
-  background-color: #c9a15c;
+  height: 56px;
+  background-color: #CEA764;
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -58,7 +58,7 @@ body,html{
 
 .back-arrow {
   font-size: 24px;
-  color: #121212;
+  color: #1C1C1C;
   cursor: pointer;
 }
 
@@ -73,9 +73,10 @@ body,html{
   margin-bottom: 30px;
 
   h1 {
-    color: #c9a15c;
+    font-family: Roboto, sans-serif;
+    color: #CEA764;
     font-size: 36px;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 10px;
   }
 
