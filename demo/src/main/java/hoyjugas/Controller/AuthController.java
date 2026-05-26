@@ -4,6 +4,7 @@ import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.PasswordResetService;
+import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {

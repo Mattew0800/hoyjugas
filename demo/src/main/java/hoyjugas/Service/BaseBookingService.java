@@ -102,12 +102,10 @@ public abstract class BaseBookingService {
 
     protected BookingResponseDTO buildBookingResponseDTO(Booking booking) {
         BigDecimal depositAmount = paymentRepository
-                .findTotalByBookingIdAndType(booking.getId(), PaymentType.DEPOSITO, PaymentStatus.PAGADO)
-                .orElse(BigDecimal.ZERO);
+                .findTotalByBookingIdAndType(booking.getId(), PaymentType.DEPOSITO, PaymentStatus.PAGADO);
 
         BigDecimal totalCobrado = paymentRepository
-                .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO)
-                .orElse(BigDecimal.ZERO);
+                .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
 
         BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCobrado).max(BigDecimal.ZERO);
 

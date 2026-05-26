@@ -2,6 +2,7 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
+import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -16,6 +17,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Pageable;
 
 @Service
@@ -49,14 +52,12 @@ public class BookingService extends BaseBookingService {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         DayType dayType = pricingService.resolveDayType(date.getDayOfWeek());
-
         SpaceSchedule schedule = spaceScheduleRepository
                 .findBySpaceIdAndDayType(spaceId, dayType)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "No hay horario configurado para ese espacio y día"
                 ));
-
         LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
         LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
         List<Booking> ocuppiedBookings = bookingRepository.findBySpaceAndDate(
@@ -65,10 +66,8 @@ public class BookingService extends BaseBookingService {
                 date.plusDays(1).atStartOfDay(),
                 BookingStatus.CANCELADO
         );
-
         List<SpaceAvailabilityDTO> slots = new ArrayList<>();
         LocalDateTime current = startOfDay;
-
         while (current.isBefore(endOfDay)) {
             LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
             final LocalDateTime slotStart = current;
@@ -77,7 +76,6 @@ public class BookingService extends BaseBookingService {
                     b.getStartDatetime().isBefore(slotEnd) &&
                             b.getEndDatetime().isAfter(slotStart)
             );
-
             BigDecimal price = pricingService.getPriceForSlot(space, slotStart);
             SpaceAvailabilityDTO slot = new SpaceAvailabilityDTO();
             slot.setSpaceId(space.getId());
@@ -101,25 +99,37 @@ public class BookingService extends BaseBookingService {
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
 
         BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-        BigDecimal depositAmount = calculateDeposit(space, price);
+
+        SystemConfig config = getSystemConfig();
+        BigDecimal minDeposit = price.multiply(config.getMinimumDepositPercentage());
+
+        if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("El monto mínimo es $%.2f", minDeposit));
+        }
+        if (dto.getDepositAmount().compareTo(price) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El monto no puede superar el total");
+        }
 
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
 
         Booking saved = bookingRepository.save(booking);
-        saved.setBookingNumber(String.format("%06d", saved.getId()));
+        saved.setBookingNumber("BK-" + String.format("%08d", saved.getId()));
         bookingRepository.save(saved);
 
-        // Pago con seña calculada por el sistema
-        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
-                null, null, PaymentType.DEPOSITO);
-        deposit.setStatus(PaymentStatus.PENDIENTE);  // espera confirmación de MP
+        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
+                null, null, PaymentType.DEPOSITO); //implementar con api de mp dsps
+        if(dto.getDepositAmount().compareTo(price)==0) {
+            deposit.setStatus(PaymentStatus.PAGADO);
+        }else {
+            deposit.setStatus(PaymentStatus.PENDIENTE);
+        }
         paymentRepository.save(deposit);
-
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
         bookingRepository.save(saved);
-
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
     }
@@ -151,7 +161,7 @@ public class BookingService extends BaseBookingService {
         bookingRepository.save(saved);
 
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
-                dto.getTransactionId(), employee, PaymentType.DEPOSITO);
+                dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
         paymentRepository.save(deposit);
 
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
@@ -160,6 +170,7 @@ public class BookingService extends BaseBookingService {
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
     }
+
     private Booking buildBooking(User client, Space space, LocalDateTime start,
                                  LocalDateTime end, BigDecimal price) {
         Booking booking = new Booking();
@@ -235,23 +246,19 @@ public class BookingService extends BaseBookingService {
 
         if (devolution) {
             BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
-            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
-                PaymentMethod refundMethod = paymentRepository
-                        .findFirstByBookingIdAndStatusOrderByCreatedAtAsc(bookingId, PaymentStatus.PAGADO)
-                        .map(Payment::getMethod)
-                        .orElse(PaymentMethod.EFECTIVO);
 
+            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
                 Payment refund = buildPayment(
                         booking,
-                        refundMethod,
+                        null,
                         totalCollected,
                         null,
                         employee,
                         PaymentType.DEVOLUCION
                 );
-                refund.setStatus(PaymentStatus.PAGADO);
+                refund.setStatus(PaymentStatus.PENDIENTE);
                 paymentRepository.save(refund);
-                booking.setRefunded(true);
+                booking.setRefunded(false);
             }
         }
         booking.setBookingStatus(BookingStatus.CANCELADO);
@@ -326,10 +333,43 @@ public class BookingService extends BaseBookingService {
         }
     }
 
+    @Transactional
+    public BookingResponseDTO processRefund(Long bookingId, ProcessRefundRequestDTO dto, User employee) {
+        Booking booking = getBookingOrThrow(bookingId);
+
+        if (!booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está cancelado");
+        }
+
+        if (booking.getRefunded()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La devolución ya fue procesada");
+        }
+
+        Payment refund = paymentRepository
+                .findByBookingIdAndTypeAndStatus(bookingId, PaymentType.DEVOLUCION, PaymentStatus.PENDIENTE)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay devolución pendiente"));
+
+        refund.setMethod(dto.getPaymentMethod());
+        refund.setCollectedBy(employee);
+        refund.setStatus(PaymentStatus.PAGADO);
+        refund.setTransactionId(dto.getTransactionId());
+        paymentRepository.save(refund);
+
+        booking.setRefunded(true);
+        bookingRepository.save(booking);
+
+        return buildBookingResponseDTO(booking);
+    }
 
     private Booking getBookingOrThrow(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    }
+
+    private Optional<Payment> findLastCollector(Long bookingId) {
+        return paymentRepository.findFirstByBookingIdAndTypeOrderByCreatedAtDesc(
+                bookingId, PaymentType.PAGO_TOTAL
+        );
     }
 
 }

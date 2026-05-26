@@ -33,7 +33,7 @@ public class Space {
     @Column(nullable = false)
     private Boolean isActive = true;
 
-    @OneToMany(mappedBy = "space", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "space", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SpacePricing> pricings = new ArrayList<>();
 
     @Column(precision = 5, scale = 2)

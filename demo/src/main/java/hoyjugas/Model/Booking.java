@@ -1,6 +1,5 @@
 package hoyjugas.Model;
 
-import hoyjugas.Enum.PaymentMethod;
 import hoyjugas.Enum.BookingStatus;
 import hoyjugas.Enum.PaymentStatus;
 import jakarta.persistence.*;
@@ -25,7 +24,7 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(unique = true, updatable = false, length = 20)
     private String bookingNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

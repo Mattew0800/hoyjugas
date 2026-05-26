@@ -4,6 +4,7 @@ import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
+import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.User.ClientIdRequestDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
@@ -71,11 +72,9 @@ public class BookingController {
     }
 
     @PostMapping("/list")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<Page<BookingListDTO>> getBookings(@Valid @RequestBody BookingFilterRequestDTO dto) {
-        Pageable pageable = PageRequest.of(
-                dto.getPage(),
-                dto.getSize(),
-                Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy())
+        Pageable pageable = PageRequest.of(dto.getPage(),dto.getSize(),Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy())
         );
         return ResponseEntity.ok(bookingService.getBookings(
                 dto.getClientId(),
@@ -87,6 +86,14 @@ public class BookingController {
                 pageable
         ));
     }
+
+//    @PostMapping("/process-refund")
+//    @PreAuthorize("hasRole('EMPLOYEE')")
+//    public ResponseEntity<BookingResponseDTO> processRefund(
+//            @Valid @RequestBody ProcessRefundRequestDTO dto) {
+//        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+//        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
+//    }
 
     @PostMapping("/client-history")
     @PreAuthorize("hasRole('USER')")

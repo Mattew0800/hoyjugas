@@ -106,14 +106,11 @@ public class SpaceService {
         pricing.setEndTime(dto.getEndTime());
         pricing.setPrice(dto.getPrice());
         spacePricingRepository.save(pricing);
-
         return SpaceResponseDTO.fromEntity(space);
     }
 
     public void checkOverlapping(Long spaceId, SpacePricingRequestDTO dto, Long pricingId) {
-
         List<SpacePricing> overlaps;
-
         if (pricingId == null) {
             overlaps = spacePricingRepository.findOverlappingPricings(
                     spaceId,
@@ -130,7 +127,6 @@ public class SpaceService {
                     pricingId
             );
         }
-
         if (!overlaps.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -152,12 +148,10 @@ public class SpaceService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Franja de precio no encontrada"
                 ));
-
         pricing.setDayType(dto.getDayType());
         pricing.setStartTime(dto.getStartTime());
         pricing.setEndTime(dto.getEndTime());
         pricing.setPrice(dto.getPrice());
-
         spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(space);
     }
@@ -177,7 +171,6 @@ public class SpaceService {
                 ));
         space.getPricings().remove(pricing);
         spaceRepository.save(space);
-
         return SpaceResponseDTO.fromEntity(space);
     }
 }

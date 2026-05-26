@@ -4,6 +4,11 @@ import hoyjugas.DTO.Space.*;
 import hoyjugas.DTO.SpacePricing.SpacePricingDeleteRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingParentRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingUpdateRequestDTO;
+import hoyjugas.DTO.SpaceSchedule.SpaceScheduleDeleteRequestDTO;
+import hoyjugas.DTO.SpaceSchedule.SpaceScheduleParentRequestDTO;
+import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
+import hoyjugas.DTO.SpaceSchedule.SpaceScheduleUpdateRequestDTO;
+import hoyjugas.Service.SpaceScheduleService;
 import hoyjugas.Service.SpaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +25,7 @@ import java.util.List;
 public class SpaceController {
 
     private final SpaceService spaceService;
+    private final SpaceScheduleService spaceScheduleService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
@@ -34,7 +40,7 @@ public class SpaceController {
         return ResponseEntity.ok(spaceService.updateSpace(dto.getSpaceId(), dto));
     }
 
-    @PutMapping("/toggle-status")
+    @PutMapping("/toggle-status")//revisar si vale la pena hacer endpoint por endpoint o simplemente usar el update y dependiendo lo que llega lo updateo
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> toggleStatus(@Valid @RequestBody SpaceStatusRequestDTO dto) {
         spaceService.toggleSpaceStatus(dto.getSpaceId(), dto.getIsActive());
@@ -53,7 +59,7 @@ public class SpaceController {
         return ResponseEntity.ok(spaceService.getAllSpacesIncludingInactive());
     }
 
-    @PostMapping("/pricing/add")
+    @PostMapping("/pricing/add")//para poner precio diff dependiendo franja horaria y dia
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SpaceResponseDTO> addPricing(@Valid @RequestBody SpacePricingParentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -66,9 +72,46 @@ public class SpaceController {
         return ResponseEntity.ok(spaceService.updatePricing(dto.getSpaceId(), dto.getPricingId(), dto.getPricing()));
     }
 
-    @PutMapping("/pricing/deactivate")
+    @DeleteMapping("/pricing/delete")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SpaceResponseDTO> deletePricing(@Valid @RequestBody SpacePricingDeleteRequestDTO dto) {
         return ResponseEntity.ok(spaceService.deletePricing(dto.getSpaceId(), dto.getPricingId()));
+    }
+
+    @PostMapping("/get-all-active")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SpaceListDTO>> getAllSpacesActive() {
+        return ResponseEntity.ok(spaceService.getAllSpacesActive());
+    }
+
+    @PostMapping("/schedule/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(
+            @Valid @RequestBody SpaceScheduleParentRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(spaceScheduleService.addSchedule(dto.getSpaceId(), dto.getSchedule()));
+    }
+
+    @PutMapping("/schedule/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(
+            @Valid @RequestBody SpaceScheduleUpdateRequestDTO dto) {
+        return ResponseEntity.ok(spaceScheduleService.updateSchedule(
+                dto.getSpaceId(), dto.getScheduleId(), dto.toScheduleRequestDTO()));
+    }
+
+    @DeleteMapping("/schedule/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteSchedule(
+            @Valid @RequestBody SpaceScheduleDeleteRequestDTO dto) {
+        spaceScheduleService.deleteSchedule(dto.getSpaceId(), dto.getScheduleId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/schedule/get-by-space")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SpaceScheduleResponseDTO>> getSchedulesBySpace(
+            @Valid @RequestBody SpaceDetailRequestDTO dto) {
+        return ResponseEntity.ok(spaceScheduleService.getSchedulesBySpace(dto.getSpaceId()));
     }
 }

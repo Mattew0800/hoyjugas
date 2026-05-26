@@ -68,11 +68,11 @@ public class RecurringBookingService extends BaseBookingService{
         recurring.setStatus(RecurringStatus.ACTIVO);
 
         RecurringBooking saved = recurringBookingRepository.save(recurring);
-        List<Booking> bookingsGenerados = generateBookings(saved, space, config);
-        bookingRepository.saveAll(bookingsGenerados);
+        List<Booking> bookingsGenerated = generateBookings(saved, space, config);
+        bookingRepository.saveAll(bookingsGenerated);
 
-        if (!bookingsGenerados.isEmpty()) {
-            Booking firstBooking = bookingsGenerados.get(0);
+        if (!bookingsGenerated.isEmpty()) {
+            Booking firstBooking = bookingsGenerated.get(0);
 
             BigDecimal depositAmount = calculateDeposit(1, firstBooking.getTotalAmount(), config);
 
@@ -91,13 +91,13 @@ public class RecurringBookingService extends BaseBookingService{
             bookingRepository.save(firstBooking);
         }
         RecurringBookingResponseDTO response = RecurringBookingResponseDTO
-                .fromEntity(saved, bookingsGenerados);
+                .fromEntity(saved, bookingsGenerated);
         response.setDepositLabel(String.format(
                 "Las primeras %d veces la seña es el doble del valor normal",
                 config.getRecurringInitialDepositTurns()
         ));
         response.setSlots(
-                buildSlots(bookingsGenerados, config.getRecurringInitialDepositTurns())
+                buildSlots(bookingsGenerated, config.getRecurringInitialDepositTurns())
         );
         return response;
     }
@@ -252,10 +252,10 @@ public class RecurringBookingService extends BaseBookingService{
 
     private List<RecurringBookingSlotDTO> buildSlots(
             List<Booking> bookings,
-            int turnosConSeñaDoble
+            int turnsWithDoubleDeposit
     ) {
         List<RecurringBookingSlotDTO> slots = new ArrayList<>();
-        int turnoNumero = 1;
+        int turnNumber = 1;
 
         for (Booking booking : bookings) {
             BigDecimal depositPaid = paymentRepository
@@ -263,18 +263,18 @@ public class RecurringBookingService extends BaseBookingService{
                             booking.getId(),
                             PaymentType.DEPOSITO,
                             PaymentStatus.PAGADO
-                    ).orElse(BigDecimal.ZERO);
+                    );
 
 
-            BigDecimal totalCobrado = paymentRepository
+            BigDecimal totalCollected = paymentRepository
                     .findTotalByBookingIdExcludingType(
                             booking.getId(),
                             PaymentType.DEVOLUCION,
                             PaymentStatus.PAGADO
-                    ).orElse(BigDecimal.ZERO);
+                    );
 
             BigDecimal remaining = booking.getTotalAmount()
-                    .subtract(totalCobrado)
+                    .subtract(totalCollected)
                     .max(BigDecimal.ZERO);
 
             booking.setPaymentStatus(
@@ -283,13 +283,13 @@ public class RecurringBookingService extends BaseBookingService{
 
             slots.add(RecurringBookingSlotDTO.fromEntity(
                     booking,
-                    turnoNumero,
-                    turnosConSeñaDoble,
+                    turnNumber,
+                    turnsWithDoubleDeposit,
                     depositPaid,
                     remaining
             ));
 
-            turnoNumero++;
+            turnNumber++;
         }
 
         return slots;

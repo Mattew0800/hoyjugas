@@ -52,13 +52,12 @@ public class PricingService {
 
     public DayType resolveDayType(DayOfWeek day) {
         return switch (day) {
-            case MONDAY -> DayType.LUNES;
-            case TUESDAY -> DayType.MARTES;
-            case WEDNESDAY -> DayType.MIERCOLES;
-            case THURSDAY -> DayType.JUEVES;
-            case FRIDAY -> DayType.VIERNES;
-            case SATURDAY -> DayType.SABADO;
-            case SUNDAY -> DayType.DOMINGO;
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY ->
+                    DayType.DIA_DE_SEMANA;
+            case SATURDAY ->
+                    DayType.SABADO;
+            case SUNDAY ->
+                    DayType.DOMINGO;
         };
     }
 }

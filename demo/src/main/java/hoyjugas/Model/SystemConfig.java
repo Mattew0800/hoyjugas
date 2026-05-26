@@ -34,6 +34,8 @@ public class SystemConfig {
 
     private Integer maxRecurringCancellations;
 
+    private BigDecimal minimumDepositPercentage;
+
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal normalDepositFactor = new BigDecimal("0.30");
 }

@@ -123,6 +123,7 @@ public class UserService {
                         "Cliente no encontrado"
                 ));
     }
+
     public User getEmployeeById(Long id) {
         return userRepository.findById(id)
                 .filter(user -> user.getRole().equals(Role.EMPLOYEE))

@@ -1,5 +1,6 @@
 package hoyjugas.Service;
 
+import hoyjugas.DTO.System.SystemConfigCreateDTO;
 import hoyjugas.DTO.System.SystemConfigUpdateDTO;
 import hoyjugas.Model.SystemConfig;
 import hoyjugas.Repository.SystemConfigRepository;
@@ -17,44 +18,50 @@ public class SystemConfigService {
 
     @Transactional
     public SystemConfig updateConfig(SystemConfigUpdateDTO dto) {
+
         SystemConfig config = systemConfigRepository.findById(1)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        HttpStatus.NOT_FOUND,
                         "Configuración no encontrada"
                 ));
-        if (dto.getCancellationHoursLimit() != null)
-            config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
-        if (dto.getReminderHoursBeforeBooking() != null)
-            config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
-        if (dto.getTermsAndConditions() != null)
-            config.setTermsAndConditions(dto.getTermsAndConditions());
-        if (dto.getRecurringMonthsAhead() != null)
-            config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
-        if (dto.getRecurringInitialDepositTurns() != null)
-            config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
-        if (dto.getRecurringInitialDepositFactor() != null)
-            config.setRecurringInitialDepositFactor(dto.getRecurringInitialDepositFactor());
-        if (dto.getRecurringDepositFactor() != null)
-            config.setRecurringDepositFactor(dto.getRecurringDepositFactor());
-        if (dto.getMaxRecurringCancellations() != null)
-            config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
-        if (dto.getNormalDepositFactor() != null)
-            config.setNormalDepositFactor(dto.getNormalDepositFactor());
-
+        updateEntity(config, dto);
         return systemConfigRepository.save(config);
     }
 
-    private SystemConfigUpdateDTO fromEntity(SystemConfig config) {
-        SystemConfigUpdateDTO dto = new SystemConfigUpdateDTO();
-        dto.setCancellationHoursLimit(config.getCancellationHoursLimit());
-        dto.setReminderHoursBeforeBooking(config.getReminderHoursBeforeBooking());
-        dto.setTermsAndConditions(config.getTermsAndConditions());
-        dto.setRecurringMonthsAhead(config.getRecurringMonthsAhead());
-        dto.setRecurringInitialDepositTurns(config.getRecurringInitialDepositTurns());
-        dto.setRecurringInitialDepositFactor(config.getRecurringInitialDepositFactor());
-        dto.setRecurringDepositFactor(config.getRecurringDepositFactor());
-        dto.setMaxRecurringCancellations(config.getMaxRecurringCancellations());
-        dto.setNormalDepositFactor(config.getNormalDepositFactor());
-        return dto;
+    @Transactional
+    public SystemConfig createConfig(SystemConfigCreateDTO dto) {
+        SystemConfig config = toEntity(dto);
+        return systemConfigRepository.save(config);
     }
+
+    private SystemConfig toEntity(SystemConfigCreateDTO dto) {
+        SystemConfig config = new SystemConfig();
+
+        config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
+        config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
+        config.setTermsAndConditions(dto.getTermsAndConditions());
+        config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
+        config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
+        config.setRecurringInitialDepositFactor(dto.getRecurringInitialDepositFactor());
+        config.setRecurringDepositFactor(dto.getRecurringDepositFactor());
+        config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
+        config.setMinimumDepositPercentage(dto.getMinimumDepositPercentage());
+        config.setNormalDepositFactor(dto.getNormalDepositFactor());
+
+        return config;
+    }
+
+    private void updateEntity(SystemConfig config, SystemConfigUpdateDTO dto) {
+        config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
+        config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
+        config.setTermsAndConditions(dto.getTermsAndConditions());
+        config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
+        config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
+        config.setRecurringInitialDepositFactor(dto.getRecurringInitialDepositFactor());
+        config.setRecurringDepositFactor(dto.getRecurringDepositFactor());
+        config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
+        config.setNormalDepositFactor(dto.getNormalDepositFactor());
+    }
+
+    
 }

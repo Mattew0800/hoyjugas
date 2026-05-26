@@ -31,9 +31,10 @@ public class RecurringBookingController {
     private final RecurringBookingService recurringBookingService;
     private final UserService userService;
 
-    @PostMapping("/create")
+    @PostMapping("/create")//no funciona para empleados dsps lo arreglo
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<RecurringBookingResponseDTO> createRecurringBooking(@Valid @RequestBody RecurringBookingRequestDTO dto) {      User employee = null;
+    public ResponseEntity<RecurringBookingResponseDTO> createRecurringBooking(@Valid @RequestBody RecurringBookingRequestDTO dto) {
+        User employee = null;
         if (dto.getEmployeePin() != null) {
             employee = userService.validateEmployeePin(dto.getEmployeePin());
         }

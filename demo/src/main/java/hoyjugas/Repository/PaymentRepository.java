@@ -33,7 +33,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     AND p.type = :type
     AND p.status = :status
 """)
-    Optional<BigDecimal> findTotalByBookingIdAndType(
+    BigDecimal findTotalByBookingIdAndType(
             @Param("bookingId") Long bookingId,
             @Param("type") PaymentType type,
             @Param("status") PaymentStatus status
@@ -46,7 +46,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     AND p.type <> :excludeType
     AND p.status = :status
 """)
-    Optional<BigDecimal> findTotalByBookingIdExcludingType(
+    BigDecimal findTotalByBookingIdExcludingType(
             @Param("bookingId") Long bookingId,
             @Param("excludeType") PaymentType excludeType,
             @Param("status") PaymentStatus status
@@ -55,5 +55,18 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findFirstByBookingIdAndTypeOrderByCreatedAtDesc(
             Long bookingId,
             PaymentType type
+    );
+
+    Optional<Payment> findByBookingIdAndTypeAndStatus(Long bookingId, PaymentType type, PaymentStatus status);
+    @Query("""
+        SELECT COALESCE(SUM(p.amount), 0) FROM Payment p
+        WHERE p.booking.id = :bookingId
+        AND p.type = :type
+        AND p.status = :status
+        """)
+    BigDecimal findTotalByBookingIdAndTypeAndStatus(
+            @Param("bookingId") Long bookingId,
+            @Param("type") PaymentType type,
+            @Param("status") PaymentStatus status
     );
 }
