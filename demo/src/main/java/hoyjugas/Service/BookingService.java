@@ -3,6 +3,7 @@ package hoyjugas.Service;
 import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
 import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
+import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -372,4 +373,68 @@ public class BookingService extends BaseBookingService {
         );
     }
 
+    @Transactional
+    public BookingResponseDTO rescheduleBooking(RescheduleBookingRequestDTO dto, User employee) {
+        Booking original = getBookingOrThrow(dto.getOriginalBookingId());
+
+        if (original.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se puede reprogramar un turno finalizado");
+        }
+        if (original.getBookingStatus().equals(BookingStatus.CANCELADO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El turno ya está cancelado");
+        }
+        if (original.isRecurring()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Para reprogramar un turno fijo usá el endpoint correspondiente");
+        }
+
+        Space space = getActiveSpaceOrThrow(dto.getSpaceId());
+        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+
+        validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
+
+        BigDecimal newPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+
+        original.setBookingStatus(BookingStatus.CANCELADO);
+        original.setCancelledAt(LocalDateTime.now());
+        original.setCancellationReason(dto.getCancellationReason() != null
+                ? dto.getCancellationReason()
+                : "Reprogramado");
+        original.setRefunded(false);
+        bookingRepository.save(original);
+
+        BigDecimal alreadyPaid = paymentRepository.findTotalByBookingIdExcludingType(
+                original.getId(),
+                PaymentType.DEVOLUCION,
+                PaymentStatus.PAGADO
+        );
+
+        Booking newBooking = buildBooking(
+                original.getClient(),
+                space,
+                dto.getStartDatetime(),
+                endDatetime,
+                newPrice
+        );
+        newBooking.setRescheduledFrom(original);
+        newBooking.setCreatedBy(employee);
+        newBooking.setTermsAccepted(dto.getTermsAccepted());
+        newBooking.setTermsAcceptedAt(LocalDateTime.now());
+        newBooking.setBookingStatus(BookingStatus.CONFIRMADO);
+
+        Booking saved = bookingRepository.save(newBooking);
+        saved.setBookingNumber(String.format("%06d", saved.getId()));
+
+        paymentRepository.save(buildTransferPayment(original,newBooking,alreadyPaid,employee));
+
+        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), newPrice));
+        bookingRepository.save(saved);
+
+        scheduleReminder(saved);
+        scheduleNotification(saved, NotificationType.CANCELACION);
+
+        return buildBookingResponseDTO(saved);
+    }
 }

@@ -85,6 +85,10 @@ public class Booking {
     @JoinColumn(name = "recurring_booking_id")
     private RecurringBooking recurringBooking;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rescheduled_from_id")
+    private Booking rescheduledFrom;
+
     public boolean isRecurring() {
         return this.recurringBooking != null;
     }

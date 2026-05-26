@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,5 +52,9 @@ public class RecurringBooking {
     @OneToMany(mappedBy = "recurringBooking", fetch = FetchType.LAZY)
     private List<Booking> bookings = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cancelled_by")
+    private User cancelledBy;
 
+    private LocalDateTime cancelledAt;
 }

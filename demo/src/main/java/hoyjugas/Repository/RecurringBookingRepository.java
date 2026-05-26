@@ -27,5 +27,20 @@ public interface RecurringBookingRepository extends JpaRepository<RecurringBooki
 
     List<RecurringBooking> findByClientIdAndStatus(Long clientId, RecurringStatus status);
 
+    @Query("""
+        SELECT COUNT(r) > 0 FROM RecurringBooking r
+        WHERE r.client.id = :clientId
+        AND r.space.id = :spaceId
+        AND r.dayOfWeek = :dayOfWeek
+        AND r.startTime = :startTime
+        AND r.status = :status
+        """)
+    boolean existsActiveRecurring(
+            @Param("clientId") Long clientId,
+            @Param("spaceId") Long spaceId,
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("startTime") LocalTime startTime,
+            @Param("status") RecurringStatus status
+    );
 }
 

@@ -120,4 +120,18 @@ public abstract class BaseBookingService {
 
         return BookingResponseDTO.fromEntity(booking, depositAmount, remainingAmount, createdByName, collectedByName);
     }
+
+    protected Payment buildTransferPayment(Booking original, Booking newBooking,
+                                           BigDecimal amount, User employee) {
+        Payment transfer = buildPayment(
+                newBooking,
+                PaymentMethod.INTERNO,
+                amount,
+                "TRANSFER-FROM-" + original.getBookingNumber(),
+                employee,
+                PaymentType.DEPOSITO
+        );
+        transfer.setStatus(PaymentStatus.PAGADO);
+        return transfer;
+    }
 }

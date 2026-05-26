@@ -54,7 +54,18 @@ public class RecurringBookingService extends BaseBookingService{
         LocalDate endDate = dto.getEndDate() != null
                 ? dto.getEndDate()
                 : LocalDate.of(LocalDate.now().getYear(), 12, 31);
+        boolean alreadyExists = recurringBookingRepository.existsActiveRecurring(
+                client.getId(),
+                space.getId(),
+                dto.getStartDate().getDayOfWeek(),
+                dto.getStartTime(),
+                RecurringStatus.ACTIVO
+        );
 
+        if (alreadyExists) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya existe un turno fijo activo para ese cliente, espacio y horario");
+        }
         RecurringBooking recurring = new RecurringBooking();
         recurring.setClient(client);
         recurring.setSpace(space);
@@ -141,6 +152,59 @@ public class RecurringBookingService extends BaseBookingService{
         return bookings;
     }
 
+    public RecurringBookingPreviewDTO previewRecurringBooking(RecurringBookingRequestDTO dto) {
+        Space space = getActiveSpaceOrThrow(dto.getSpaceId());
+        SystemConfig config = getSystemConfig();
+
+        LocalDate endDate = dto.getEndDate() != null
+                ? dto.getEndDate()
+                : LocalDate.of(LocalDate.now().getYear(), 12, 31);
+
+        List<LocalDateTime> available = new ArrayList<>();
+        List<LocalDateTime> conflicts = new ArrayList<>();
+
+        LocalDate current = dto.getStartDate();
+        int intervalWeeks = dto.getIntervalWeeks() != null ? dto.getIntervalWeeks() : 1;
+
+        while (!current.isAfter(endDate)) {
+            LocalDateTime startDatetime = LocalDateTime.of(current, dto.getStartTime());
+            LocalDateTime endDatetime = startDatetime.plusMinutes(space.getSlotDuration());
+
+            boolean ocupado = bookingRepository.existsOverlappingBooking(
+                    space.getId(),
+                    startDatetime,
+                    endDatetime,
+                    BookingStatus.CANCELADO
+            );
+
+            if (ocupado) {
+                conflicts.add(startDatetime);
+            } else {
+                available.add(startDatetime);
+            }
+
+            current = current.plusWeeks(intervalWeeks);
+        }
+
+        BigDecimal price = pricingService.getPriceForSlot(space,
+                LocalDateTime.of(dto.getStartDate(), dto.getStartTime()));
+        BigDecimal firstDeposit = calculateDeposit(1, price, config);
+
+        RecurringBookingPreviewDTO preview = new RecurringBookingPreviewDTO();
+        preview.setSpaceId(space.getId());
+        preview.setSpaceName(space.getName());
+        preview.setStartDate(dto.getStartDate());
+        preview.setEndDate(endDate);
+        preview.setIntervalWeeks(intervalWeeks);
+        preview.setTotalSlotsGenerated(available.size());
+        preview.setConflictingSlots(conflicts.size());
+        preview.setConflicts(conflicts);
+        preview.setAvailable(available);
+        preview.setFirstDepositAmount(firstDeposit);
+
+        return preview;
+    }
+
     private BigDecimal calculateDeposit(int bookingNumber, BigDecimal totalPrice, SystemConfig config) {
         int bookingsWithHighDeposit = config.getRecurringInitialDepositTurns();
         BigDecimal initialDepositFactor = config.getRecurringInitialDepositFactor();
@@ -215,13 +279,11 @@ public class RecurringBookingService extends BaseBookingService{
     }
 
     @Transactional
-    public void cancelRecurringCycle(Long recurringId, String cancellationReason, Long requesterId) {
+    public void cancelRecurringCycle(Long recurringId, String cancellationReason, Long requesterId, User employee) {
         RecurringBooking recurring = recurringBookingRepository.findById(recurringId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ciclo no encontrado"));
-
         User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-
         if (requester.getRole().equals(Role.USER) &&
                 !recurring.getClient().getId().equals(requesterId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
@@ -231,9 +293,10 @@ public class RecurringBookingService extends BaseBookingService{
         if (recurring.getStatus().equals(RecurringStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ciclo ya está cancelado");
         }
-
         cancelFutureBookings(recurring, cancellationReason);
         recurring.setStatus(RecurringStatus.CANCELADO);
+        recurring.setCancelledAt(LocalDateTime.now());
+        recurring.setCancelledBy(employee != null ? employee : requester);
         recurringBookingRepository.save(recurring);
     }
 
@@ -250,13 +313,9 @@ public class RecurringBookingService extends BaseBookingService{
                 .toList();
     }
 
-    private List<RecurringBookingSlotDTO> buildSlots(
-            List<Booking> bookings,
-            int turnsWithDoubleDeposit
-    ) {
+    private List<RecurringBookingSlotDTO> buildSlots(List<Booking> bookings,int turnsWithDoubleDeposit ) {
         List<RecurringBookingSlotDTO> slots = new ArrayList<>();
         int turnNumber = 1;
-
         for (Booking booking : bookings) {
             BigDecimal depositPaid = paymentRepository
                     .findTotalByBookingIdAndType(
@@ -264,8 +323,6 @@ public class RecurringBookingService extends BaseBookingService{
                             PaymentType.DEPOSITO,
                             PaymentStatus.PAGADO
                     );
-
-
             BigDecimal totalCollected = paymentRepository
                     .findTotalByBookingIdExcludingType(
                             booking.getId(),
@@ -294,5 +351,7 @@ public class RecurringBookingService extends BaseBookingService{
 
         return slots;
     }
+
+
 
 }

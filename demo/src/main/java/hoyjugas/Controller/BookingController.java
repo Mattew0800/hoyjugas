@@ -106,4 +106,15 @@ public class BookingController {
     public ResponseEntity<BigDecimal> getClientDebt(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
     }
+
+
+    @PostMapping("/reschedule")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> rescheduleBooking(@Valid @RequestBody RescheduleBookingRequestDTO dto) {
+        User employee = null;
+        if (dto.getEmployeePin() != null) {
+            employee = userService.validateEmployeePin(dto.getEmployeePin());
+        }
+        return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
+    }
 }
