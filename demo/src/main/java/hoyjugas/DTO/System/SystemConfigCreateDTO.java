@@ -30,26 +30,10 @@ public class SystemConfigCreateDTO {
     private Integer recurringInitialDepositTurns;
 
     @NotNull
-    @DecimalMin("0.01")
-    @DecimalMax("1.00")
-    private BigDecimal recurringInitialDepositFactor;
-
-    @NotNull
-    @DecimalMin("0.01")
-    @DecimalMax("1.00")
-    private BigDecimal recurringDepositFactor;
+    @DecimalMin("1.00")
+    private BigDecimal recurringDepositMultiplier;
 
     @NotNull
     @Min(1)
     private Integer maxRecurringCancellations;
-
-    @NotNull
-    @DecimalMin("0.01")
-    @DecimalMax("1.00")
-    private BigDecimal minimumDepositPercentage;
-
-    @NotNull
-    @DecimalMin("0.01")
-    @DecimalMax("1.00")
-    private BigDecimal normalDepositFactor;
 }

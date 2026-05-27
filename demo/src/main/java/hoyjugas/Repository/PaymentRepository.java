@@ -32,7 +32,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     WHERE p.booking.id = :bookingId
     AND p.type = :type
     AND p.status = :status
-""")
+    """)
     BigDecimal findTotalByBookingIdAndType(
             @Param("bookingId") Long bookingId,
             @Param("type") PaymentType type,

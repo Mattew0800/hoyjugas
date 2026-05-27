@@ -19,6 +19,7 @@ public abstract class BaseBookingService {
     protected final UserRepository userRepository;
     protected final SpaceRepository spaceRepository;
     protected final PaymentRepository paymentRepository;
+    protected final BookingRepository bookingRepository;
 
     protected void scheduleNotification(Booking booking, NotificationType type) {
         BookingNotification notif = new BookingNotification();
@@ -89,20 +90,32 @@ public abstract class BaseBookingService {
         }
         return PaymentStatus.NO_PAGADO;
     }
+
     protected BigDecimal calculateDeposit(Space space, BigDecimal totalPrice) {
-        SystemConfig config = getSystemConfig();
-        if (space.getFixedDeposit() != null && space.getFixedDeposit().compareTo(BigDecimal.ZERO) > 0) {
-            return space.getFixedDeposit().min(totalPrice);
-        }
-        BigDecimal factor = space.getDepositFactor() != null
-                ? space.getDepositFactor()
-                : config.getNormalDepositFactor();
-        return totalPrice.multiply(factor).min(totalPrice);
+        return space.getFixedDeposit()
+                .min(totalPrice);
+    }
+    protected void assignBookingNumbers(List<Booking> bookings) {
+        bookings.forEach(b ->
+                b.setBookingNumber("BK-" + String.format("%08d", b.getId()))
+        );
+        bookingRepository.saveAll(bookings);
+    }
+
+    protected Booking assignBookingNumber(Booking booking) {
+        String bookingNumber = "BK-" + String.format("%08d", booking.getId());
+        bookingRepository.updateBookingNumber(booking.getId(), bookingNumber);
+        booking.setBookingNumber(bookingNumber);
+        return booking;
     }
 
     protected BookingResponseDTO buildBookingResponseDTO(Booking booking) {
         BigDecimal depositAmount = paymentRepository
-                .findTotalByBookingIdAndType(booking.getId(), PaymentType.DEPOSITO, PaymentStatus.PAGADO);
+                .findTotalByBookingIdAndType(
+                        booking.getId(),
+                        PaymentType.DEPOSITO,
+                        PaymentStatus.PAGADO
+                );
 
         BigDecimal totalCobrado = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);

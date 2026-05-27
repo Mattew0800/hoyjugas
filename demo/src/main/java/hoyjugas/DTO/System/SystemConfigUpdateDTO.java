@@ -1,6 +1,5 @@
 package hoyjugas.DTO.System;
 
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -26,18 +25,9 @@ public class SystemConfigUpdateDTO {
     @Min(value = 1)
     private Integer recurringInitialDepositTurns;
 
-    @DecimalMin(value = "0.01")
-    @DecimalMax(value = "1.00")
-    private BigDecimal recurringInitialDepositFactor;
-
-    @DecimalMin(value = "0.01")
-    @DecimalMax(value = "1.00")
-    private BigDecimal recurringDepositFactor;
+    @DecimalMin("1.00")
+    private BigDecimal recurringDepositMultiplier;
 
     @Min(value = 1)
     private Integer maxRecurringCancellations;
-
-    @DecimalMin(value = "0.01")
-    @DecimalMax(value = "1.00")
-    private BigDecimal normalDepositFactor;
 }

@@ -26,15 +26,11 @@ public class SystemConfig {
 
     private Integer recurringMonthsAhead;
 
+    private BigDecimal recurringDepositMultiplier;
+
     private int recurringInitialDepositTurns;
-
-    private BigDecimal recurringInitialDepositFactor;
-
-    private BigDecimal recurringDepositFactor;
-
+    
     private Integer maxRecurringCancellations;
-
-    private BigDecimal minimumDepositPercentage;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal normalDepositFactor = new BigDecimal("0.30");

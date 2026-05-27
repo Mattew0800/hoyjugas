@@ -87,6 +87,20 @@ public class BookingController {
         ));
     }
 
+    @GetMapping("/my-bookings")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<BookingListDTO>> getMyBookings(@Valid @RequestBody BookingFilterRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getBookings(
+                me.getId(),
+                dto.getSpaceId(),
+                dto.getStatus(),
+                null,
+                dto.getDateFrom(),
+                dto.getDateTo(),
+                PageRequest.of(dto.getPage(), dto.getSize(),
+                        Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy()))
+        ));
+    }
 //    @PostMapping("/process-refund")
 //    @PreAuthorize("hasRole('EMPLOYEE')")
 //    public ResponseEntity<BookingResponseDTO> processRefund(
@@ -95,11 +109,6 @@ public class BookingController {
 //        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
 //    }
 
-    @PostMapping("/client-history")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<BookingListDTO>> getClientHistory(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
-        return ResponseEntity.ok(bookingService.getClientHistory(dto.getClientId(),me.getId()));
-    }
 
     @PostMapping("/client-debt")
     @PreAuthorize("hasRole('USER')")

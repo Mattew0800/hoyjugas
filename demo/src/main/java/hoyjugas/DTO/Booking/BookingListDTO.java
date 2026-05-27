@@ -31,9 +31,9 @@ public class BookingListDTO {
         dto.setSpaceName(booking.getSpace().getName());
         dto.setStartDatetime(booking.getStartDatetime());
         dto.setEndDatetime(booking.getEndDatetime());
-        dto.setStatus(booking.getPaymentStatus().name());
+        dto.setStatus(booking.getBookingStatus().name());
         dto.setPaymentStatus(booking.getPaymentStatus().name());
         dto.setTotalAmount(booking.getTotalAmount());
         return dto;
-}
+    }
 }

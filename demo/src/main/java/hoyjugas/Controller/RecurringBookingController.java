@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/recurring-bookings")
@@ -53,10 +54,10 @@ public class RecurringBookingController {
 
     @PostMapping("/cancel-cycle")
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<Void> cancelRecurringCycle(@Valid @RequestBody CancelRecurringCycleRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+    public ResponseEntity<?> cancelRecurringCycle(@Valid @RequestBody CancelRecurringCycleRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
         User employee = userService.validateEmployeePin(dto.getEmployeePin());
         recurringBookingService.cancelRecurringCycle(dto.getRecurringId(), dto.getCancellationReason(),me.getId(), employee);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Map.of("message", "Ciclo cancelado correctamente"));
     }
 
     @PostMapping("/client-history")

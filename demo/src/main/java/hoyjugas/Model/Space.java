@@ -37,9 +37,9 @@ public class Space {
     private List<SpacePricing> pricings = new ArrayList<>();
 
     @Column(precision = 5, scale = 2)
-    private BigDecimal depositFactor;//porcentaje del totalll
+    private BigDecimal depositFactor;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal fixedDeposit;//monto minimo de seña
+    @Column(precision = 10, scale = 2,nullable = false)
+    private BigDecimal fixedDeposit;//monto de seña
 }
 

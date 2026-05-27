@@ -39,7 +39,7 @@ public class BookingService extends BaseBookingService {
             SpaceRepository spaceRepository,
             UserRepository userRepository,
             PricingService pricingService,SpaceScheduleRepository spaceScheduleRepository,PaymentRepository paymentRepository) {
-        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository);
+        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
         this.userRepository = userRepository;
@@ -96,14 +96,9 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
-
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-
-        SystemConfig config = getSystemConfig();
-        BigDecimal minDeposit = price.multiply(config.getMinimumDepositPercentage());
-
+        BigDecimal minDeposit = space.getFixedDeposit();
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
@@ -112,22 +107,16 @@ public class BookingService extends BaseBookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El monto no puede superar el total");
         }
-
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
 
         Booking saved = bookingRepository.save(booking);
-        saved.setBookingNumber("BK-" + String.format("%08d", saved.getId()));
-        bookingRepository.save(saved);
+        saved = assignBookingNumber(saved);
 
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
                 null, null, PaymentType.DEPOSITO); //implementar con api de mp dsps
-        if(dto.getDepositAmount().compareTo(price)==0) {
-            deposit.setStatus(PaymentStatus.PAGADO);
-        }else {
-            deposit.setStatus(PaymentStatus.PENDIENTE);
-        }
+        deposit.setStatus(PaymentStatus.PAGADO);
         paymentRepository.save(deposit);
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
         bookingRepository.save(saved);
@@ -143,24 +132,36 @@ public class BookingService extends BaseBookingService {
 
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
 
-        BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+        BigDecimal price =
+                pricingService.getPriceForSlot(space, dto.getStartDatetime());
+
+        BigDecimal minimumDeposit =
+                calculateDeposit(space, price);
+
         BigDecimal depositAmount = dto.getDepositAmount() != null
                 ? dto.getDepositAmount()
-                : calculateDeposit(space, price);
+                : minimumDeposit;
+
+        if (depositAmount.compareTo(minimumDeposit) < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La seña no puede ser menor a " + minimumDeposit
+            );
+        }
 
         if (depositAmount.compareTo(price) > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La seña no puede superar el total");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La seña no puede superar el total"
+            );
         }
 
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
-
         Booking saved = bookingRepository.save(booking);
-        saved.setBookingNumber(String.format("%06d", saved.getId()));
-        bookingRepository.save(saved);
-
+        assignBookingNumber(saved);
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
                 dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
         paymentRepository.save(deposit);
@@ -170,6 +171,15 @@ public class BookingService extends BaseBookingService {
 
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
+    }
+
+    private PaymentStatus determinePaymentStatus(BigDecimal paidAmount, BigDecimal totalPrice) {
+        if (paidAmount.compareTo(totalPrice) == 0) {
+            return PaymentStatus.PAGADO;
+        } else if (paidAmount.compareTo(BigDecimal.ZERO) > 0) {
+            return PaymentStatus.RESERVADO;
+        }
+        return PaymentStatus.NO_PAGADO;
     }
 
     private Booking buildBooking(User client, Space space, LocalDateTime start,
@@ -272,20 +282,29 @@ public class BookingService extends BaseBookingService {
     }
 
 
-    public Page<BookingListDTO> getBookings(
-            Long clientId,
-            Long spaceId,
-            BookingStatus status,
-            Long employeeId,
-            LocalDateTime dateFrom,
-            LocalDateTime dateTo,
-            Pageable pageable
-    ) {
+    public Page<BookingListDTO> getBookings(Long clientId, Long spaceId, BookingStatus status,
+                                            Long employeeId, LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable) {
         return bookingRepository
                 .findAllWithFilters(clientId, spaceId, status, employeeId, dateFrom, dateTo, pageable)
-                .map(BookingListDTO::fromEntity);
-    }
+                .map(booking -> {
+                    BookingListDTO dto = BookingListDTO.fromEntity(booking);
 
+                    BigDecimal totalCobrado = paymentRepository.findTotalByBookingIdExcludingType(
+                            booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
+                    dto.setRemainingAmount(booking.getTotalAmount()
+                            .subtract(totalCobrado).max(BigDecimal.ZERO));
+
+                    paymentRepository.findFirstByBookingIdAndTypeOrderByCreatedAtDesc(
+                                    booking.getId(), PaymentType.PAGO_TOTAL)
+                            .ifPresent(p -> {
+                                if (p.getCollectedBy() != null) {
+                                    dto.setPaymentCollectedByName(p.getCollectedBy().getName());
+                                }
+                            });
+
+                    return dto;
+                });
+    }
 
     public BookingResponseDTO getBooking(Long bookingId) {
         return buildBookingResponseDTO(getBookingOrThrow(bookingId));

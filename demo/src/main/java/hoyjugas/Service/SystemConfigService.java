@@ -42,12 +42,8 @@ public class SystemConfigService {
         config.setTermsAndConditions(dto.getTermsAndConditions());
         config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
-        config.setRecurringInitialDepositFactor(dto.getRecurringInitialDepositFactor());
-        config.setRecurringDepositFactor(dto.getRecurringDepositFactor());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
-        config.setMinimumDepositPercentage(dto.getMinimumDepositPercentage());
-        config.setNormalDepositFactor(dto.getNormalDepositFactor());
-
+        config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
         return config;
     }
 
@@ -57,10 +53,8 @@ public class SystemConfigService {
         config.setTermsAndConditions(dto.getTermsAndConditions());
         config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
-        config.setRecurringInitialDepositFactor(dto.getRecurringInitialDepositFactor());
-        config.setRecurringDepositFactor(dto.getRecurringDepositFactor());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
-        config.setNormalDepositFactor(dto.getNormalDepositFactor());
+        config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
     }
 
     
