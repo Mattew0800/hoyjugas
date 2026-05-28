@@ -60,7 +60,7 @@ public class RecurringBookingController {
         return ResponseEntity.ok(Map.of("message", "Ciclo cancelado correctamente"));
     }
 
-    @PostMapping("/client-history")
+    @PostMapping("/client-history")//agregar filtrado
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<List<RecurringBookingResponseDTO>> getRecurringByClient(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(
@@ -68,4 +68,10 @@ public class RecurringBookingController {
         );
     }
 
+    @PostMapping("/my-recurring")
+    @PreAuthorize("hasRole('USER')")// agregar filtrado
+    public ResponseEntity<List<RecurringBookingResponseDTO>> getMyRecurring(@AuthenticationPrincipal UserDetailsImpl me) {   return ResponseEntity.ok(
+                recurringBookingService.getRecurringByClient(me.getId(), me.getId())
+        );
+    }
 }

@@ -406,7 +406,7 @@ public class BookingService extends BaseBookingService {
         }
         if (original.isRecurring()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Para reprogramar un turno fijo usá el endpoint correspondiente");
+                    "No se puede reprogramar un turno fijo en esta pestaña");
         }
 
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());

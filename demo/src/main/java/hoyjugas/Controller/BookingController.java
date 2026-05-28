@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
@@ -116,7 +117,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
     }
 
-
     @PostMapping("/reschedule")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookingResponseDTO> rescheduleBooking(@Valid @RequestBody RescheduleBookingRequestDTO dto) {
@@ -126,4 +126,5 @@ public class BookingController {
         }
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
+
 }
