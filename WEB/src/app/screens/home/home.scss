@@ -7,7 +7,7 @@
 
   color: white;
 
-  padding: 20px 18px 120px;
+  padding: 0;
 
   display: flex;
   flex-direction: column;
@@ -18,7 +18,9 @@
 /* FIELD */
 
 .field-card {
-  width: 100%;
+  width: calc(100% - 36px);
+
+  margin: 0 18px;
 
   border-radius: 22px;
 
@@ -37,7 +39,10 @@
 /* BUTTON */
 
 .reserve-button {
-  width: 100%;
+  width: calc(100% - 36px);
+
+  margin: 0 18px;
+
   height: 72px;
 
   border: none;
@@ -62,6 +67,10 @@
 /* RESERVATION */
 
 .reservation-card {
+  width: calc(100% - 36px);
+
+  margin: 0 18px;
+
   background: #111111;
 
   border-radius: 18px;
@@ -92,6 +101,10 @@
 /* STATS */
 
 .stats-card {
+  width: calc(100% - 36px);
+
+  margin: 0 18px;
+
   background: #111111;
 
   border-radius: 18px;
@@ -139,6 +152,10 @@
 /* QUICK ACTIONS */
 
 .quick-actions {
+  width: calc(100% - 36px);
+
+  margin: 0 18px 120px;
+
   display: flex;
   justify-content: space-between;
   gap: 12px;

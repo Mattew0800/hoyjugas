@@ -3,7 +3,7 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 
   padding: 18px 20px;
 
@@ -11,7 +11,7 @@
 
   background:
     radial-gradient(
-        circle at center,
+        circle at left,
         rgba(201, 161, 92, 0.18) 0%,
         rgba(201, 161, 92, 0.06) 35%,
         rgba(0, 0, 0, 0) 75%
@@ -28,9 +28,8 @@
 }
 
 .logo {
-  width: 55px;
-  height: 55px;
-  object-fit: contain;
+  width: 4rem;
+  height: 4rem;
 }
 
 .user-section {
@@ -50,8 +49,9 @@
   }
 
   h2 {
-    color: #c9a15c;
-    font-size: 28px;
+    font-family: Roboto, sans-serif;
+    color: #CEA764;
+    font-size: 1.5rem;
     font-weight: 500;
   }
 }

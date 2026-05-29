@@ -1,8 +1,24 @@
 @font-face {
   font-family: 'MistressBenedict';
-  src: url('/assets/fonts/MistressBenedictBrush.ttf') format('truetype');
+  /* Definición normal (ya existente) */
+  src: local('Mistress Benedict Brush'), local('MistressBenedict'),
+       url('/fonts/Mistress Benedict Brush.ttf') format('truetype'),
+       url('/fonts/MistressBenedictBrush.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
+}
+
+/* Agregamos una cara para 'italic' que apunta al mismo archivo.
+   Muchos navegadores buscan una @font-face con font-style: italic para aplicar cursiva;
+   si no existe, pueden no usar la fuente o aplicar un faux-italic distinto o ausente en algunos WebViews. */
+@font-face {
+  font-family: 'MistressBenedict';
+  src: local('Mistress Benedict Brush'), local('MistressBenedict'),
+       url('/fonts/Mistress Benedict Brush.ttf') format('truetype'),
+       url('/fonts/MistressBenedictBrush.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -150,6 +166,7 @@
   display: flex;
   justify-content: center;
   padding-bottom: 10px;
+
 }
 
 
@@ -162,8 +179,47 @@
   align-items: center;
   border-radius: 10px;
   background-color: #fefefe;
-  color: #000;
-  font-size: montserrat, sans-serif;
-  font-weight: 300;
+  color: #1c1c1c;
+  font-weight: 500;
+  font-size: 16px;
   border: none;
+
+}
+
+.phrase-container{
+  /* Cambio principal: apilar verticalmente y centrar correctamente en la pantalla */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 57%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  gap: 8px;
+  width: 100%;
+  text-align: center;
+
+  p{
+    margin: 0;
+    color: #CEA764;
+    font-size: 14px;
+    line-height: 20px;
+    max-width: 24ch;
+
+  }
+
+  p+p{
+    margin: 0;
+    font-family: 'MistressBenedict', cursive;
+    font-size: 32px;
+    line-height: 36px;
+    color: #FAFAFA;
+    font-weight: normal;
+    font-synthesis: style;
+
+  }
+
+
+
 }

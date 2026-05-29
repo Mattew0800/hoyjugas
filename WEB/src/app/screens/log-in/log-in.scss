@@ -41,19 +41,27 @@ body,html{
 /* log-in.component.scss */
 
 .login-page {
-  min-height: 100vh;
+  height: 100dvh;
   background-color: #1c1c1c;
   color: white;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 56px;
   background-color: #CEA764;
   display: flex;
   align-items: center;
   padding: 0 20px;
+  z-index: 1000;
+  flex-shrink: 0;
 }
 
 .back-arrow {
@@ -65,6 +73,7 @@ body,html{
 .content {
   flex: 1;
   padding: 24px 18px;
+  margin-top: 56px;
   display: flex;
   flex-direction: column;
 }
@@ -80,16 +89,21 @@ body,html{
     margin-bottom: 10px;
   }
 
-  p {
-    color: #9b9b9b;
-    font-size: 16px;
-  }
 }
 
 .form-section {
   display: flex;
   flex-direction: column;
   gap: 18px;
+
+  label{
+    color: #9b9b9b;
+    font-size: 16px;
+    font-family: Roboto, sans-serif;
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
 
   input {
     height: 54px;
@@ -100,9 +114,11 @@ body,html{
     color: white;
     font-size: 15px;
     outline: none;
+    width: 100%;
+
 
     &::placeholder {
-      color: #7f7f7f;
+      color: #5f5f5f;
     }
   }
 
@@ -115,6 +131,29 @@ body,html{
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+  }
+}
+
+.password-input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-right: 45px;
+  }
+
+  .eye-icon {
+    position: absolute;
+    right: 16px;
+    cursor: pointer;
+    color: #888;
+    font-size: 20px;
   }
 }
 

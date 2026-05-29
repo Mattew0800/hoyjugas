@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, Inject, Renderer2} from '@angular/core';
 import { Router } from '@angular/router';
 
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Header } from '../header/header';
+import {Meta} from '@angular/platform-browser';
+import {DOCUMENT} from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +18,22 @@ export class Home {
 
   closingHour: string = '23:00';
 
-  constructor(private router: Router) {}
+  constructor(
+    private meta: Meta,
+    @Inject(DOCUMENT) private document: Document,
+    private renderer: Renderer2,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.meta.updateTag({ name: 'theme-color', content: '#181b16' });
+    this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
+  }
+
+  ngOnDestroy() {
+    this.meta.updateTag({ name: 'theme-color', content: '#000000' });
+    this.renderer.removeStyle(this.document.body, 'background-color');
+  }
 
   goToBooking() {
     this.router.navigate(['/booking']);

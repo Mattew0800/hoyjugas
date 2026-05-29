@@ -13,7 +13,7 @@
   <div class="login-page">
 
     <div class="top-bar">
-      <span class="back-arrow" (click)="goToOnboarding()">
+      <span class="back-arrow" (click)="continueBoolean ? goBack() : goToOnboarding()">
         ←
       </span>
     </div>
@@ -24,16 +24,20 @@
 
         <div class="title-section">
           <h1>Iniciar Sesión</h1>
-          <p>Ingresa tu celular</p>
+
         </div>
 
         <div class="form-section">
+          <div>
+            <label for="">Ingresa tu celular</label>
+              <input
+                type="text"
+                placeholder="223 539 6482"
+                [(ngModel)]="phoneNumber"
+              />
 
-          <input
-            type="text"
-            placeholder="Número de celular"
-            [(ngModel)]="phoneNumber"
-          />
+          </div>
+
 
           <button (click)="continue()">
             Continuar
@@ -65,15 +69,15 @@
         <div class="social-buttons">
 
           <button class="social-btn">
-            G
+            <fa-icon [icon]="faGoogle"></fa-icon>
           </button>
 
           <button class="social-btn">
-            
+            <fa-icon [icon]="faEnvelope"></fa-icon>
           </button>
 
           <button class="social-btn">
-            ✉
+            <fa-icon [icon]="faApple"></fa-icon>
           </button>
 
         </div>
@@ -88,20 +92,32 @@
 
         <div class="title-section">
           <h1>Iniciar Sesión</h1>
-          <p>Ingresa tu contraseña</p>
+
         </div>
 
         <div class="form-section">
+          <div class="password-input-wrapper">
+            <label for="">Ingresa tu contraseña</label>
 
-          <input
-            type="password"
-            placeholder="Contraseña"
-            [(ngModel)]="password"
-          />
+            <div class="input-container">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Aj#9fo1U@23"
+                [(ngModel)]="password"
+              />
+              <fa-icon
+                [icon]="showPassword ? faEye : faEyeSlash"
+                class="eye-icon"
+                (click)="togglePasswordVisibility()"
+              ></fa-icon>
+            </div>
 
-          <button (click)="continue()">
-            Continuar
-          </button>
+          </div>
+
+            <button (click)="continue()">
+              Continuar
+            </button>
+
 
         </div>
 
