@@ -111,11 +111,11 @@ public class BookingController {
 //    }
 
 
-    @PostMapping("/client-debt")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BigDecimal> getClientDebt(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
-        return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
-    }
+//    @PostMapping("/client-debt")
+//    @PreAuthorize("hasRole('USER')")
+//    public ResponseEntity<BigDecimal> getClientDebt(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+//        return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
+//    }
 
     @PostMapping("/reschedule")
     @PreAuthorize("hasRole('USER')")

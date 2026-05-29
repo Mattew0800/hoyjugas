@@ -4,7 +4,6 @@ import hoyjugas.Model.Booking;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -24,7 +23,7 @@ public class RecurringBookingSlotDTO {
     private BigDecimal remainingAmount;
     private Boolean isInitialDeposit;
 
-    public static RecurringBookingSlotDTO fromEntity(Booking booking,int turnoNumero,int turnosConSeñaDoble,BigDecimal depositAmount,BigDecimal remainingAmount) {
+    public static RecurringBookingSlotDTO fromEntity(Booking booking,int bookingNumber,int bookingWDoubleDeposit,BigDecimal depositAmount,BigDecimal remainingAmount) {
         RecurringBookingSlotDTO dto = new RecurringBookingSlotDTO();
         dto.setBookingId(booking.getId());
         dto.setBookingNumber(booking.getBookingNumber());
@@ -35,7 +34,7 @@ public class RecurringBookingSlotDTO {
         dto.setTotalAmount(booking.getTotalAmount());
         dto.setDepositAmount(depositAmount);
         dto.setRemainingAmount(remainingAmount);
-        dto.setIsInitialDeposit(turnoNumero <= turnosConSeñaDoble);
+        dto.setIsInitialDeposit(bookingNumber <= bookingWDoubleDeposit);
         return dto;
     }
 }

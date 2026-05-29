@@ -1,10 +1,9 @@
 package hoyjugas.DTO.RecurringBooking;
 
+import hoyjugas.Enum.DayType;
 import hoyjugas.Enum.RecurringStatus;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Data
@@ -16,7 +15,7 @@ public class RecurringBookingFilterRequestDTO {
 
     private RecurringStatus status;
 
-    private DayOfWeek dayOfWeek;
+    private DayType dayOfWeek;
 
     private Long cancelledByEmployeeId;
 

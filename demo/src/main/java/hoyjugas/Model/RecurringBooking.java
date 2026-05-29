@@ -1,5 +1,6 @@
 package hoyjugas.Model;
 
+import hoyjugas.Enum.DayType;
 import hoyjugas.Enum.RecurringStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class RecurringBooking {
     private Space space;
 
     @Enumerated(EnumType.STRING)
-    private DayOfWeek dayOfWeek;
+    private DayType dayOfWeek;
 
     private LocalTime startTime;
 

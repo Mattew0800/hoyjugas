@@ -12,5 +12,6 @@ public class CancelRecurringCycleRequestDTO {
     @NotBlank(message = "El motivo de cancelación es obligatorio")
     private String cancellationReason;
 
+    @NotBlank(message = "El pin es obligatorio")
     private String employeePin;
 }

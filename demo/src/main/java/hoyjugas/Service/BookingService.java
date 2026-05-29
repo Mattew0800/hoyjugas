@@ -16,11 +16,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
+
+import static java.util.Calendar.HOUR;
 
 @Service
 public class BookingService extends BaseBookingService {
@@ -138,23 +141,7 @@ public class BookingService extends BaseBookingService {
         BigDecimal minimumDeposit =
                 calculateDeposit(space, price);
 
-        BigDecimal depositAmount = dto.getDepositAmount() != null
-                ? dto.getDepositAmount()
-                : minimumDeposit;
-
-        if (depositAmount.compareTo(minimumDeposit) < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La seña no puede ser menor a " + minimumDeposit
-            );
-        }
-
-        if (depositAmount.compareTo(price) > 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La seña no puede superar el total"
-            );
-        }
+        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, price);
 
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setCreatedBy(employee);
@@ -171,6 +158,25 @@ public class BookingService extends BaseBookingService {
 
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
+    }
+
+    private static BigDecimal getDepositAmount(EmployeeBookingRequestDTO dto, BigDecimal minimumDeposit, BigDecimal price) {
+        BigDecimal depositAmount = dto.getDepositAmount() != null
+                ? dto.getDepositAmount()
+                : minimumDeposit;
+        if (depositAmount.compareTo(minimumDeposit) < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La seña no puede ser menor a " + minimumDeposit
+            );
+        }
+        if (depositAmount.compareTo(price) > 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La seña no puede superar el total"
+            );
+        }
+        return depositAmount;
     }
 
     private PaymentStatus determinePaymentStatus(BigDecimal paidAmount, BigDecimal totalPrice) {
@@ -228,7 +234,6 @@ public class BookingService extends BaseBookingService {
                 PaymentType.PAGO_TOTAL
         );
         paymentRepository.save(payment);
-
         booking.setBookingStatus(BookingStatus.FINALIZADO);
         booking.setPaymentStatus(calculatePaymentStatus(bookingId, booking.getTotalAmount()));
         bookingRepository.save(booking);
@@ -406,16 +411,19 @@ public class BookingService extends BaseBookingService {
         }
         if (original.isRecurring()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No se puede reprogramar un turno fijo en esta pestaña");
+                    "No se puede reprogramar un turno fijo");
         }
-
+        SystemConfig config = getSystemConfig();
+        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), original.getStartDatetime());
+        if (hoursTillBooking < config.getCancellationHoursLimit()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("No se puede reprogramar con menos de %d horas de anticipación",
+                            config.getCancellationHoursLimit()));
+        }
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
-
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal newPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-
         original.setBookingStatus(BookingStatus.CANCELADO);
         original.setCancelledAt(LocalDateTime.now());
         original.setCancellationReason(dto.getCancellationReason() != null
@@ -423,7 +431,6 @@ public class BookingService extends BaseBookingService {
                 : "Reprogramado");
         original.setRefunded(false);
         bookingRepository.save(original);
-
         BigDecimal alreadyPaid = paymentRepository.findTotalByBookingIdExcludingType(
                 original.getId(),
                 PaymentType.DEVOLUCION,
@@ -442,18 +449,13 @@ public class BookingService extends BaseBookingService {
         newBooking.setTermsAccepted(dto.getTermsAccepted());
         newBooking.setTermsAcceptedAt(LocalDateTime.now());
         newBooking.setBookingStatus(BookingStatus.CONFIRMADO);
-
         Booking saved = bookingRepository.save(newBooking);
         saved.setBookingNumber(String.format("%06d", saved.getId()));
-
         paymentRepository.save(buildTransferPayment(original,newBooking,alreadyPaid,employee));
-
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), newPrice));
         bookingRepository.save(saved);
-
         scheduleReminder(saved);
         scheduleNotification(saved, NotificationType.CANCELACION);
-
         return buildBookingResponseDTO(saved);
     }
 }

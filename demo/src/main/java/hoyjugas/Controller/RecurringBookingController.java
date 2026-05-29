@@ -1,11 +1,8 @@
 package hoyjugas.Controller;
 
 import hoyjugas.Config.UserDetailsImpl;
-import hoyjugas.DTO.Booking.BookingResponseDTO;
 import hoyjugas.DTO.Booking.CancelBookingRequestDTO;
-import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
 import hoyjugas.DTO.RecurringBooking.*;
-import hoyjugas.DTO.User.ClientIdRequestDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.RecurringBookingService;
 import hoyjugas.Service.UserService;
@@ -13,13 +10,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -60,18 +57,21 @@ public class RecurringBookingController {
         return ResponseEntity.ok(Map.of("message", "Ciclo cancelado correctamente"));
     }
 
-    @PostMapping("/client-history")//agregar filtrado
+    @PostMapping("/client-history")
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<List<RecurringBookingResponseDTO>> getRecurringByClient(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+    public ResponseEntity<Page<RecurringBookingResponseDTO>> getRecurringByClient(
+            @Valid @RequestBody RecurringBookingFilterRequestDTO dto,
+            @AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(
-                recurringBookingService.getRecurringByClient(dto.getClientId(), me.getId())
-        );
+                recurringBookingService.getRecurringByClient(me.getId(), dto));
     }
 
     @PostMapping("/my-recurring")
-    @PreAuthorize("hasRole('USER')")// agregar filtrado
-    public ResponseEntity<List<RecurringBookingResponseDTO>> getMyRecurring(@AuthenticationPrincipal UserDetailsImpl me) {   return ResponseEntity.ok(
-                recurringBookingService.getRecurringByClient(me.getId(), me.getId())
-        );
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<RecurringBookingResponseDTO>> getMyRecurring(
+            @Valid @RequestBody RecurringBookingFilterRequestDTO dto,
+            @AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(
+                recurringBookingService.getRecurringByClient(me.getId(), dto));
     }
 }

@@ -5,6 +5,10 @@ import hoyjugas.DTO.RecurringBooking.*;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +57,7 @@ public class RecurringBookingService extends BaseBookingService{
         boolean alreadyExists = recurringBookingRepository.existsActiveRecurring(
                 client.getId(),
                 space.getId(),
-                dto.getStartDate().getDayOfWeek(),
+                pricingService.resolveDayType(dto.getStartDate().getDayOfWeek()),
                 dto.getStartTime(),
                 RecurringStatus.ACTIVO
         );
@@ -64,7 +68,7 @@ public class RecurringBookingService extends BaseBookingService{
         RecurringBooking recurring = new RecurringBooking();
         recurring.setClient(client);
         recurring.setSpace(space);
-        recurring.setDayOfWeek(dto.getStartDate().getDayOfWeek());
+        recurring.setDayOfWeek(pricingService.resolveDayType(dto.getStartDate().getDayOfWeek()));
         recurring.setStartTime(dto.getStartTime());
         recurring.setStartDate(dto.getStartDate());
         recurring.setEndDate(endDate);
@@ -293,17 +297,41 @@ public class RecurringBookingService extends BaseBookingService{
         recurringBookingRepository.save(recurring);
     }
 
-    public List<RecurringBookingResponseDTO> getRecurringByClient(Long clientId, Long requesterId) {
+    public Page<RecurringBookingResponseDTO> getRecurringByClient(
+            Long requesterId, RecurringBookingFilterRequestDTO dto) {
+
         User requester = userRepository.findById(requesterId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-        if (requester.getRole().equals(Role.USER) && !requesterId.equals(clientId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso para ver los turnos de otro cliente");
-        }
-        return recurringBookingRepository
-                .findByClientIdOrderByStartDateDesc(clientId)
-                .stream()
-                .map(r -> RecurringBookingResponseDTO.fromEntity(r, r.getBookings()))
-                .toList();
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        Long clientId = requester.getRole().equals(Role.USER)
+                ? requesterId
+                : dto.getClientId();
+
+        Pageable pageable = PageRequest.of(
+                dto.getPage(),
+                dto.getSize(),
+                Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy())
+        );
+
+        return recurringBookingRepository.findAllWithFilters(
+                clientId,
+                dto.getSpaceId(),
+                dto.getStatus(),
+                dto.getDayOfWeek(),
+                dto.getCancelledByEmployeeId(),
+                dto.getStartDateFrom(),
+                dto.getStartDateTo(),
+                pageable
+        ).map(r -> {List<Booking> bookings = bookingRepository
+                .findByRecurringBookingIdOrderByStartDatetimeAsc(r.getId());
+            BigDecimal firstDeposit = bookings.isEmpty() ? BigDecimal.ZERO
+                    : paymentRepository.findTotalByBookingIdAndType(
+                    bookings.get(0).getId(),
+                    PaymentType.DEPOSITO,
+                    PaymentStatus.PAGADO);
+            return RecurringBookingResponseDTO.fromEntity(r, bookings, firstDeposit);
+        });
     }
 
     private List<RecurringBookingSlotDTO> buildSlots(List<Booking> bookings,int turnsWithDoubleDeposit ) {
@@ -338,13 +366,9 @@ public class RecurringBookingService extends BaseBookingService{
                     depositPaid,
                     remaining
             ));
-
             turnNumber++;
         }
-
         return slots;
     }
-
-
 
 }
