@@ -1,0 +1,22 @@
+/* Global reset and styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100dvh;
+  background-color: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  min-height: 100dvh;
+}
