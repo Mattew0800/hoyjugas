@@ -14,8 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @Data
 public class RecurringBookingRequestDTO {

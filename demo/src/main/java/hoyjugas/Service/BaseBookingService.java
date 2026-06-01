@@ -1,11 +1,15 @@
 package hoyjugas.Service;
 
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.payment.PaymentData;
 import hoyjugas.DTO.Booking.BookingResponseDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -20,6 +24,7 @@ public abstract class BaseBookingService {
     protected final SpaceRepository spaceRepository;
     protected final PaymentRepository paymentRepository;
     protected final BookingRepository bookingRepository;
+    protected final MercadoPagoService mercadoPagoService;
 
     protected void scheduleNotification(Booking booking, NotificationType type) {
         BookingNotification notif = new BookingNotification();
@@ -71,21 +76,20 @@ public abstract class BaseBookingService {
                 .filter(p -> p.getType() != PaymentType.DEVOLUCION)
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         BigDecimal totalReturned = payments.stream()
                 .filter(p -> p.getStatus() == PaymentStatus.PAGADO
                         || p.getStatus() == PaymentStatus.REEMBOLSADO)
                 .filter(p -> p.getType() == PaymentType.DEVOLUCION)
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal neto = totalPaid.subtract(totalReturned);
-        if (totalPaid.compareTo(BigDecimal.ZERO) > 0 && neto.compareTo(BigDecimal.ZERO) <= 0) {
+        BigDecimal net = totalPaid.subtract(totalReturned);
+        if (totalPaid.compareTo(BigDecimal.ZERO) > 0 && net.compareTo(BigDecimal.ZERO) <= 0) {
             return PaymentStatus.REEMBOLSADO;
         }
-        if (neto.compareTo(totalAmount) >= 0) {
+        if (net.compareTo(totalAmount) >= 0) {
             return PaymentStatus.PAGADO;
         }
-        if (neto.compareTo(BigDecimal.ZERO) > 0) {
+        if (net.compareTo(BigDecimal.ZERO) > 0) {
             return PaymentStatus.RESERVADO;
         }
         return PaymentStatus.NO_PAGADO;
@@ -95,6 +99,7 @@ public abstract class BaseBookingService {
         return space.getFixedDeposit()
                 .min(totalPrice);
     }
+
     protected void assignBookingNumbers(List<Booking> bookings) {
         bookings.forEach(b ->
                 b.setBookingNumber("BK-" + String.format("%08d", b.getId()))
@@ -114,7 +119,7 @@ public abstract class BaseBookingService {
                 .findTotalByBookingIdAndType(
                         booking.getId(),
                         PaymentType.DEPOSITO,
-                        PaymentStatus.PAGADO
+                        PaymentStatus.NO_PAGADO
                 );
 
         BigDecimal totalCobrado = paymentRepository
@@ -147,4 +152,44 @@ public abstract class BaseBookingService {
         transfer.setStatus(PaymentStatus.PAGADO);
         return transfer;
     }
+
+    @Transactional
+    public void confirmMpPayment(String paymentId) {
+        com.mercadopago.resources.payment.Payment mpPayment =
+                mercadoPagoService.getPayment(paymentId);
+        if (!"approved".equals(mpPayment.getStatus())) return;
+        Booking booking = bookingRepository
+                .findById(Long.parseLong(mpPayment.getExternalReference()))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Turno no encontrado"));
+        Payment payment = buildPayment(
+                booking,
+                PaymentMethod.MERCADOPAGO,
+                mpPayment.getTransactionAmount(),
+                String.valueOf(mpPayment.getId()),
+                null,
+                PaymentType.DEPOSITO
+        );
+        payment.setStatus(PaymentStatus.PAGADO);
+        paymentRepository.save(payment);
+        booking.setPaymentStatus(calculatePaymentStatus(booking.getId(), booking.getTotalAmount()));
+        bookingRepository.save(booking);
+        scheduleReminder(booking);
+    }
+
+    protected void scheduleReminder(Booking booking) {
+        boolean alreadyExists = bookingNotificationRepository
+                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
+
+        if (!alreadyExists) {
+            SystemConfig config = getSystemConfig();
+            BookingNotification notif = new BookingNotification();
+            notif.setBooking(booking);
+            notif.setType(NotificationType.RECUERDO_24H);
+            notif.setStatus(NotificationStatus.PENDIENTE);
+            notif.setHoursBefore(config.getReminderHoursBeforeBooking());
+            bookingNotificationRepository.save(notif);
+        }
+    }
 }
+

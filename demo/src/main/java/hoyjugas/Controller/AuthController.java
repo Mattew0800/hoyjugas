@@ -12,17 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080", "https://nomadia-viajes.vercel.app"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
 public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
-    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
@@ -45,7 +42,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody @Valid EmailRequestDTO request){
         passwordResetService.sendResetLink(request.getEmail());
-        return ResponseEntity.ok("Si el email existe, se envió un link de recuperación.");
+        return ResponseEntity.ok("Si el email existe en nuestra base de datos, se envió un link de recuperación.");
     }
 
     @PostMapping("/reset-password")

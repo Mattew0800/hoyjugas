@@ -118,4 +118,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable
     );
+
 }

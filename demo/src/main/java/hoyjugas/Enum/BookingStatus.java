@@ -1,5 +1,5 @@
 package hoyjugas.Enum;
 
 public enum BookingStatus {
-    CONFIRMADO,CANCELADO,FINALIZADO
+    CONFIRMADO,CANCELADO,FINALIZADO,ERROR_DE_PAGO
 }

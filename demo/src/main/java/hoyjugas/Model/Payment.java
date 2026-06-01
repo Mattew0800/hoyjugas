@@ -48,12 +48,6 @@ public class Payment {
     @JoinColumn(name = "collected_by")
     private User collectedBy;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal depositAmount;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod;
-
     @Column(columnDefinition = "TEXT")
     private String notes;
 

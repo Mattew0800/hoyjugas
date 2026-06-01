@@ -1,5 +1,7 @@
 package hoyjugas.Controller;
 
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
@@ -8,6 +10,7 @@ import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.User.ClientIdRequestDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
+import hoyjugas.Service.MercadoPagoService;
 import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -31,6 +36,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
+    private final MercadoPagoService mercadoPagoService;
 
     @PostMapping("/availability")
     @PreAuthorize("hasRole('USER')")
@@ -46,9 +52,21 @@ public class BookingController {
 
     @PostMapping("/public/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> createBookingByClient(@Valid @RequestBody ClientBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl client) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(bookingService.createBookingByClient(dto,userService.getClientById(client.getId())));
+    public ResponseEntity<BookingCreatedResponseDTO> createBookingByClient(@Valid @RequestBody ClientBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl client) throws MPException, MPApiException {
+        User user = userService.getClientById(client.getId());
+        BookingResponseDTO booking = bookingService.createBookingByClient(dto, user);
+        try{
+            String mpUrl = mercadoPagoService.createPreference(
+                    bookingService.getBookingEntity(booking.getId()),
+                    dto.getDepositAmount()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new BookingCreatedResponseDTO(booking, mpUrl));
+        }catch (Exception e) {
+            bookingService.markAsPaymentError(booking.getId());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al procesar el pago. Por favor intentá de nuevo.");
+        }
     }
 
     @PostMapping("/detail")

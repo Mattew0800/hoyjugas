@@ -28,7 +28,7 @@ public class BookingResponseDTO {
     private String status;
     private String paymentStatus;
     private BigDecimal totalAmount;
-    private BigDecimal depositAmount;
+    private BigDecimal depositedAmount;
     private BigDecimal remainingAmount;
     private String depositLabel;
 
@@ -44,7 +44,7 @@ public class BookingResponseDTO {
 
     public static BookingResponseDTO fromEntity(
             Booking booking,
-            BigDecimal depositAmount,
+            BigDecimal depositedAmount,
             BigDecimal remainingAmount,
             String createdByName,
             String paymentCollectedByName
@@ -68,7 +68,7 @@ public class BookingResponseDTO {
         dto.setPaymentStatus(booking.getPaymentStatus().name());
 
         dto.setTotalAmount(booking.getTotalAmount());
-        dto.setDepositAmount(depositAmount);
+        dto.setDepositedAmount(depositedAmount);
         dto.setRemainingAmount(remainingAmount);
 
         dto.setCancelledAt(booking.getCancelledAt());

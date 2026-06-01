@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 
+import javax.swing.text.html.Option;
+
 import static java.util.Calendar.HOUR;
 
 @Service
@@ -41,8 +43,8 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,SpaceScheduleRepository spaceScheduleRepository,PaymentRepository paymentRepository) {
-        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
+            PricingService pricingService,SpaceScheduleRepository spaceScheduleRepository,PaymentRepository paymentRepository,MercadoPagoService mercadoPagoService) {
+        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository,mercadoPagoService);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
         this.userRepository = userRepository;
@@ -102,26 +104,22 @@ public class BookingService extends BaseBookingService {
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
         BigDecimal minDeposit = space.getFixedDeposit();
-        if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
+        BigDecimal depositAmount=dto.getDepositAmount();
+        if (depositAmount.compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
         }
-        if (dto.getDepositAmount().compareTo(price) > 0) {
+        if (depositAmount.compareTo(price) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El monto no puede superar el total");
         }
+
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
-
+        booking.setTotalAmount(price);
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
-
-        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
-                null, null, PaymentType.DEPOSITO); //implementar con api de mp dsps
-        deposit.setStatus(PaymentStatus.PAGADO);
-        paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -149,13 +147,7 @@ public class BookingService extends BaseBookingService {
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         assignBookingNumber(saved);
-        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
-                dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
-        paymentRepository.save(deposit);
-
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
         bookingRepository.save(saved);
-
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
     }
@@ -255,7 +247,6 @@ public class BookingService extends BaseBookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Para cancelar un turno fijo usá el endpoint de cancelación de ciclo");
         }
-
         SystemConfig config = getSystemConfig();
         long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
         boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
@@ -341,21 +332,6 @@ public class BookingService extends BaseBookingService {
                 .stream()
                 .map(BookingListDTO::fromEntity)
                 .toList();
-    }
-
-    private void scheduleReminder(Booking booking) {
-        boolean yaExiste = bookingNotificationRepository
-                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
-
-        if (!yaExiste) {
-            SystemConfig config = getSystemConfig();
-            BookingNotification notif = new BookingNotification();
-            notif.setBooking(booking);
-            notif.setType(NotificationType.RECUERDO_24H);
-            notif.setStatus(NotificationStatus.PENDIENTE);
-            notif.setHoursBefore(config.getReminderHoursBeforeBooking());
-            bookingNotificationRepository.save(notif);
-        }
     }
 
     @Transactional
@@ -457,5 +433,16 @@ public class BookingService extends BaseBookingService {
         scheduleReminder(saved);
         scheduleNotification(saved, NotificationType.CANCELACION);
         return buildBookingResponseDTO(saved);
+    }
+
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    }
+
+    public void markAsPaymentError(Long bookingId){
+        Booking booking = getBookingOrThrow(bookingId);
+        booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
     }
 }

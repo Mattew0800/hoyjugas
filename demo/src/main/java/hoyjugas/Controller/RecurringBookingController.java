@@ -39,7 +39,7 @@ public class RecurringBookingController {
     public ResponseEntity<RecurringBookingResponseDTO> createRecurringBooking(@Valid @RequestBody RecurringBookingRequestDTO dto) {
         User employee = userService.validateEmployeePin(dto.getEmployeePin());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(recurringBookingService.createRecurringBooking(dto, employee));
+                .body(recurringBookingService.createRecurringBooking(dto,employee));
     }
 
     @PostMapping("/cancel-one")

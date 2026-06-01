@@ -36,8 +36,8 @@ public class RecurringBookingService extends BaseBookingService{
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,PaymentRepository paymentRepository) {
-        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
+            PricingService pricingService,PaymentRepository paymentRepository,MercadoPagoService mercadoPagoService) {
+        super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository,mercadoPagoService);
         this.recurringBookingRepository = recurringBookingRepository;
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -80,23 +80,21 @@ public class RecurringBookingService extends BaseBookingService{
         List<Booking> bookingsGenerated = generateBookings(saved, space);
         bookingRepository.saveAll(bookingsGenerated);
         assignBookingNumbers(bookingsGenerated);
-
         if (!bookingsGenerated.isEmpty()) {
             Booking firstBooking = bookingsGenerated.get(0);
-
             BigDecimal depositAmount = calculateRecurringDeposit(
-                    1, firstBooking.getTotalAmount(), space, config);
-
-            if (dto.getDepositAmount().compareTo(depositAmount) != 0) {
+                    firstBooking.getTotalAmount(), space, config);
+            if (dto.getDepositAmount().compareTo(depositAmount) < 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El monto del deposito debe ser igual al necesario");
             }
-
+            if(dto.getDepositAmount().compareTo(firstBooking.getTotalAmount())>0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El monto no puede ser mayor al total del valor del turno");
+            }
             Payment deposit = buildPayment(
                     firstBooking, dto.getPaymentMethod(), depositAmount,
                     dto.getTransactionId(), employee, PaymentType.DEPOSITO);
             paymentRepository.save(deposit);
-
             firstBooking.setPaymentStatus(
                     calculatePaymentStatus(firstBooking.getId(), firstBooking.getTotalAmount()));
             bookingRepository.save(firstBooking);
@@ -113,20 +111,13 @@ public class RecurringBookingService extends BaseBookingService{
         return response;
     }
 
-    protected BigDecimal calculateRecurringDeposit(
-            int bookingNumber,
-            BigDecimal totalPrice,
-            Space space,
-            SystemConfig config
-    ) {
+    protected BigDecimal calculateRecurringDeposit(BigDecimal totalPrice,Space space,SystemConfig config) {
         BigDecimal deposit = space.getFixedDeposit();
-
-        if (bookingNumber <= config.getRecurringInitialDepositTurns()) {
+        if (1 <= config.getRecurringInitialDepositTurns()) {
             deposit = deposit.multiply(
                     config.getRecurringDepositMultiplier()
             );
         }
-
         return deposit.min(totalPrice);
     }
 
@@ -143,7 +134,6 @@ public class RecurringBookingService extends BaseBookingService{
                     endDatetime,
                     BookingStatus.CANCELADO
             );
-
             if (!ocupado) {
                 BigDecimal price = pricingService.getPriceForSlot(space, startDatetime);
                 Booking booking = new Booking();
@@ -203,7 +193,7 @@ public class RecurringBookingService extends BaseBookingService{
 
         BigDecimal price = pricingService.getPriceForSlot(space,
                 LocalDateTime.of(dto.getStartDate(), dto.getStartTime()));
-        BigDecimal firstDeposit = calculateRecurringDeposit(1, price,space, config);
+        BigDecimal firstDeposit = calculateRecurringDeposit(price,space, config);
 
         RecurringBookingPreviewDTO preview = new RecurringBookingPreviewDTO();
         preview.setSpaceId(space.getId());
@@ -236,6 +226,9 @@ public class RecurringBookingService extends BaseBookingService{
         if (!booking.getClient().getId().equals(dto.getRequesterId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "El cliente no pertenece a ese turno");
+        }
+        if(!booking.isRecurring()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno debe pertenecer a un ciclo de turnos fijo");
         }
         RecurringBooking recurring = booking.getRecurringBooking();
         SystemConfig config = getSystemConfig();
