@@ -1,6 +1,8 @@
 package hoyjugas.DTO.RecurringBooking;
 
 import hoyjugas.Enum.DayType;
+import hoyjugas.Enum.PaymentStatus;
+import hoyjugas.Enum.PaymentType;
 import hoyjugas.Enum.RecurringStatus;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,6 +32,10 @@ public class RecurringBookingFilterRequestDTO {
     private Integer size = 20;
 
     private String sortBy = "startDate";
+
+    private PaymentType paymentType;
+
+    private PaymentStatus paymentStatus;
 
     private String sortDirection = "desc";
 }

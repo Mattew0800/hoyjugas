@@ -37,7 +37,7 @@ public class SpaceService {
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         space.setDepositFactor(dto.getDepositFactor());
-        space.setFixedDeposit(dto.getFixedDeposit());
+        space.setDepositValue(dto.getDepositValue());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }
@@ -53,7 +53,7 @@ public class SpaceService {
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive());
         space.setDepositFactor(dto.getDepositFactor());
-        space.setFixedDeposit(dto.getFixedDeposit());
+        space.setDepositValue(dto.getDepositValue());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }

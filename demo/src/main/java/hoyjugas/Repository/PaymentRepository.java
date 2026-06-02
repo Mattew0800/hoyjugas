@@ -26,11 +26,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             PaymentStatus status
     );
 
+    Optional<Payment> findByTransactionId(String transactionId);
     @Query("""
     SELECT COALESCE(SUM(p.amount), 0)
     FROM Payment p
     WHERE p.booking.id = :bookingId
-    AND p.type = :type
+      AND p.type = :type
     AND p.status = :status
     """)
     BigDecimal findTotalByBookingIdAndType(

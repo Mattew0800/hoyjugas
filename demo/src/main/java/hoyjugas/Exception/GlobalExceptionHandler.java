@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MPException.class, MPApiException.class})
     public ResponseEntity<String> handleMPException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al procesar el pago de Mercado Pago");
+                .body("Error al procesar el pago de Mercado Pago"+ e.getMessage()+ e.getCause() );
     }
 }
 

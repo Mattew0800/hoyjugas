@@ -14,7 +14,7 @@ public class SpaceListDTO {
     private Integer slotDuration;
     private Boolean isActive;
     private int pricingCount;
-    private BigDecimal fixedDeposit;
+    private BigDecimal depositValue;
     public static SpaceListDTO fromEntity(Space space) {
         SpaceListDTO dto = new SpaceListDTO();
         dto.setId(space.getId());
@@ -23,7 +23,7 @@ public class SpaceListDTO {
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
         dto.setPricingCount(space.getPricings().size());
-        dto.setFixedDeposit(space.getFixedDeposit());
+        dto.setDepositValue(space.getDepositValue());
         return dto;
     }
 }

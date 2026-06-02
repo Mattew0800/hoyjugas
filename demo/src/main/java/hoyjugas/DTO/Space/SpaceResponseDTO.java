@@ -17,7 +17,7 @@ public class SpaceResponseDTO {
     private Integer slotDuration;
     private Boolean isActive;
     private BigDecimal depositFactor;
-    private BigDecimal fixedDeposit;
+    private BigDecimal depositValue;
     private List<SpacePricingDTO> pricings;
     private String depositInfo;
 
@@ -29,7 +29,7 @@ public class SpaceResponseDTO {
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
         dto.setDepositFactor(space.getDepositFactor());
-        dto.setFixedDeposit(space.getFixedDeposit());
+        dto.setDepositValue(space.getDepositValue());
 
         dto.setPricings(space.getPricings().stream()
                 .map(SpacePricingDTO::fromEntity)
@@ -42,8 +42,8 @@ public class SpaceResponseDTO {
     }
 
     private static String buildDepositInfo(Space space) {
-        if (space.getFixedDeposit() != null && space.getFixedDeposit().compareTo(BigDecimal.ZERO) > 0) {
-            return String.format("Seña fija de $%s", space.getFixedDeposit().toPlainString());
+        if (space.getDepositValue() != null && space.getDepositValue().compareTo(BigDecimal.ZERO) > 0) {
+            return String.format("Seña fija de $%s", space.getDepositValue().toPlainString());
         }
         BigDecimal factor = space.getDepositFactor();
         if (factor != null && factor.compareTo(BigDecimal.ZERO) > 0) {

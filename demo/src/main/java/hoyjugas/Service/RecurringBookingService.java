@@ -82,18 +82,24 @@ public class RecurringBookingService extends BaseBookingService{
         assignBookingNumbers(bookingsGenerated);
         if (!bookingsGenerated.isEmpty()) {
             Booking firstBooking = bookingsGenerated.get(0);
-            BigDecimal depositAmount = calculateRecurringDeposit(
+            BigDecimal minimumDeposit = calculateRecurringDeposit(
                     firstBooking.getTotalAmount(), space, config);
-            if (dto.getDepositAmount().compareTo(depositAmount) < 0) {
+
+            if (dto.getDepositAmount().compareTo(minimumDeposit) < 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El monto del deposito debe ser igual al necesario");
+                        "El monto mínimo de seña es $" + minimumDeposit);
             }
-            if(dto.getDepositAmount().compareTo(firstBooking.getTotalAmount())>0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El monto no puede ser mayor al total del valor del turno");
+            if (dto.getDepositAmount().compareTo(firstBooking.getTotalAmount()) > 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El monto no puede ser mayor al total del valor del turno");
             }
+
+            PaymentType paymentType = dto.getDepositAmount().compareTo(firstBooking.getTotalAmount()) == 0
+                    ? PaymentType.PAGO_TOTAL
+                    : PaymentType.SEÑA;
             Payment deposit = buildPayment(
-                    firstBooking, dto.getPaymentMethod(), depositAmount,
-                    dto.getTransactionId(), employee, PaymentType.DEPOSITO);
+                    firstBooking, dto.getPaymentMethod(), dto.getDepositAmount(),
+                    dto.getTransactionId(), employee, paymentType);
             paymentRepository.save(deposit);
             firstBooking.setPaymentStatus(
                     calculatePaymentStatus(firstBooking.getId(), firstBooking.getTotalAmount()));
@@ -112,7 +118,7 @@ public class RecurringBookingService extends BaseBookingService{
     }
 
     protected BigDecimal calculateRecurringDeposit(BigDecimal totalPrice,Space space,SystemConfig config) {
-        BigDecimal deposit = space.getFixedDeposit();
+        BigDecimal deposit = space.getDepositValue();
         if (1 <= config.getRecurringInitialDepositTurns()) {
             deposit = deposit.multiply(
                     config.getRecurringDepositMultiplier()
@@ -321,8 +327,8 @@ public class RecurringBookingService extends BaseBookingService{
             BigDecimal firstDeposit = bookings.isEmpty() ? BigDecimal.ZERO
                     : paymentRepository.findTotalByBookingIdAndType(
                     bookings.get(0).getId(),
-                    PaymentType.DEPOSITO,
-                    PaymentStatus.PAGADO);
+                    dto.getPaymentType(),
+                    dto.getPaymentStatus());
             return RecurringBookingResponseDTO.fromEntity(r, bookings, firstDeposit);
         });
     }
@@ -334,7 +340,7 @@ public class RecurringBookingService extends BaseBookingService{
             BigDecimal depositPaid = paymentRepository
                     .findTotalByBookingIdAndType(
                             booking.getId(),
-                            PaymentType.DEPOSITO,
+                            PaymentType.SEÑA,
                             PaymentStatus.PAGADO
                     );
             BigDecimal totalCollected = paymentRepository

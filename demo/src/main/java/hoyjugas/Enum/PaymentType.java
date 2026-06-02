@@ -1,5 +1,5 @@
 package hoyjugas.Enum;
 
 public enum PaymentType {
-    DEPOSITO,PAGO_TOTAL,DEVOLUCION
+    INTERNO,PAGO_TOTAL,DEVOLUCION,SEÑA
 }

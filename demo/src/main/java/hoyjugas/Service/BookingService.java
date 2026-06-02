@@ -102,22 +102,21 @@ public class BookingService extends BaseBookingService {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-        BigDecimal minDeposit = space.getFixedDeposit();
-        BigDecimal depositAmount=dto.getDepositAmount();
-        if (depositAmount.compareTo(minDeposit) < 0) {
+        if (dto.getPaymentType() != PaymentType.PAGO_TOTAL && dto.getPaymentType() != PaymentType.SEÑA) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("El monto mínimo es $%.2f", minDeposit));
+                    "Tipo de pago no soportado.");
         }
-        if (depositAmount.compareTo(price) > 0) {
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+        BigDecimal depositToPay = dto.getPaymentType() == PaymentType.PAGO_TOTAL
+                ? totalPrice
+                : space.getDepositFactor();
+        if (depositToPay.compareTo(totalPrice) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El monto no puede superar el total");
+                    "La seña no puede superar el monto total");
         }
-
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
-        booking.setTotalAmount(price);
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
         bookingRepository.save(saved);

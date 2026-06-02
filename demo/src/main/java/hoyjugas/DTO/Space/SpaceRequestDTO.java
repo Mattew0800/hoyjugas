@@ -28,5 +28,5 @@ public class SpaceRequestDTO {
     private BigDecimal depositFactor;
 
     @DecimalMin(value = "0.01", message = "La seña fija debe ser mayor a 0")
-    private BigDecimal fixedDeposit;
+    private BigDecimal depositValue;
 }

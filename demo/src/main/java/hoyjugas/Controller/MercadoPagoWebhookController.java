@@ -1,40 +1,37 @@
 package hoyjugas.Controller;
 
+import hoyjugas.DTO.MercadoPago.PaymentWebHookDTO;
 import hoyjugas.Service.BookingService;
-import hoyjugas.Service.MercadoPagoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+@Slf4j
 @RestController
 @RequestMapping("/webhooks")
 @RequiredArgsConstructor
 public class MercadoPagoWebhookController {
 
-    private final MercadoPagoService mercadoPagoService;
     private final BookingService bookingService;
 
-    @PostMapping("/mp")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> handleWebhook(@RequestBody Map<String, Object> payload)  {
-        String type = (String) payload.get("type");
-        if ("payment".equals(type)) {
-            Map<String, Object> data = (Map<String, Object>) payload.get("data");
-            String paymentId = String.valueOf(data.get("id"));
-            bookingService.confirmMpPayment(paymentId);
+    @PostMapping({"/mp", "/"})
+    public ResponseEntity<Void> handleWebhook(@RequestBody PaymentWebHookDTO payload) {
+        if (payload == null || payload.getData() == null || payload.getData().getId() == null) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/pruebita")
-    public ResponseEntity<Void>webhook(@RequestBody String body){
-        System.out.println("WEBHOOK RECIBIDO");
-        System.out.println(body);
-        return ResponseEntity.ok().build();
-    }
+        try {
+            Long paymentId = Long.parseLong(payload.getData().getId());
+            bookingService.confirmMpPaymentFromPaymentId(paymentId);
+            return ResponseEntity.ok().build();
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+}
 }

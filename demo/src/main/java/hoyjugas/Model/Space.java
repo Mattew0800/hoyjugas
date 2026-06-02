@@ -40,6 +40,6 @@ public class Space {
     private BigDecimal depositFactor;
 
     @Column(precision = 10, scale = 2,nullable = false)
-    private BigDecimal fixedDeposit;//monto de seña
+    private BigDecimal depositValue;
 }
 

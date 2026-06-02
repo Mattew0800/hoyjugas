@@ -1,20 +1,18 @@
 package hoyjugas.Service;
 
-import com.mercadopago.exceptions.MPApiException;
-import com.mercadopago.exceptions.MPException;
-import com.mercadopago.resources.payment.PaymentData;
 import hoyjugas.DTO.Booking.BookingResponseDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class BaseBookingService {
 
@@ -41,6 +39,7 @@ public abstract class BaseBookingService {
                         "Configuración del sistema no encontrada"
                 ));
     }
+
     protected User getClientOrThrow(Long clientId) {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
@@ -77,26 +76,22 @@ public abstract class BaseBookingService {
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totalReturned = payments.stream()
-                .filter(p -> p.getStatus() == PaymentStatus.PAGADO
-                        || p.getStatus() == PaymentStatus.REEMBOLSADO)
                 .filter(p -> p.getType() == PaymentType.DEVOLUCION)
+                .filter(p -> p.getStatus() == PaymentStatus.PAGADO || p.getStatus() == PaymentStatus.REEMBOLSADO)
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal net = totalPaid.subtract(totalReturned);
-        if (totalPaid.compareTo(BigDecimal.ZERO) > 0 && net.compareTo(BigDecimal.ZERO) <= 0) {
-            return PaymentStatus.REEMBOLSADO;
+        BigDecimal netPaid = totalPaid.subtract(totalReturned);
+        if (netPaid.compareTo(BigDecimal.ZERO) <= 0) {
+            return PaymentStatus.NO_PAGADO;
         }
-        if (net.compareTo(totalAmount) >= 0) {
+        if (netPaid.compareTo(totalAmount) >= 0) {
             return PaymentStatus.PAGADO;
         }
-        if (net.compareTo(BigDecimal.ZERO) > 0) {
-            return PaymentStatus.RESERVADO;
-        }
-        return PaymentStatus.NO_PAGADO;
+        return PaymentStatus.RESERVADO;
     }
 
     protected BigDecimal calculateDeposit(Space space, BigDecimal totalPrice) {
-        return space.getFixedDeposit()
+        return space.getDepositValue()
                 .min(totalPrice);
     }
 
@@ -118,24 +113,19 @@ public abstract class BaseBookingService {
         BigDecimal depositAmount = paymentRepository
                 .findTotalByBookingIdAndType(
                         booking.getId(),
-                        PaymentType.DEPOSITO,
+                        PaymentType.INTERNO,
                         PaymentStatus.NO_PAGADO
                 );
-
-        BigDecimal totalCobrado = paymentRepository
+        BigDecimal totalCollected = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
-
-        BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCobrado).max(BigDecimal.ZERO);
-
+        BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCollected).max(BigDecimal.ZERO);
         String createdByName = booking.getCreatedBy() != null
                 ? booking.getCreatedBy().getName()
                 : null;
-
         String collectedByName = paymentRepository
                 .findFirstByBookingIdAndTypeOrderByCreatedAtDesc(booking.getId(), PaymentType.PAGO_TOTAL)
                 .map(p -> p.getCollectedBy() != null ? p.getCollectedBy().getName() : null)
                 .orElse(null);
-
         return BookingResponseDTO.fromEntity(booking, depositAmount, remainingAmount, createdByName, collectedByName);
     }
 
@@ -147,34 +137,10 @@ public abstract class BaseBookingService {
                 amount,
                 "TRANSFER-FROM-" + original.getBookingNumber(),
                 employee,
-                PaymentType.DEPOSITO
+                PaymentType.INTERNO
         );
         transfer.setStatus(PaymentStatus.PAGADO);
         return transfer;
-    }
-
-    @Transactional
-    public void confirmMpPayment(String paymentId) {
-        com.mercadopago.resources.payment.Payment mpPayment =
-                mercadoPagoService.getPayment(paymentId);
-        if (!"approved".equals(mpPayment.getStatus())) return;
-        Booking booking = bookingRepository
-                .findById(Long.parseLong(mpPayment.getExternalReference()))
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Turno no encontrado"));
-        Payment payment = buildPayment(
-                booking,
-                PaymentMethod.MERCADOPAGO,
-                mpPayment.getTransactionAmount(),
-                String.valueOf(mpPayment.getId()),
-                null,
-                PaymentType.DEPOSITO
-        );
-        payment.setStatus(PaymentStatus.PAGADO);
-        paymentRepository.save(payment);
-        booking.setPaymentStatus(calculatePaymentStatus(booking.getId(), booking.getTotalAmount()));
-        bookingRepository.save(booking);
-        scheduleReminder(booking);
     }
 
     protected void scheduleReminder(Booking booking) {
@@ -191,5 +157,57 @@ public abstract class BaseBookingService {
             bookingNotificationRepository.save(notif);
         }
     }
-}
 
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmMpPaymentFromPaymentId(Long paymentId) {
+        if (paymentId == null) {
+            return;
+        }
+        com.mercadopago.resources.payment.Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
+        if (mpPayment == null) {
+            return;
+        }
+        if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
+            return;
+        }
+        processApprovedPayment(mpPayment);
+    }
+
+    private void processApprovedPayment(com.mercadopago.resources.payment.Payment mpPayment) {
+        String externalRef = mpPayment.getExternalReference();
+        if (externalRef == null || externalRef.isBlank()) {
+            return;
+        }
+        Long bookingId = Long.parseLong(externalRef);
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Turno no encontrado con id: " + bookingId));
+        String transactionId = String.valueOf(mpPayment.getId());
+        if (paymentRepository.findByTransactionId(transactionId).isPresent()) {
+            return;
+        }
+        BigDecimal transactionAmount = mpPayment.getTransactionAmount();
+        PaymentType paymentType = determinePaymentType(booking, transactionAmount);
+        Payment payment = buildPayment(
+                booking,
+                PaymentMethod.MERCADOPAGO,
+                transactionAmount,
+                transactionId,
+                null,
+                paymentType
+        );
+        payment.setStatus(PaymentStatus.PAGADO);
+        paymentRepository.save(payment);
+        PaymentStatus newPaymentStatus = calculatePaymentStatus(booking.getId(), booking.getTotalAmount());
+        booking.setPaymentStatus(newPaymentStatus);
+        bookingRepository.save(booking);
+        scheduleReminder(booking);
+    }
+
+    private PaymentType determinePaymentType(Booking booking, BigDecimal paidAmount) {
+        return paidAmount.compareTo(booking.getTotalAmount()) >= 0
+                ? PaymentType.PAGO_TOTAL
+                : PaymentType.SEÑA;
+    }
+}

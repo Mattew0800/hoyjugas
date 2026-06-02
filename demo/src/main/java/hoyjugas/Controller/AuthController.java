@@ -4,7 +4,6 @@ import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.PasswordResetService;
-import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
