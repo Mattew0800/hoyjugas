@@ -1,5 +1,6 @@
 package hoyjugas.Service;
 
+import hoyjugas.DTO.User.EmployeeCreatedDTO;
 import hoyjugas.DTO.User.LoginRequestDTO;
 import hoyjugas.DTO.User.LoginResponseDTO;
 import hoyjugas.DTO.User.RegisterRequestDTO;
@@ -18,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -27,12 +30,10 @@ public class AuthService {
     private final Key key;
     private final long jwtExpirationMs;
 
-    public AuthService(UserRepository userRepository,
-                       @Value("${jwt.secret}") String jwtSecret,
-                       @Value("${jwt.expiration}") long jwtExpirationMs) {
+    public AuthService(UserRepository userRepository, Key key, BCryptPasswordEncoder passwordEncoder, @Value("${jwt.expiration}") long jwtExpirationMs) {
         this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        this.passwordEncoder = passwordEncoder;
+        this.key = key;
         this.jwtExpirationMs = jwtExpirationMs;
     }
 
@@ -51,39 +52,63 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO registerUser(RegisterRequestDTO request) {
-        return createWithRole(request, Role.USER, true);
+        User user = createUser(request, Role.USER, false, null);
+        String token = generateToken(user);
+        return new LoginResponseDTO(token, user.getEmail(), user.getName());
     }
 
     @Transactional
-    public LoginResponseDTO registerEmployee(RegisterRequestDTO request) {
-        return createWithRole(request, Role.EMPLOYEE, false);
+    public EmployeeCreatedDTO registerEmployee(RegisterRequestDTO request) {
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+        if (existingUser.isPresent()) {
+            return promoteToEmployee(existingUser.get().getEmail());
+        }
+        String rawPin = generateRawPin();
+        User user = createUser(request, Role.EMPLOYEE, true, rawPin);
+        return new EmployeeCreatedDTO(user, rawPin);
     }
 
     @Transactional
-    public void promoteToEmployee(String email){
+    public EmployeeCreatedDTO promoteToEmployee(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Email no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email no encontrado"));
+        if (user.getRole() == Role.EMPLOYEE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario ya es empleado");
+        }
+        String rawPin = generateRawPin();
         user.setRole(Role.EMPLOYEE);
-        userRepository.save(user);
+        user.setPin(passwordEncoder.encode(rawPin));
+        User savedUser = userRepository.save(user);
+        return new EmployeeCreatedDTO(savedUser, rawPin);
     }
 
     @Transactional
     public LoginResponseDTO registerAdmin(RegisterRequestDTO request) {
-        return createWithRole(request, Role.ADMIN, false);
+        User user = createUser(request, Role.ADMIN, false, null);
+        return new LoginResponseDTO(null, user.getEmail(), user.getName());
     }
 
-    private LoginResponseDTO createWithRole(RegisterRequestDTO request, Role role, boolean autoLogin) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Ese mail ya pertenece a una cuenta, por favor inicia sesión");}
-        User user = User.fromRegisterDTO(request, passwordEncoder);
-        user.setRole(role);
-        User savedUser = userRepository.save(user);
-        if (autoLogin) {
-            String token = generateToken(savedUser);
-            return new LoginResponseDTO(token, savedUser.getEmail(), savedUser.getName());
-        } else {
-            return new LoginResponseDTO(null, savedUser.getEmail(), savedUser.getName());
+    private User createUser(RegisterRequestDTO request, Role role, boolean hasPin, String rawPin) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese mail ya pertenece a una cuenta");
         }
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese telefono ya pertenece a una cuenta");
+        }
+        if (userRepository.existsByDni(request.getDni())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese DNI ya pertenece a una cuenta");
+        }
+        User user = User.fromRegisterDTO(request, passwordEncoder);
+        user.setEnabled(true);
+        user.setRole(role);
+        if (hasPin && rawPin != null) {
+            user.setPin(passwordEncoder.encode(rawPin));
+        }
+        return userRepository.save(user);
+    }
+
+    private String generateRawPin() {
+        return String.format("%04d", new Random().nextInt(10000));
     }
 
     public String generateToken(User user) {

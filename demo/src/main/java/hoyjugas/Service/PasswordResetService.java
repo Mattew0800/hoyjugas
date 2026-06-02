@@ -20,7 +20,7 @@ public class PasswordResetService {
     private final GmailService gmailService;
     private final PasswordEncoder passwordEncoder;
 
-    public PasswordResetService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository, GmailService gmailService, PasswordEncoder passwordEncoder) {
+    public PasswordResetService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository,GmailService gmailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.gmailService = gmailService;
@@ -40,9 +40,9 @@ public class PasswordResetService {
         resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);
-        String link = "http://localhost:3000/reset-password?token=" + token;
+        String link = "http://localhost:8080/reset-password?token=" + token;
         try{
-            gmailService.sendPasswordResetEmail(user.getEmail(), link);
+           gmailService.sendPasswordResetEmail(user.getEmail(), link);
         }catch (Exception e){
             throw new RuntimeException("Error enviando mail", e);
         }

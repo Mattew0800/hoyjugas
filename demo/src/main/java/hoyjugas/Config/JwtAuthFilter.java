@@ -1,14 +1,15 @@
 package hoyjugas.Config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import hoyjugas.Service.UserService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,27 +25,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final SecretKey key;
 
-    public JwtAuthFilter(UserService userService,
-                         @Value("${jwt.secret}") String jwtSecret) {
+    public JwtAuthFilter(UserService userService, SecretKey key) {
         this.userService = userService;
-        this.key = Keys.hmacShaKeyFor(java.util.Base64.getDecoder().decode(jwtSecret));
+        this.key = key;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain filterChain)throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String jwt = null;
+        String token = extractToken(request);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-
+        if (token != null) {
             try {
                 Claims claims = Jwts.parser()
-                        .verifyWith(key)
+                        .setSigningKey(key)
                         .build()
-                        .parseSignedClaims(jwt)
-                        .getPayload();
+                        .parseClaimsJws(token)
+                        .getBody();
 
                 String email = claims.getSubject();
                 String role = (String) claims.get("role");
@@ -57,33 +56,39 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 user.getPassword(),
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
                         );
-
                         var authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
                                 userDetails.getAuthorities()
                         );
-
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     });
                 }
-
             } catch (io.jsonwebtoken.ExpiredJwtException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("El token ha expirado");
-                return;
-            } catch (io.jsonwebtoken.security.SignatureException e) { // 👈 cambió package
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Firma del token inválida");
-                return;
+                logger.info("Token expirado para request: {}" + request.getRequestURI());
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Error procesando el token JWT");
-                return;
+                logger.warn("Error validando token: {}"+ e.getMessage());
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("authToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        return null;
     }
 }

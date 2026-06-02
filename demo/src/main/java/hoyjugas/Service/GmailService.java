@@ -36,7 +36,7 @@ public class GmailService {
 
     private static final List<String> SCOPES =
             Collections.singletonList(GmailScopes.GMAIL_SEND);
-    private static final String TOKENS_DIRECTORY_PATH = "API/tokens";
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     @PostConstruct
     public void init() throws Exception {
