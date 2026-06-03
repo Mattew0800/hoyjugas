@@ -6,6 +6,7 @@ import {Error} from './screens/error/error';
 import {SplashComponent} from './screens/splash/splash';
 import {Home} from './screens/home/home';
 import {Booking} from './screens/booking/booking';
+import {FieldSchedule} from './screens/field-schedule/field-schedule';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -14,6 +15,7 @@ export const routes: Routes = [
   {path:'sign-up', component:SignUp},
   {path: 'home', component: Home},
   {path:'booking', component: Booking},
+  {path: 'field-schedule', component: FieldSchedule},
   {path:'**', component:Error}
 
 ];

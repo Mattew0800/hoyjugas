@@ -1,0 +1,133 @@
+$page-bg: #000;
+$gold: #d8b24c;
+$card-bg: #111;
+
+.page {
+  min-height: 200vh;
+  background: $page-bg;
+  color: white;
+}
+
+.content {
+  padding: 1rem;
+  padding-bottom: 120px;
+}
+
+.field-image {
+  width: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.field-card {
+  background: $card-bg;
+  border-radius: 20px;
+  padding: 1rem;
+  border: 1px solid #2b2b2b;
+}
+
+.subtitle {
+  color: #bdbdbd;
+  margin-bottom: 1rem;
+}
+
+.info-container {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-box {
+  flex: 1;
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: .75rem;
+  font-size: .8rem;
+}
+
+.label {
+  display: block;
+  color: $gold;
+  margin-bottom: .3rem;
+}
+
+.date-section {
+  margin-bottom: 1rem;
+}
+
+select {
+  width: 120px;
+  padding: .7rem;
+  border-radius: 10px;
+  border: none;
+  background: $gold;
+  color: black;
+  font-weight: bold;
+}
+
+.hours-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+  margin-top: 1rem;
+}
+
+.hour-btn {
+  background: transparent;
+  border: 1px solid $gold;
+  color: $gold;
+  padding: .8rem;
+  border-radius: 10px;
+}
+
+.selected {
+  background: $gold;
+  color: black;
+  font-weight: bold;
+}
+
+.unavailable {
+  opacity: .4;
+  border-color: #666;
+  color: #666;
+}
+
+.legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: .75rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: .3rem;
+}
+
+.available-dot {
+  border: 1px solid $gold;
+}
+
+.selected-dot {
+  background: $gold;
+}
+
+.unavailable-dot {
+  background: #666;
+}
+
+.reserve-btn {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: $gold;
+  color: black;
+  font-weight: bold;
+  letter-spacing: 2px;
+}

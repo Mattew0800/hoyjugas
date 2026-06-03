@@ -1,0 +1,110 @@
+<div class="page">
+
+  <app-header></app-header>
+
+  <div class="content">
+
+    <img
+      src="/cancha1.png"
+      alt="Cancha"
+      class="field-image"
+    />
+
+    <div class="field-card">
+
+      <h2>Cancha 1 - Fútbol 5</h2>
+
+      <p class="subtitle">
+        Techada · Césped sintético
+      </p>
+
+      <div class="info-container">
+
+        <div class="info-box">
+          <span class="label">tipo</span>
+          <span>Techada</span>
+        </div>
+
+        <div class="info-box">
+          <span class="label">precio</span>
+          <span>$8.000/h</span>
+        </div>
+
+        <div class="info-box">
+          <span class="label">horario</span>
+          <span>08:00 - 23:00</span>
+        </div>
+
+      </div>
+
+      <div class="date-section">
+
+        <label>Elegí tu turno:</label>
+
+        <select
+          [(ngModel)]="selectedDate"
+        >
+          @for(date of dates; track date){
+
+            <option [value]="date">
+              {{date}}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+      <div class="hours-grid">
+
+        @for(slot of timeSlots; track slot.hour){
+
+          <button
+            class="hour-btn"
+            [class.selected]="selectedHour === slot.hour"
+            [class.unavailable]="!slot.available"
+            (click)="selectHour(slot.hour)"
+          >
+
+            {{slot.hour}}
+
+          </button>
+
+        }
+
+      </div>
+
+      <div class="legend">
+
+        <div>
+          <span class="dot unavailable-dot"></span>
+          No disponible
+        </div>
+
+        <div>
+          <span class="dot selected-dot"></span>
+          Seleccionado
+        </div>
+
+        <div>
+          <span class="dot available-dot"></span>
+          Disponible
+        </div>
+
+      </div>
+
+      <button
+        class="reserve-btn"
+        (click)="reserve()"
+      >
+        RESERVAR TURNO
+      </button>
+
+    </div>
+
+  </div>
+
+  <app-bottom-navbar></app-bottom-navbar>
+
+</div>
