@@ -8,32 +8,31 @@ import java.math.BigDecimal;
 @Data
 public class SystemConfigCreateDTO {
 
-    @NotNull
-    @Min(0)
+    @Min(value = 0, message = "El límite de horas debe ser mayor o igual a 0")
     private Integer cancellationHoursLimit;
 
-    @NotNull
-    @Min(1)
-    @Max(168)
+    @Min(value = 1, message = "Las horas de anticipación del recordatorio deben ser al menos 1")
+    @Max(value = 168, message = "No puede superar una semana")
     private Integer reminderHoursBeforeBooking;
 
-    @NotBlank
     private String termsAndConditions;
 
-    @NotNull
-    @Min(1)
-    @Max(52)
-    private Integer recurringMonthsAhead;
-
-    @NotNull
-    @Min(1)
+    @Min(value = 1, message = "La cantidad inicial de turnos debe ser al menos 1")
     private Integer recurringInitialDepositTurns;
 
-    @NotNull
-    @DecimalMin("1.00")
+    @DecimalMin(value = "1.00", message = "El multiplicador debe ser al menos 1.00")
     private BigDecimal recurringDepositMultiplier;
 
-    @NotNull
-    @Min(1)
+    @Min(value = 1, message = "Debe permitir al menos una cancelación")
     private Integer maxRecurringCancellations;
+
+    @Size(max = 255, message = "La dirección no puede superar los 255 caracteres")
+    private String address;
+
+    @Size(max = 100, message = "El nombre del complejo no puede superar los 100 caracteres")
+    private String sportsComplexName;
+
+    @DecimalMin(value = "0.00", message = "El porcentaje de seña no puede ser negativo")
+    @DecimalMax(value = "1.00", message = "El porcentaje de seña no puede ser mayor a 1")
+    private BigDecimal normalDepositFactor;//dsps sacar
 }

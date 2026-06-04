@@ -36,7 +36,8 @@ public class SystemConfigService {
 
     private SystemConfig toEntity(SystemConfigCreateDTO dto) {
         SystemConfig config = new SystemConfig();
-
+        config.setAddress(dto.getAddress());
+        config.setSportsComplexName(dto.getSportsComplexName());
         config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
         config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
         config.setTermsAndConditions(dto.getTermsAndConditions());
