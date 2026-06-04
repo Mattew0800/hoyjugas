@@ -252,7 +252,7 @@ public class RecurringBookingService extends BaseBookingService{
             recurring.setStatus(RecurringStatus.CANCELADO);
         }
         recurringBookingRepository.save(recurring);
-        scheduleNotification(booking, NotificationType.CANCELACION);
+        scheduleNotification(booking, NotificationType.CANCELADO);
         return new RecurringCancelResponseDTO(
                 bookingId,
                 completedCycle,

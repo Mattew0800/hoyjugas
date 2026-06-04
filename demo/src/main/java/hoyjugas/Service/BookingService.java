@@ -16,16 +16,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Pageable;
-
-import javax.swing.text.html.Option;
-
-import static java.util.Calendar.HOUR;
 
 @Service
 public class BookingService extends BaseBookingService {
@@ -36,6 +30,7 @@ public class BookingService extends BaseBookingService {
     private final PricingService pricingService;
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final PaymentRepository paymentRepository;
+    private final WhatsAppService whatsAppService;
 
     public BookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -43,7 +38,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,SpaceScheduleRepository spaceScheduleRepository,PaymentRepository paymentRepository,MercadoPagoService mercadoPagoService) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, MercadoPagoService mercadoPagoService, WhatsAppService whatsAppService) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository,mercadoPagoService);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -51,6 +46,7 @@ public class BookingService extends BaseBookingService {
         this.pricingService = pricingService;
         this.spaceScheduleRepository=spaceScheduleRepository;
         this.paymentRepository=paymentRepository;
+        this.whatsAppService = whatsAppService;
     }
 
 
@@ -100,13 +96,16 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         if (dto.getPaymentType() != PaymentType.PAGO_TOTAL && dto.getPaymentType() != PaymentType.SEÑA) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Tipo de pago no soportado.");
         }
-        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(dto.getSlots()));
         BigDecimal depositToPay = dto.getPaymentType() == PaymentType.PAGO_TOTAL
                 ? totalPrice
                 : space.getDepositFactor();
@@ -128,19 +127,18 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO createBookingByEmployee(EmployeeBookingRequestDTO dto, User employee) {
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
-
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
-        BigDecimal price =
-                pricingService.getPriceForSlot(space, dto.getStartDatetime());
-
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(slots));
         BigDecimal minimumDeposit =
-                calculateDeposit(space, price);
+                calculateDeposit(space, totalPrice);
 
-        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, price);
+        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
 
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
@@ -235,7 +233,6 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO cancelBooking(CancelBookingRequestDTO dto, User employee) {
         Long bookingId = dto.getBookingId();
         Booking booking = getBookingOrThrow(bookingId);
-
         if (booking.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar un turno finalizado");
         }
@@ -247,35 +244,17 @@ public class BookingService extends BaseBookingService {
                     "Para cancelar un turno fijo usá el endpoint de cancelación de ciclo");
         }
         SystemConfig config = getSystemConfig();
-        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
-        boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
-
-        if (devolution) {
-            BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
-
-            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
-                Payment refund = buildPayment(
-                        booking,
-                        null,
-                        totalCollected,
-                        null,
-                        employee,
-                        PaymentType.DEVOLUCION
-                );
-                refund.setStatus(PaymentStatus.PENDIENTE);
-                paymentRepository.save(refund);
-                booking.setRefunded(false);
-            }
+        if(ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime()) >= config.getCancellationHoursLimit()){
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "No se puede cancelar un turno antes de "+ config.getCancellationHoursLimit()+ "horas de que empiece el mismo");
         }
         booking.setBookingStatus(BookingStatus.CANCELADO);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(dto.getCancellationReason());
         booking.setPaymentStatus(calculatePaymentStatus(bookingId, booking.getTotalAmount()));
         bookingRepository.save(booking);
-        scheduleNotification(booking, NotificationType.CANCELACION);
+        whatsAppService.sendCancellationNotification(booking);
         return buildBookingResponseDTO(booking);
     }
-
 
     public Page<BookingListDTO> getBookings(Long clientId, Long spaceId, BookingStatus status,
                                             Long employeeId, LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable) {
@@ -425,12 +404,13 @@ public class BookingService extends BaseBookingService {
         newBooking.setTermsAcceptedAt(LocalDateTime.now());
         newBooking.setBookingStatus(BookingStatus.CONFIRMADO);
         Booking saved = bookingRepository.save(newBooking);
-        saved.setBookingNumber(String.format("%06d", saved.getId()));
+        saved = assignBookingNumber(saved);
         paymentRepository.save(buildTransferPayment(original,newBooking,alreadyPaid,employee));
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), newPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
-        scheduleNotification(saved, NotificationType.CANCELACION);
+        whatsAppService.sendRescheduleNotification(original, saved);
+        scheduleNotification(original, NotificationType.REPROGRAMADO);
         return buildBookingResponseDTO(saved);
     }
 
@@ -443,5 +423,17 @@ public class BookingService extends BaseBookingService {
     public void markAsPaymentError(Long bookingId){
         Booking booking = getBookingOrThrow(bookingId);
         booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
+    }
+
+    @Transactional
+    public void markAbsent(Long bookingId, User employee) {
+        Booking booking = getBookingOrThrow(bookingId);
+        if (!booking.getBookingStatus().equals(BookingStatus.CONFIRMADO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El turno no está confirmado");
+        }
+        booking.setBookingStatus(BookingStatus.FINALIZADO);
+        bookingRepository.save(booking);
+        scheduleNotification(booking, NotificationType.AUSENTE);
     }
 }

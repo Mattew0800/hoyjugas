@@ -146,7 +146,6 @@ public abstract class BaseBookingService {
     protected void scheduleReminder(Booking booking) {
         boolean alreadyExists = bookingNotificationRepository
                 .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
-
         if (!alreadyExists) {
             SystemConfig config = getSystemConfig();
             BookingNotification notif = new BookingNotification();

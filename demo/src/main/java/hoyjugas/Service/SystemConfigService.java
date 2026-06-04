@@ -40,7 +40,6 @@ public class SystemConfigService {
         config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
         config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
         config.setTermsAndConditions(dto.getTermsAndConditions());
-        config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
@@ -48,10 +47,11 @@ public class SystemConfigService {
     }
 
     private void updateEntity(SystemConfig config, SystemConfigUpdateDTO dto) {
+        config.setAddress(dto.getAddress());
+        config.setSportsComplexName(dto.getSportsComplexName());
         config.setCancellationHoursLimit(dto.getCancellationHoursLimit());
         config.setReminderHoursBeforeBooking(dto.getReminderHoursBeforeBooking());
         config.setTermsAndConditions(dto.getTermsAndConditions());
-        config.setRecurringMonthsAhead(dto.getRecurringMonthsAhead());
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());

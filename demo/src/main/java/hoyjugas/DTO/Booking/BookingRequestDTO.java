@@ -1,10 +1,7 @@
 package hoyjugas.DTO.Booking;
 
 import hoyjugas.Enum.PaymentMethod;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +30,11 @@ public class BookingRequestDTO {
     private PaymentMethod paymentMethod;
 
     private String transactionId;
+
+    @NotNull(message = "La cantidad de horas es obligatoria")
+    @Min(value = 1, message = "Mínimo 1 hora")
+    @Max(value = 4, message = "Máximo 4 horas")  // configurable por admin
+    private Integer slots;
 
     private String employeePin;
 

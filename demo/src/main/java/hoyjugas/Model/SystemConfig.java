@@ -19,12 +19,11 @@ public class SystemConfig {
     private Integer id=1;
 
     private Integer cancellationHoursLimit;
+
     private Integer reminderHoursBeforeBooking;
 
     @Column(columnDefinition = "TEXT")
     private String termsAndConditions;
-
-    private Integer recurringMonthsAhead;
 
     private BigDecimal recurringDepositMultiplier;
 
@@ -32,6 +31,10 @@ public class SystemConfig {
     
     private Integer maxRecurringCancellations;
 
+    private String address;
+
+    private String sportsComplexName;
+
     @Column(nullable = false, precision = 5, scale = 2)
-    private BigDecimal normalDepositFactor = new BigDecimal("0.30");
+    private BigDecimal normalDepositFactor = new BigDecimal("0.30");//dsps sacar
 }

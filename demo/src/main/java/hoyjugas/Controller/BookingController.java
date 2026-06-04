@@ -11,6 +11,7 @@ import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
 import hoyjugas.Service.MercadoPagoService;
 import hoyjugas.Service.UserService;
+import hoyjugas.Service.WhatsAppService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -35,6 +39,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final UserService userService;
     private final MercadoPagoService mercadoPagoService;
+    private final WhatsAppService whatsAppService;
 
     @PostMapping("/availability")
     @PreAuthorize("hasRole('USER')")
@@ -140,4 +145,25 @@ public class BookingController {
         }
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
+
+    @PostMapping("/mark-absent")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<?> markAbsent(@Valid @RequestBody MarkAbsentRequestDTO dto) {
+        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+        bookingService.markAbsent(dto.getBookingId(), employee);
+        return ResponseEntity.ok(Map.of("message","Reserva marcada como ausente exitosamente"));
+    }
+
+    @PostMapping("/test-reminder")
+    public ResponseEntity<Void>testReminder() {
+        whatsAppService.sendBookingReminder(bookingService.getBookingEntity(307L), BigDecimal.valueOf(120000));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("test-cancellation")
+    public ResponseEntity<Void>testCancellation() {
+        whatsAppService.sendCancellationNotification(bookingService.getBookingEntity(310L));
+        return ResponseEntity.ok().build();
+    }
+
 }

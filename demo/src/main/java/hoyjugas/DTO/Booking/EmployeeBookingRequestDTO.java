@@ -35,4 +35,8 @@ public class EmployeeBookingRequestDTO {
     @AssertTrue
     private Boolean termsAccepted;
 
+    @NotNull(message = "La cantidad de horas es obligatoria")
+    @Min(value = 1, message = "Mínimo 1 hora")
+    @Max(value = 4, message = "Máximo 4 horas")
+    private Integer slots;
 }

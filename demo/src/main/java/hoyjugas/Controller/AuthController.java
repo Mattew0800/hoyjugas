@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -41,13 +43,13 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody @Valid EmailRequestDTO request){
         passwordResetService.sendResetLink(request.getEmail());
-        return ResponseEntity.ok("Si el email existe en nuestra base de datos, se envió un link de recuperación.");
+        return ResponseEntity.ok(Map.of("message","Si el email existe en nuestra base de datos, se envió un link de recuperación."));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequestDTO request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.ok("Contraseña actualizada correctamente");
+        return ResponseEntity.ok(Map.of("message","Contraseña actualizada correctamente"));
     }
 
     @PostMapping("/register-admin")

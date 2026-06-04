@@ -1,8 +1,6 @@
 package hoyjugas.DTO.System;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -18,16 +16,22 @@ public class SystemConfigUpdateDTO {
 
     private String termsAndConditions;
 
-    @Min(value = 1)
-    @Max(value = 52)
-    private Integer recurringMonthsAhead;
-
-    @Min(value = 1)
+    @Min(value = 1, message = "La cantidad inicial de turnos debe ser al menos 1")
     private Integer recurringInitialDepositTurns;
 
-    @DecimalMin("1.00")
+    @DecimalMin(value = "1.00", message = "El multiplicador debe ser al menos 1.00")
     private BigDecimal recurringDepositMultiplier;
 
-    @Min(value = 1)
+    @Min(value = 1, message = "Debe permitir al menos una cancelación")
     private Integer maxRecurringCancellations;
+
+    @Size(max = 255, message = "La dirección no puede superar los 255 caracteres")
+    private String address;
+
+    @Size(max = 100, message = "El nombre del complejo no puede superar los 100 caracteres")
+    private String sportsComplexName;
+
+    @DecimalMin(value = "0.00", message = "El porcentaje de seña no puede ser negativo")
+    @DecimalMax(value = "1.00", message = "El porcentaje de seña no puede ser mayor a 1")
+    private BigDecimal normalDepositFactor;//dsps sacar
 }
