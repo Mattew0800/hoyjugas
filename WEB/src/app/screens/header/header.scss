@@ -1,0 +1,72 @@
+/* HEADER */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 18px 20px;
+
+  position: relative;
+
+  background:
+    radial-gradient(
+        circle at left,
+        rgba(201, 161, 92, 0.18) 0%,
+        rgba(201, 161, 92, 0.06) 35%,
+        rgba(0, 0, 0, 0) 75%
+    ),
+    #050505;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 4rem;
+  height: 4rem;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.welcome-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  span {
+    color: #8b8b8b;
+    font-size: 13px;
+  }
+
+  h2 {
+    font-family: Roboto, sans-serif;
+    color: #CEA764;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+}
+
+.profile-button {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  border: 1px solid #3a3a3a;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 22px;
+}
