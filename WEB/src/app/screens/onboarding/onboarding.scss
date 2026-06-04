@@ -1,27 +1,3 @@
-@font-face {
-  font-family: 'MistressBenedict';
-  /* Definición normal (ya existente) */
-  src: local('Mistress Benedict Brush'), local('MistressBenedict'),
-       url('/fonts/Mistress Benedict Brush.ttf') format('truetype'),
-       url('/fonts/MistressBenedictBrush.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Agregamos una cara para 'italic' que apunta al mismo archivo.
-   Muchos navegadores buscan una @font-face con font-style: italic para aplicar cursiva;
-   si no existe, pueden no usar la fuente o aplicar un faux-italic distinto o ausente en algunos WebViews. */
-@font-face {
-  font-family: 'MistressBenedict';
-  src: local('Mistress Benedict Brush'), local('MistressBenedict'),
-       url('/fonts/Mistress Benedict Brush.ttf') format('truetype'),
-       url('/fonts/MistressBenedictBrush.ttf') format('truetype');
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
-}
-
 // =====================================
 // ONBOARDING - Estructura base
 // =====================================
@@ -215,8 +191,10 @@
     font-size: 32px;
     line-height: 36px;
     color: #FAFAFA;
-    font-weight: normal;
-    font-synthesis: style;
+    font-weight: 400;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
   }
 
