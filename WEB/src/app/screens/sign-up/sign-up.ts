@@ -2,7 +2,15 @@
 
 import {Component, HostListener, Inject, OnDestroy, OnInit, Renderer2, AfterViewInit} from '@angular/core';
 import { Router } from '@angular/router';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule, ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import {Meta} from '@angular/platform-browser';
 import {DOCUMENT} from '@angular/common';
 
@@ -20,22 +28,61 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
   screenWidth = window.innerWidth;
   private scrollInterval: any;
 
-  fullName: string = '';
-  phoneNumber: string = '';
-  dni: string = '';
-  email: string = '';
-
-  password: string = '';
-  confirmPassword: string = '';
 
   acceptedTerms: boolean = false;
+
+  form: FormGroup;
 
   constructor(
     private meta: Meta,
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
-    private router: Router
-  ) {}
+    private router: Router,
+  ) {
+    this.form = new FormGroup({
+        name: new FormControl('',[
+          Validators.required,
+          Validators.pattern(/^(?:[A-Za-zÁÉÍÓÚáéíóúÑñ]{2,}|de|del|la|los|san)(?:\s(?:[A-Za-zÁÉÍÓÚáéíóúÑñ]{2,}|de|del|la|los|san))+$/i),
+          // Solo letras (con tildes/ñ), al menos dos palabras (espacio en medio)
+          // Permite "de", "del", "la", "los", "san" | Sin simbolos o espacios extra.
+          Validators.maxLength(50),
+          this.maxWordsValidator(5)
+        ]),
+
+      phone: new FormControl('',[
+        Validators.required,
+        Validators.pattern(/^([0-9]{2,4})\s?([0-9]{7,8})$|^([0-9]{2,4})\s?([0-9]{3})\s?([0-9]{4,5})$/),
+        this.argentinePhoneValidator()
+      ]),
+
+      dni: new FormControl('',[
+        Validators.required,
+        Validators.pattern(/^([0-9]{1,3}\.?){2}[0-9]{3,4}$|^[0-9]{7,10}$/),
+        this.argentineDniValidator()
+      ]),
+
+      email: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^(?!.*\.{2})[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/),
+        Validators.maxLength(254)
+        //Prohíbe puntos consecutivos
+        //Exige que el local-part no empiece/termine con punto
+        //Controla que los guiones en el dominio no estén al inicio/final
+        //Requiere TLD de al menos 2 letras
+        //Permite subdominios
+      ]),
+
+
+      password: new FormControl('', [Validators.required, Validators.minLength(6), Validators.pattern(/\S/)]),
+
+      confirmPassword: new FormControl('', [
+        Validators.required,
+      ]),
+
+      terms: new FormControl(false, [Validators.requiredTrue])
+
+    }, { validators: this.passwordsMatchValidator() })
+  }
 
   ngOnInit() {
     //this.meta.updateTag({ name: 'theme-color', content: '#181b16' });
@@ -79,6 +126,101 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
+  maxWordsValidator(max: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value || '';
+      const words = value.trim().split(/\s+/).filter((w: string) => w.length > 0);
+      return words.length > max ? { maxWords: { requiredMax: max, actual: words.length } } : null;
+    };
+  }
+
+  argentinePhoneValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value || '';
+
+      if (!value) {
+        return null;
+      }
+
+      const cleanPhone = value.replace(/[\s\-()]/g, '');
+
+      // Only numbers allowed
+      if (!/^\d+$/.test(cleanPhone)) {
+        return { invalidArgentinePhone: { value: value, message: 'Solo se permiten números' } };
+      }
+
+      if (cleanPhone.length !== 10) {
+        return {
+          invalidArgentinePhone: {
+            value: value,
+            message: 'El teléfono debe tener 10 dígitos. Formato: código de área (2-4 dígitos) + número (6-8 dígitos)'
+          }
+        };
+      }
+
+      return null;
+    };
+  }
+
+  argentineDniValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value || '';
+
+      if (!value) {
+        return null;
+      }
+
+      // Remove dots and hyphens for validation
+      const cleanDni = value.replace(/[.\-\s]/g, '');
+
+      // Only numbers allowed
+      if (!/^\d+$/.test(cleanDni)) {
+        return { invalidArgentineDni: { value: value, message: 'El DNI solo puede contener números' } };
+      }
+
+      // Argentine DNI must be between 7 and 10 digits
+      // Format: XX.XXX.XXX or XXXXXXXX (most common is 8 digits)
+      // Examples: 12.345.678 or 12345678
+      if (cleanDni.length < 7 || cleanDni.length > 10) {
+        return {
+          invalidArgentineDni: {
+            value: value,
+            message: 'El DNI debe tener entre 7 y 10 dígitos. Formato: XX.XXX.XXX o XXXXXXXX'
+          }
+        };
+      }
+
+      return null;
+    };
+  }
+
+  passwordsMatchValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const password = control.get('password')?.value;
+      const confirmPassword = control.get('confirmPassword')?.value;
+
+      if (!password || !confirmPassword) {
+        return null;
+      }
+
+      if (password !== confirmPassword) {
+        control.get('confirmPassword')?.setErrors({ passwordsMismatch: true });
+        return { passwordsMismatch: true };
+      } else {
+        // Clear the error if passwords match
+        const errors = control.get('confirmPassword')?.errors;
+        if (errors) {
+          delete errors['passwordsMismatch'];
+          if (Object.keys(errors).length === 0) {
+            control.get('confirmPassword')?.setErrors(null);
+          }
+        }
+      }
+
+      return null;
+    };
+  }
+
   ngOnDestroy() {
     //this.meta.updateTag({ name: 'theme-color', content: '#000000' });
     if (this.scrollInterval) {
@@ -91,6 +233,7 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
 
   continue(): void {
     console.log('Registro');
+    this.form.markAllAsTouched();
   }
 
 

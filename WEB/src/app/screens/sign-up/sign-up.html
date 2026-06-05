@@ -24,7 +24,7 @@
         <h1>Registrarse</h1>
       </div>
 
-      <div class="form-section">
+      <form [formGroup]="form" class="form-section">
 
         <div class="input-group">
           <label>Ingresa tu nombre completo</label>
@@ -32,8 +32,24 @@
           <input
             type="text"
             placeholder="Nombre completo"
-            [(ngModel)]="fullName"
+            formControlName="name"
+            [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched"
           />
+
+          @if(form.get('name')?.invalid && form.get('name')?.touched) {
+            @if(form.get('name')?.errors?.['required']) {
+              <span class="error-message">El nombre es requerido</span>
+            }
+            @if(form.get('name')?.errors?.['pattern']) {
+              <span class="error-message">El nombre debe contener al menos dos palabras con solo letras</span>
+            }
+            @if(form.get('name')?.errors?.['maxLength']) {
+              <span class="error-message">El nombre no puede exceder 50 caracteres</span>
+            }
+            @if(form.get('name')?.errors?.['maxWords']) {
+              <span class="error-message">El nombre no puede tener más de 5 palabras</span>
+            }
+          }
         </div>
 
         <div class="input-group">
@@ -42,8 +58,21 @@
           <input
             type="text"
             placeholder="Número de celular"
-            [(ngModel)]="phoneNumber"
+            formControlName="phone"
+            [class.input-error]="form.get('phone')?.invalid && form.get('phone')?.touched"
           />
+
+          @if(form.get('phone')?.invalid && form.get('phone')?.touched) {
+            @if(form.get('phone')?.errors?.['required']) {
+              <span class="error-message">El teléfono es requerido</span>
+            }
+            @if(form.get('phone')?.errors?.['pattern']) {
+              <span class="error-message">Formato de teléfono inválido. Ejemplo: 223 5282181</span>
+            }
+            @if(form.get('phone')?.errors?.['invalidArgentinePhone']) {
+              <span class="error-message">{{ form.get('phone')?.errors?.['invalidArgentinePhone'].message }}</span>
+            }
+          }
         </div>
 
         <div class="input-group">
@@ -52,8 +81,21 @@
           <input
             type="text"
             placeholder="Documento Nacional de Identidad"
-            [(ngModel)]="dni"
+            formControlName="dni"
+            [class.input-error]="form.get('dni')?.invalid && form.get('dni')?.touched"
           />
+
+          @if(form.get('dni')?.invalid && form.get('dni')?.touched) {
+            @if(form.get('dni')?.errors?.['required']) {
+              <span class="error-message">El DNI es requerido</span>
+            }
+            @if(form.get('dni')?.errors?.['pattern']) {
+              <span class="error-message">Formato de DNI inválido. Ejemplo: 12.345.678 o 12345678</span>
+            }
+            @if(form.get('dni')?.errors?.['invalidArgentineDni']) {
+              <span class="error-message">{{ form.get('dni')?.errors?.['invalidArgentineDni'].message }}</span>
+            }
+          }
         </div>
 
         <div class="input-group">
@@ -62,8 +104,21 @@
           <input
             type="email"
             placeholder="nombre@email.com"
-            [(ngModel)]="email"
+            formControlName="email"
+            [class.input-error]="form.get('email')?.invalid && form.get('email')?.touched"
           />
+
+          @if(form.get('email')?.invalid && form.get('email')?.touched) {
+            @if(form.get('email')?.errors?.['required']) {
+              <span class="error-message">El email es requerido</span>
+            }
+            @if(form.get('email')?.errors?.['pattern']) {
+              <span class="error-message">Formato de email inválido</span>
+            }
+            @if(form.get('email')?.errors?.['maxLength']) {
+              <span class="error-message">El email no puede exceder 254 caracteres</span>
+            }
+          }
         </div>
 
         <div class="input-group">
@@ -72,8 +127,18 @@
           <input
             type="password"
             placeholder="Contraseña"
-            [(ngModel)]="password"
+            formControlName="password"
+            [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
           />
+
+          @if(form.get('password')?.invalid && form.get('password')?.touched) {
+            @if(form.get('password')?.errors?.['required']) {
+              <span class="error-message">La contraseña es requerida</span>
+            }
+            @if(form.get('password')?.errors?.['minLength']) {
+              <span class="error-message">La contraseña debe tener al menos 6 caracteres</span>
+            }
+          }
         </div>
 
         <div class="input-group">
@@ -82,22 +147,40 @@
           <input
             type="password"
             placeholder="Vuelva a poner su contraseña"
-            [(ngModel)]="confirmPassword"
+            formControlName="confirmPassword"
+            [class.input-error]="form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched"
           />
+
+          @if(form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
+            @if(form.get('confirmPassword')?.errors?.['required']) {
+              <span class="error-message">Confirmar contraseña es requerido</span>
+            }
+            @if(form.get('confirmPassword')?.errors?.['passwordsMismatch']) {
+              <span class="error-message">Las contraseñas no coinciden</span>
+            }
+          }
         </div>
 
         <div class="terms-check">
 
           <input
             type="checkbox"
-            [(ngModel)]="acceptedTerms"
+            formControlName="terms"
+            id="check"
+            [class.checkbox-error]="form.get('terms')?.invalid && form.get('terms')?.touched"
           />
+          <label
+            for="check"
+            [class.label-error]="form.get('terms')?.invalid && form.get('terms')?.touched"
+          >
+            Términos y condiciones
+          </label>
 
-          <span>Términos y condiciones</span>
+
 
         </div>
 
-      </div>
+      </form>
       <button class="continue-btn" (click)="continue()">
         Continuar
       </button>
