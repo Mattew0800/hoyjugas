@@ -1,0 +1,19 @@
+# IDE
+.idea/
+*.iml
+
+# Node
+node_modules/
+
+# OAuth / Gmail
+tokens/
+
+# Java
+**/target/
+
+# Angular
+WEB/dist/
+WEB/.angular/
+
+# Logs
+*.log

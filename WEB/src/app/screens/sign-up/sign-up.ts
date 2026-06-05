@@ -2,7 +2,7 @@
 
 import {Component, HostListener, Inject, OnDestroy, OnInit, Renderer2, AfterViewInit} from '@angular/core';
 import { Router } from '@angular/router';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Meta} from '@angular/platform-browser';
 import {DOCUMENT} from '@angular/common';
 
@@ -10,7 +10,8 @@ import {DOCUMENT} from '@angular/common';
   selector: 'app-sign-up',
   templateUrl: './sign-up.html',
   imports: [
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   styleUrls: ['./sign-up.scss']
 })
