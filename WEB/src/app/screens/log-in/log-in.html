@@ -1,100 +1,91 @@
-<!-- log-in.html -->
+<div class="login-page">
 
-@if(screenWidth >= 1024){
-
-  <div class="ALERT-CONTAINER">
-    <h2 class="ALERT-MESSAGE">
-      ESTAS FUERA DE LA COBERTURA DEL MOBILE DESIGN
-    </h2>
-  </div>
-
-} @else {
-
-  <div class="login-page">
-
-    <div class="top-bar">
+  <div class="top-bar">
       <span class="back-arrow" (click)="continueBoolean ? goBack() : goToOnboarding()">
         ←
       </span>
-    </div>
+  </div>
 
-    <div class="content">
+  <div class="content">
 
-      @if(!continueBoolean){
+    @if (!continueBoolean) {
 
-        <div class="title-section">
-          <h1>Iniciar Sesión</h1>
+      <div class="title-section">
+        <h1>Iniciar Sesión</h1>
 
-        </div>
+      </div>
 
-        <div class="form-section">
+      <form action="" [formGroup]="form" (submit)="continue()">
+        <div class="form-section" [formGroup]="form">
           <div>
-            <label for="">Ingresa tu celular</label>
-              <input
-                type="text"
-                placeholder="223 539 6482"
-                [(ngModel)]="phoneNumber"
-              />
+            <label for="">Ingresa tu email</label>
+            <input
+              type="text"
+              placeholder="ejemplo@gmail.com"
+              formControlName="email"
+            />
 
           </div>
 
 
-          <button (click)="continue()">
+          <button type="submit">
             Continuar
           </button>
 
         </div>
+      </form>
 
-        <p class="terms">
-          Al continuar, aceptas los
+      <p class="terms">
+        Al continuar, aceptas los
 
-          <a href="/terminos">
-            términos de servicio
-          </a>
+        <a href="/terminos">
+          términos de servicio
+        </a>
 
-          y la
+        y la
 
-          <a href="/privacidad">
-            política de privacidad
-          </a>
+        <a href="/privacidad">
+          política de privacidad
+        </a>
 
-        </p>
+      </p>
 
-        <div class="divider">
-          <div class="line"></div>
-          <span>or</span>
-          <div class="line"></div>
-        </div>
+      <div class="divider">
+        <div class="line"></div>
+        <span>or</span>
+        <div class="line"></div>
+      </div>
 
-        <div class="social-buttons">
+      <div class="social-buttons">
 
-          <button class="social-btn">
-            <fa-icon [icon]="faGoogle"></fa-icon>
-          </button>
+        <button class="social-btn">
+          <fa-icon [icon]="faGoogle"></fa-icon>
+        </button>
 
-          <button class="social-btn">
-            <fa-icon [icon]="faEnvelope"></fa-icon>
-          </button>
+        <button class="social-btn">
+          <fa-icon [icon]="faEnvelope"></fa-icon>
+        </button>
 
-          <button class="social-btn">
-            <fa-icon [icon]="faApple"></fa-icon>
-          </button>
+        <button class="social-btn">
+          <fa-icon [icon]="faApple"></fa-icon>
+        </button>
 
-        </div>
+      </div>
 
-        <p class="register-text">
-          ¿No tienes una cuenta?
-          <span class="register-link" (click)="goToSignUp()">
+      <p class="register-text">
+        ¿No tienes una cuenta?
+        <span class="register-link" (click)="goToSignUp()">
         Regístrate
           </span>
-        </p>
-      }@else{
+      </p>
+    } @else {
 
-        <div class="title-section">
-          <h1>Iniciar Sesión</h1>
+      <div class="title-section">
+        <h1>Iniciar Sesión</h1>
 
-        </div>
+      </div>
 
+      <form action="" [formGroup]="form" (submit)="login()">
         <div class="form-section">
           <div class="password-input-wrapper">
             <label for="">Ingresa tu contraseña</label>
@@ -103,7 +94,7 @@
               <input
                 [type]="showPassword ? 'text' : 'password'"
                 placeholder="Aj#9fo1U@23"
-                [(ngModel)]="password"
+                formControlName="password"
               />
               <fa-icon
                 [icon]="showPassword ? faEye : faEyeSlash"
@@ -114,30 +105,35 @@
 
           </div>
 
-            <button (click)="continue()">
-              Continuar
-            </button>
-
-
+          <button type="submit">
+            Continuar
+          </button>
+          @if(formErrorMsg!= '') {
+            <p class="error-message">
+              {{ formErrorMsg }}
+            </p>
+          }
         </div>
+      </form>
 
-        <p class="terms">
-          Al continuar, aceptas los
 
-          <a href="/terminos">
-            términos de servicio
-          </a>
+      <p class="terms">
+        Al continuar, aceptas los
 
-          y la
+        <a href="/terminos">
+          términos de servicio
+        </a>
 
-          <a href="/privacidad">
-            política de privacidad
-          </a>
+        y la
 
-        </p>
+        <a href="/privacidad">
+          política de privacidad
+        </a>
 
-      }
-    </div>
+      </p>
 
+    }
   </div>
-}
+
+</div>
+

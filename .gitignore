@@ -10,6 +10,7 @@ tokens/
 
 # Java
 **/target/
+demo/src/main/resources/credentials/credentials.json
 
 # Angular
 WEB/dist/

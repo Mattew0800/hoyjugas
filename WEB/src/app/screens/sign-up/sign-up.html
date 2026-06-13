@@ -181,7 +181,12 @@
         </div>
 
       </form>
-      <button class="continue-btn" (click)="continue()">
+      @if(formErrorMsg!= ''){
+        <p class="error-message">
+          {{ formErrorMsg }}
+        </p>
+      }
+      <button class="continue-btn" (click)="register()">
         Continuar
       </button>
     </div>

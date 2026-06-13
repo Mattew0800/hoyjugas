@@ -17,12 +17,12 @@ export class AuthService {
   }
 
   logUser(user: LoginRequestDTO){
-    this.http.post<LoginRequestDTO>(`${this.API_URL}/login`,user);
+    return this.http.post<LoginRequestDTO>(`${this.API_URL}/login`,user);
 
   }
 
   registerUser(user: RegisterRequestDTO){
-    this.http.post<RegisterRequestDTO>(`${this.API_URL}/register`,user);
+    return this.http.post<RegisterRequestDTO>(`${this.API_URL}/register`,user);
   }
 
 }
