@@ -102,7 +102,7 @@ export class LogIn implements OnInit, OnDestroy{
   login(){
 
     const user : LoginRequestDTO = {
-      email: this.form.value.phone!,
+      email: this.form.value.email!,
       password: this.form.value.password!
     }
 

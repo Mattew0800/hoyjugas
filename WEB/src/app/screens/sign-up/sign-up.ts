@@ -129,7 +129,6 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
 
     if (continueBtn) {
       const rect = continueBtn.getBoundingClientRect();
-      console.log('Botón Y:', rect.bottom, 'Window height:', window.innerHeight);
 
       if (rect.bottom <= window.innerHeight + 50) {
         this.renderer.setStyle(this.document.body, 'background-color', '#1c1c1c');
@@ -148,8 +147,9 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
   }
 
 
-
   register(){
+    this.form.markAllAsTouched();
+
     const user : RegisterRequestDTO = {
       name: this.form.value.name,
       phone: this.form.value.phone,
@@ -158,10 +158,14 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
       password: this.form.value.password
     }
 
+    if (this.form.invalid){
+      return;
+    }
+
     this.authService.registerUser(user).subscribe({
       next: (r)=>{
         this.authService.users = [...this.authService.users,r];
-        this.router.navigate(['/login']);
+        this.router.navigate(['/sign-in']);
       },
       error:(e)=>{
         console.log(e);
@@ -169,7 +173,6 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
       }
     })
   }
-
 
   goToLogin(): void {
     this.router.navigate(['/sign-in']);

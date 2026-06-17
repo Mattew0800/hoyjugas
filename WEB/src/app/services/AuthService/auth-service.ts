@@ -9,7 +9,7 @@ import {LoginRequestDTO} from '../../models/LoginRequestDTO';
 })
 export class AuthService {
 
-  API_URL = "http://localhost:8080/auth";
+  API_URL = "http://localhost:8080/hoyjugas/auth";
   users : User[];
 
   constructor(public http: HttpClient) {
