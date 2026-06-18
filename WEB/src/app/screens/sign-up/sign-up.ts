@@ -164,7 +164,6 @@ export class SignUp implements OnInit, OnDestroy, AfterViewInit{
 
     this.authService.registerUser(user).subscribe({
       next: (r)=>{
-        this.authService.users = [...this.authService.users,r];
         this.router.navigate(['/sign-in']);
       },
       error:(e)=>{
