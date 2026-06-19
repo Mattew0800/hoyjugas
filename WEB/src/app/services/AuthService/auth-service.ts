@@ -5,13 +5,15 @@ import {RegisterRequestDTO} from '../../models/RegisterRequestDTO';
 import {LoginRequestDTO} from '../../models/LoginRequestDTO';
 import {BehaviorSubject, catchError, Observable, of, tap} from 'rxjs';
 import {LoginResponseDTO} from '../../models/LoginResponseDTO';
+import {getApiUrl} from '../../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
 
-  API_URL = "http://localhost:8080/hoyjugas/auth";
+  API_URL = getApiUrl();
+
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
