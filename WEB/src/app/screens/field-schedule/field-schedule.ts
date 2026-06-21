@@ -3,6 +3,7 @@ import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-field-schedule',
@@ -27,6 +28,10 @@ export class FieldSchedule {
     '17 sep',
     '18 sep'
   ];
+
+  constructor(
+    private router: Router
+  ) {}
 
   timeSlots = [
     { hour: '08:00', available: true },
@@ -60,9 +65,32 @@ export class FieldSchedule {
   }
 
   reserve(): void {
-    console.log(
-      this.selectedDate,
-      this.selectedHour
+
+    this.router.navigate(
+      ['/booking-confirmation'],
+      {
+        state: {
+          bookingData: {
+            fieldName: 'Cancha 1 - Fútbol 5 (Techada)',
+            date: this.selectedDate,
+            startTime: this.selectedHour,
+            endTime: this.calculateEndTime(this.selectedHour),
+            userName: 'Martín',
+            price: 8000
+          }
+        }
+      }
     );
+  }
+
+  private calculateEndTime(startHour: string): string {
+
+    const [hours, minutes] = startHour.split(':').map(Number);
+
+    const endHour = hours + 1;
+
+    return `${endHour.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}`;
   }
 }

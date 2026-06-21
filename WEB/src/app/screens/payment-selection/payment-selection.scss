@@ -1,0 +1,209 @@
+.payment-container {
+  background: #050505;
+  min-height: 100vh;
+
+  padding: 16px;
+  padding-bottom: 130px;
+}
+
+.field-image {
+  width: 100%;
+  height: 120px;
+
+  object-fit: cover;
+  border-radius: 20px;
+
+  margin-bottom: 16px;
+}
+
+.payment-card {
+  background: #0f0f0f;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+
+  padding: 16px;
+
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+
+  color: #8e8e8e;
+
+  cursor: pointer;
+}
+
+.card-header h1 {
+  color: #d9b44a;
+  font-size: 22px;
+  margin: 0;
+}
+
+.separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+
+  margin: 16px 0;
+}
+
+.price-row {
+  color: white;
+  font-size: 18px;
+
+  margin-bottom: 20px;
+}
+
+.price-row span {
+  color: #d9b44a;
+  font-weight: 700;
+}
+
+.section-title {
+  color: #cfcfcf;
+  margin-bottom: 12px;
+}
+
+.payment-options {
+  display: flex;
+  gap: 12px;
+}
+
+.option-card {
+  flex: 1;
+
+  background: #151515;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 14px;
+
+  min-height: 90px;
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+}
+
+.option-card.selected {
+  border: 2px solid #d9b44a;
+}
+
+.option-card span {
+  font-size: 11px;
+}
+
+.option-card strong {
+  font-size: 24px;
+  color: #d9b44a;
+}
+
+.payment-method-header {
+  color: white;
+  font-weight: 600;
+
+  margin-bottom: 16px;
+}
+
+/* ===== DATOS DE PAGO ===== */
+
+.mercadopago-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  border: 1px solid #d9b44a;
+  border-radius: 14px;
+
+  padding: 16px;
+}
+
+.card-brands {
+  width: 72px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+
+  flex-shrink: 0;
+}
+
+.card-brands img {
+  width: 28px;
+  height: 20px;
+
+  object-fit: contain;
+
+  background: white;
+  border-radius: 4px;
+
+  padding: 2px;
+}
+
+.payment-info {
+  flex: 1;
+}
+
+.payment-info h3 {
+  margin: 0 0 6px 0;
+
+  color: white !important;
+  font-size: 18px;
+}
+
+.payment-info p {
+  margin: 0 0 6px 0;
+
+  color: #cfcfcf !important;
+  font-size: 13px;
+}
+
+.payment-info small {
+  color: #888888 !important;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.pago{
+  color: white;
+}
+
+/* ===== BOTÓN ===== */
+
+.pay-button {
+  position: fixed;
+
+  left: 24px;
+  right: 24px;
+  bottom: 90px;
+
+  height: 50px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: #d9b44a;
+
+  color: black;
+
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+
+  z-index: 10;
+}

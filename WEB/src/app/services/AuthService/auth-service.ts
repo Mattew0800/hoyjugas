@@ -5,7 +5,7 @@ import {RegisterRequestDTO} from '../../models/RegisterRequestDTO';
 import {LoginRequestDTO} from '../../models/LoginRequestDTO';
 import {BehaviorSubject, catchError, Observable, of, tap} from 'rxjs';
 import {LoginResponseDTO} from '../../models/LoginResponseDTO';
-import {getApiUrl} from '../../config/api.config';
+import {getApiUrl, getUserApiUrl} from '../../config/api.config';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +13,7 @@ import {getApiUrl} from '../../config/api.config';
 export class AuthService {
 
   API_URL = getApiUrl();
+  USER_API_URL=getUserApiUrl();
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -22,7 +23,7 @@ export class AuthService {
   }
 
   checkBackendSession(): Observable<User | null> {
-    return this.http.get<User>(`${this.API_URL}/me`, { withCredentials: true }).pipe(
+    return this.http.get<User>(`${this.USER_API_URL}/me`, { withCredentials: true }).pipe(
       tap(user => this.currentUserSubject.next(user)),
       catchError(() => {
         this.currentUserSubject.next(null);

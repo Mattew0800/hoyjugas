@@ -7,8 +7,11 @@ import {SplashComponent} from './screens/splash/splash';
 import {Home} from './screens/home/home';
 import {Booking} from './screens/booking/booking';
 import {FieldSchedule} from './screens/field-schedule/field-schedule';
+import {BookingConfirmation} from './screens/booking-confirmation/booking-confirmation';
+import {PaymentSelection} from './screens/payment-selection/payment-selection';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
+
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -18,6 +21,8 @@ export const routes: Routes = [
   {path: 'home', component: Home, canActivate: [authGuard]},
   {path:'booking', component: Booking, canActivate: [authGuard]},
   {path: 'field-schedule', component: FieldSchedule, canActivate: [authGuard]},
+  {path: 'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
+  {path: 'payment-selection', component: PaymentSelection, canActivate:[authGuard]},
   {path:'**', component:Error}
 
 ];
