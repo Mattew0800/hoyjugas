@@ -1,5 +1,9 @@
 /* home.component.scss */
 
+*{
+  font-family: Roboto, sans-serif;
+}
+
 .home-screen {
   min-height: 100vh;
 
@@ -26,14 +30,17 @@
 
   background: #111111;
 
-  padding: 18px;
+  padding: 5px 18px;
 
   border: 1px solid #1f1f1f;
 }
 
 .field-image {
-  width: 100%;
+  width: 75%;
   border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 /* BUTTON */
@@ -43,7 +50,7 @@
 
   margin: 0 18px;
 
-  height: 72px;
+  height: 50px;
 
   border: none;
   border-radius: 18px;
@@ -95,31 +102,43 @@
   p {
     margin-top: 8px;
     font-size: 18px;
+    color: #8f8f8f;
   }
 }
 
 /* STATS */
 
 .stats-card {
-  width: calc(100% - 36px);
-
-  margin: 0 18px;
-
+  width: calc(75% - 36px);
+  margin: 0 auto;
   background: #111111;
 
   border-radius: 18px;
 
-  padding: 20px;
+  padding: 10px;
 
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .stat-item {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+}
+
+/* Anclamos el bloque izquierdo hacia la línea central */
+.stat-item:first-of-type {
+  justify-content: flex-end;
+}
+
+/* Anclamos el bloque derecho hacia la línea central */
+.stat-item:last-of-type {
+  justify-content: flex-start;
 }
 
 .field-icon {
@@ -132,14 +151,20 @@
 }
 
 .stat-info {
+  display: flex;
+  flex-direction: column; /* Apila los elementos verticalmente */
+  align-items: center; /* Centra horizontalmente el contenido */
+  justify-content: center;
 
   h3 {
     font-size: 24px;
+    color: #CEA764;
   }
 
   span {
     color: #7f7f7f;
     font-size: 12px;
+    white-space: nowrap;
   }
 }
 
@@ -147,6 +172,8 @@
   width: 1px;
   height: 40px;
   background: #2a2a2a;
+  flex-shrink: 0;
+
 }
 
 /* QUICK ACTIONS */
@@ -170,7 +197,7 @@
 
   border: 1px solid #1f1f1f;
 
-  height: 92px;
+  height: 70px;
 
   display: flex;
   flex-direction: column;
