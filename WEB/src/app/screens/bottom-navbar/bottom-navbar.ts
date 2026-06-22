@@ -1,11 +1,13 @@
-// bottom-navbar.ts
-
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-bottom-navbar',
   templateUrl: './bottom-navbar.html',
+  imports: [
+    RouterLink,
+    RouterLinkActive
+  ],
   styleUrls: ['./bottom-navbar.scss']
 })
 export class BottomNavbar {
@@ -23,5 +25,4 @@ export class BottomNavbar {
   goToProfile(): void {
     this.router.navigate(['/profile']);
   }
-
 }
