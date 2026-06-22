@@ -9,6 +9,9 @@ import {Booking} from './screens/booking/booking';
 import {FieldSchedule} from './screens/field-schedule/field-schedule';
 import {BookingConfirmation} from './screens/booking-confirmation/booking-confirmation';
 import {PaymentSelection} from './screens/payment-selection/payment-selection';
+import {Profile} from './screens/profile/profile';
+import {ChangePassword} from './screens/password/password';
+import {HistoryBookings} from './screens/history-bookings/history-bookings';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 
@@ -23,6 +26,9 @@ export const routes: Routes = [
   {path: 'field-schedule', component: FieldSchedule, canActivate: [authGuard]},
   {path: 'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
   {path: 'payment-selection', component: PaymentSelection, canActivate:[authGuard]},
+  {path:'profile', component:Profile, canActivate:[authGuard]},
+  {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
+  {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
   {path:'**', component:Error}
 
 ];

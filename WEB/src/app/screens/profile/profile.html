@@ -1,0 +1,112 @@
+<app-header></app-header>
+
+<div class="profile-container">
+
+  <div class="profile-header">
+
+    <div class="avatar-container">
+
+      <div class="avatar">
+        <img
+          src="assets/icons/user.svg"
+          alt="Usuario"
+        >
+      </div>
+
+      <button
+        class="camera-button"
+        (click)="changePhoto()">
+
+        <img
+          src="assets/icons/camera.svg"
+          alt="Cambiar foto"
+        >
+
+      </button>
+
+    </div>
+
+    <h2>{{ user.fullName }}</h2>
+
+    <p>Cliente AZTK Arena</p>
+
+  </div>
+
+  <div class="profile-card">
+
+    <div class="field-group">
+
+      <label>
+        NOMBRE COMPLETO
+      </label>
+
+      <input
+        type="text"
+        [(ngModel)]="user.fullName"
+      >
+
+    </div>
+
+    <div class="field-group">
+
+      <label>
+        TELÉFONO / WHATSAPP
+      </label>
+
+      <input
+        type="text"
+        [(ngModel)]="user.phone"
+      >
+
+    </div>
+
+    <div class="field-group">
+
+      <label>
+        CORREO ELECTRÓNICO
+      </label>
+
+      <input
+        type="email"
+        [(ngModel)]="user.email"
+      >
+
+    </div>
+
+  </div>
+
+  <button
+    class="password-card"
+    (click)="changePassword()">
+
+    <div class="password-content">
+
+      <span>
+        <img src="/assets/emojis/shield.svg"
+             class="shield-icon"
+             alt="Cambiar contraseña">
+      </span>
+
+      <span>
+        Cambiar Contraseña
+      </span>
+
+    </div>
+
+    <span class="arrow">
+      ›
+    </span>
+
+  </button>
+
+  <button
+    class="save-button"
+    (click)="saveProfile()">
+
+    GUARDAR CAMBIOS
+
+  </button>
+
+</div>
+
+<app-bottom-navbar></app-bottom-navbar>

@@ -1,0 +1,108 @@
+<app-header></app-header>
+
+<div class="history-container">
+
+  <h1 class="title">
+    Mis Turnos
+  </h1>
+
+  <p class="subtitle">
+    Revisá tus próximas fechas y el historial de partidos.
+  </p>
+
+  <div class="tabs">
+
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'upcoming'"
+      (click)="selectTab('upcoming')">
+
+      PRÓXIMOS
+
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'past'"
+      (click)="selectTab('past')">
+
+      PASADOS
+
+    </button>
+
+  </div>
+
+  <div
+    class="booking-card"
+    *ngFor="let booking of bookings">
+
+    <div class="card-header">
+
+      <div class="date-box">
+
+        <span class="month">
+          {{ booking.dateMonth }}
+        </span>
+
+        <span class="day">
+          {{ booking.dateDay }}
+        </span>
+
+      </div>
+
+      <div class="booking-info">
+
+        <h3>
+          {{ booking.field }}
+        </h3>
+
+        <div class="time">
+          {{ booking.time }}
+        </div>
+
+      </div>
+
+      <div
+        class="status-badge"
+        [class.deposit]="booking.status === 'deposit'"
+        [class.paid]="booking.status === 'paid'">
+
+        {{ booking.statusText }}
+
+      </div>
+
+    </div>
+
+    <div class="details">
+
+      <span>
+        📍 {{ booking.type }}
+      </span>
+
+      <span>
+        • {{ booking.extra }}
+      </span>
+
+    </div>
+
+    <div class="card-footer">
+
+      <span>
+        Ref #{{ booking.reference }}
+      </span>
+
+      <button
+        class="details-button"
+        (click)="viewDetails(booking.reference)">
+
+        Ver detalles →
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<app-bottom-navbar></app-bottom-navbar>
