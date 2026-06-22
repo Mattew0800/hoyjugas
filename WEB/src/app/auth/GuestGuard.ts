@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { map, take } from 'rxjs';
+import { map, take, switchMap } from 'rxjs';
 import {AuthService} from '../services/AuthService/auth-service';
+import { of } from 'rxjs';
 
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -9,12 +10,21 @@ export const guestGuard: CanActivateFn = () => {
 
   return authService.currentUser$.pipe(
     take(1),
-    map(user => {
+    switchMap(user => {
       if (user) {
         router.navigate(['/home']);
-        return false; // Bloquea el acceso a la ruta actual (Login/Onboarding)
+        return of(false);
       }
-      return true;
+      // No user in memory, check backend session
+      return authService.checkBackendSession().pipe(
+        map(backendUser => {
+          if (backendUser) {
+            router.navigate(['/home']);
+            return false;
+          }
+          return true;
+        })
+      );
     })
   );
 };
