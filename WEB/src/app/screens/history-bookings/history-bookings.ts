@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
@@ -14,9 +14,19 @@ import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
   templateUrl: './history-bookings.html',
   styleUrl: './history-bookings.scss'
 })
-export class HistoryBookings {
+export class HistoryBookings implements OnInit {
 
   activeTab: 'upcoming' | 'past' = 'upcoming';
+
+  ngOnInit(): void {
+    const state = history.state;
+
+    if (state.selectedTab === 'past') {
+      this.activeTab = 'past';
+    } else {
+      this.activeTab = 'upcoming';
+    }
+  }
 
   bookings = [
     {

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {AuthService} from '../../services/AuthService/auth-service';
 import {AsyncPipe} from '@angular/common';
+import {Router} from '@angular/router';
 
 
 @Component({
@@ -17,7 +18,7 @@ export class Header {
 
   userName$?:Observable<String>;
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private router: Router) {
     this.userName$ = this.authService.currentUser$
       .pipe(
         map(user => {
@@ -28,5 +29,9 @@ export class Header {
         })
       );
 
+  }
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
   }
 }

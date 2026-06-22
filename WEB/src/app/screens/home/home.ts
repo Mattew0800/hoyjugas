@@ -39,4 +39,10 @@ export class Home {
     this.router.navigate(['/booking']);
   }
 
+  goToMyBookings(tab: 'upcoming' | 'past'): void {
+    this.router.navigate(['/my-bookings'], {
+      state: { selectedTab: tab }
+    });
+  }
+
 }
