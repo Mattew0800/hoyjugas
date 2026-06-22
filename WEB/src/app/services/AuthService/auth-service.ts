@@ -20,6 +20,7 @@ export class AuthService {
 
 
   constructor(public http: HttpClient) {
+    this.checkBackendSession().subscribe();
   }
 
   checkBackendSession(): Observable<User | null> {
