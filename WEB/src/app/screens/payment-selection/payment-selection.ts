@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {Router} from '@angular/router';
 import {BottomNavbar} from '../bottom-navbar/bottom-navbar';
@@ -11,9 +11,31 @@ import {Header} from '../header/header';
   templateUrl: './payment-selection.html',
   styleUrl: './payment-selection.scss'
 })
-export class PaymentSelection {
+export class PaymentSelection implements OnInit{
 
-  totalPrice = 8000;
+  booking!: {
+    fieldName: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    userName: string;
+    price: number;
+  };
+
+  constructor(
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.booking= history.state.bookingData;
+    if(!this.booking){
+      this.router.navigate(['/booking']);
+      return;
+    }
+    this.totalPrice=this.booking.price;
+  }
+
+  totalPrice = 0;
 
   selectedPayment: 'full' | 'deposit' = 'deposit';
 
