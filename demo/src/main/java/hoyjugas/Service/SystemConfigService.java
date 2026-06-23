@@ -58,5 +58,4 @@ public class SystemConfigService {
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
     }
 
-    
 }
