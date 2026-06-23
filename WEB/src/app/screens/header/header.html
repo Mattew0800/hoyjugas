@@ -14,8 +14,40 @@
       <h2>{{ userName$ | async }}</h2>
     </div>
 
-    <div class="profile-button" (click)="goToProfile()">
-      <img src="/assets/emojis/header-profile.svg">
+    <div class="profile-wrapper">
+
+      <div
+        class="profile-button"
+        (click)="toggleMenu()">
+
+        <img src="/assets/emojis/header-profile.svg">
+
+      </div>
+
+      @if(menuOpen){
+
+        <div class="profile-menu">
+
+          <button
+            class="menu-item"
+            (click)="goToProfile()">
+
+            Mi perfil
+
+          </button>
+
+          <button
+            class="menu-item logout"
+            (click)="logout()">
+
+            Cerrar sesión
+
+          </button>
+
+        </div>
+
+      }
+
     </div>
 
   </div>

@@ -30,8 +30,26 @@ export class Header {
       );
 
   }
+  menuOpen = false;
 
-  goToProfile() {
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  goToProfile(): void {
+    this.menuOpen = false;
     this.router.navigate(['/profile']);
+  }
+
+  logout(): void {
+
+    this.menuOpen = false;
+
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/sign-in']);
+      }
+    });
+
   }
 }

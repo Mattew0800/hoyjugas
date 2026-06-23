@@ -55,4 +55,19 @@ export class AuthService {
     return this.http.post<RegisterRequestDTO>(`${this.API_URL}/register`,user);
   }
 
+  logout(): Observable<any> {
+    return this.http.post(
+      `${this.API_URL}/logout`,
+      {},
+      {
+        withCredentials: true,
+        responseType: 'text'
+      }
+    ).pipe(
+      tap(() => {
+        this.clearCurrentUser();
+      })
+    );
+  }
+
 }
