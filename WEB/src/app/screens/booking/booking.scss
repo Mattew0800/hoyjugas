@@ -1,23 +1,20 @@
 .reservations-screen {
   min-height: 100vh;
-
   background: #050505;
   color: white;
-
   padding-bottom: 100px;
 }
 
 .filters {
   display: flex;
   gap: 12px;
-
   padding: 16px;
+  flex-wrap: wrap;
 }
 
 .date-button,
 .filter-button {
   height: 40px;
-
   padding: 0 18px;
 
   border-radius: 12px;
@@ -29,11 +26,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
 }
 
-.active {
+.filter-button.active {
   background: #c9a15c;
-  color: black;
+  color: #000;
 }
 
 .fields-list {
@@ -47,10 +48,10 @@
 .field-card {
   background: #111;
   width: 100%;
+
   border-radius: 24px;
-  box-sizing: border-box;
+
   overflow: hidden;
-  margin: 0;
 }
 
 .field-image {
@@ -58,7 +59,7 @@
   height: 180px;
 
   object-fit: cover;
-  object-position: center center;
+  object-position: center;
 }
 
 .field-content {
@@ -67,11 +68,12 @@
 
 .field-info h2 {
   font-size: 24px;
-  margin-bottom: 4px;
+  margin: 0 0 4px;
 }
 
 .field-info p {
   color: #9a9a9a;
+  margin: 0;
 }
 
 .field-footer {
@@ -89,15 +91,21 @@
 .view-button {
   margin-top: 18px;
 
-  width: fit-content;
-
   padding: 10px 18px;
 
   border-radius: 12px;
 
   background: transparent;
-
   border: 1px solid #c9a15c;
 
   color: #c9a15c;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.view-button:hover {
+  background: #c9a15c;
+  color: #000;
 }

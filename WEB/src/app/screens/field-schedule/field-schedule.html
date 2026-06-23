@@ -41,18 +41,51 @@
 
         <label>Elegí tu turno:</label>
 
-        <select
-          [(ngModel)]="selectedDate"
-        >
-          @for(date of dates; track date){
+        <div class="date-selector">
 
-            <option [value]="date">
-              {{date}}
-            </option>
+          @for(date of visibleDates; track date.value){
+
+            <button
+              class="date-pill"
+              [class.selected-date]="selectedDate.toDateString() === date.value.toDateString()"
+              (click)="selectDate(date.value)">
+
+              <div class="date-calendar">
+
+          <span class="month">
+            {{ date.month }}
+          </span>
+
+                <span class="day">
+            {{ date.day }}
+          </span>
+
+              </div>
+
+              <span class="availability">
+          {{ date.availableSlots }} libres
+        </span>
+
+            </button>
 
           }
 
-        </select>
+          <button
+            class="calendar-pill"
+            (click)="calendarInput.showPicker()">
+
+            📅
+
+          </button>
+
+          <input
+            #calendarInput
+            hidden
+            type="date"
+            (change)="onDateChange($event)"
+          />
+
+        </div>
 
       </div>
 

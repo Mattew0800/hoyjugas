@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
+interface DateOption {
+  value: Date;
+  day: number;
+  month: string;
+  availableSlots: number;
+}
 
 @Component({
   selector: 'app-field-schedule',
@@ -17,21 +24,59 @@ import { Router } from '@angular/router';
   templateUrl: './field-schedule.html',
   styleUrl: './field-schedule.scss'
 })
-export class FieldSchedule {
+export class FieldSchedule implements OnInit {
 
-  selectedDate = '15 sep';
+  selectedDate!: Date;
   selectedHour = '13:00';
 
-  dates = [
-    '15 sep',
-    '16 sep',
-    '17 sep',
-    '18 sep'
-  ];
+  visibleDates: DateOption[] = [];
 
   constructor(
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.selectedDate = new Date();
+    this.generateVisibleDates(this.selectedDate);
+  }
+
+  generateVisibleDates(baseDate: Date): void {
+
+    this.visibleDates = [];
+
+    for (let i = 0; i < 5; i++) {
+
+      const date = new Date(baseDate);
+
+      date.setDate(baseDate.getDate() + i);
+
+      this.visibleDates.push({
+        value: date,
+        day: date.getDate(),
+        month: date.toLocaleDateString('es-AR', {
+          month: 'short'
+        }).replace('.', '').toUpperCase(),
+        availableSlots: [8, 5, 12, 3, 10][i]
+      });
+    }
+  }
+
+  selectDate(date: Date): void {
+    this.selectedDate = date;
+  }
+
+  onDateChange(event: Event): void {
+
+    const value = (event.target as HTMLInputElement).value;
+
+    if (!value) return;
+
+    const newDate = new Date(value);
+
+    this.selectedDate = newDate;
+
+    this.generateVisibleDates(newDate);
+  }
 
   timeSlots = [
     { hour: '08:00', available: true },
@@ -72,7 +117,7 @@ export class FieldSchedule {
         state: {
           bookingData: {
             fieldName: 'Cancha 1 - Fútbol 5 (Techada)',
-            date: this.selectedDate,
+            date: this.selectedDate.toLocaleDateString('es-AR'),
             startTime: this.selectedHour,
             endTime: this.calculateEndTime(this.selectedHour),
             userName: 'Martín',
