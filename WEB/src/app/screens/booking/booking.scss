@@ -1,42 +1,55 @@
+*{
+  font-family: Roboto, sans-serif;
+}
+
 .reservations-screen {
   min-height: 100vh;
   background: #050505;
   color: white;
   padding-bottom: 100px;
 }
-
 .filters {
   display: flex;
-  gap: 12px;
-  padding: 16px;
-  flex-wrap: wrap;
+  width: 100%;
+  gap: 0;
+  background-color: #1c1c1c;
+  padding: 3px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  position: relative; // Clave para el slider
+  margin-top: 1rem;
 }
 
-.date-button,
 .filter-button {
+  flex: 1;
   height: 40px;
-  padding: 0 18px;
-
-  border-radius: 12px;
-  border: 1px solid #c9a15c;
-
+  margin: 0;
+  border: none;
   background: transparent;
-  color: #c9a15c;
-
+  color: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
-  gap: 8px;
-
+  justify-content: center;
   cursor: pointer;
+  z-index: 2; // El texto arriba del dorado
+  transition: color 0.3s ease-out;
 
-  transition: all 0.2s ease;
+  &.active {
+    color: #000; // Color oscuro para que contraste con el dorado
+  }
 }
 
-.filter-button.active {
-  background: #c9a15c;
-  color: #000;
+.slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  height: 40px;
+  width: calc(50% - 3px); // 50% para que ocupe un botón entero
+  background-color: #c9a15c;
+  border-radius: 8px;
+  z-index: 1; // Por debajo del texto
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); // La magia de la fluidez
 }
-
 .fields-list {
   display: flex;
   flex-direction: column;

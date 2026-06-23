@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, Inject, Renderer2} from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import {CommonModule, DOCUMENT} from '@angular/common';
 
 @Component({
   selector: 'app-booking',
@@ -21,8 +21,21 @@ export class Booking {
   selectedDate: Date = new Date();
 
   constructor(
-    private router: Router
-  ) {}
+    private router: Router,
+    private renderer: Renderer2,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+
+  }
+
+  ngOnInit() {
+    //this.meta.updateTag({ name: 'theme-color', content: '#CEA764' });
+    this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
+  }
+
+  get activeIndex(): number {
+    return this.selectedFieldType === 'futbol5' ? 0 : 1;
+  }
 
   selectFieldType(type: 'futbol5' | 'futbol7'): void {
     this.selectedFieldType = type;

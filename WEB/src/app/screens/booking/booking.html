@@ -2,63 +2,40 @@
 
   <app-header></app-header>
 
-  <div class="filters">
 
-    <button
-      class="date-button"
-      (click)="datePicker.showPicker()">
-
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M7 2V5M17 2V5M3 9H21M5 4H19C20.1046 4 21 4.89543 21 6V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V6C3 4.89543 3.89543 4 5 4Z"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
-
-      <span>
-        {{ selectedDate | date:'dd MMM' }}
-      </span>
-
-    </button>
-
-    <input
-      #datePicker
-      type="date"
-      hidden
-      (change)="onDateChange($event)"
-    />
-
-    <button
-      class="filter-button"
-      [class.active]="selectedFieldType === 'futbol5'"
-      (click)="selectFieldType('futbol5')">
-
-      fútbol 5
-
-    </button>
-
-    <button
-      class="filter-button"
-      [class.active]="selectedFieldType === 'futbol7'"
-      (click)="selectFieldType('futbol7')">
-
-      fútbol 7
-
-    </button>
-
-  </div>
 
   <div class="fields-list">
+    <div class="filters">
+      <div class="slider" [style.transform]="'translateX(' + (activeIndex * 100) + '%)'"></div>
 
-    <div class="field-card">
+      <button
+        class="filter-button"
+        [class.active]="selectedFieldType === 'futbol5'"
+        (click)="selectFieldType('futbol5')">
+
+        Fútbol 5
+
+      </button>
+
+      <button
+        class="filter-button"
+        [class.active]="selectedFieldType === 'futbol7'"
+        (click)="selectFieldType('futbol7')">
+
+        Fútbol 7
+
+      </button>
+
+    </div>
+
+    <div class="field-card" (click)="goToFieldSchedule()">
 
       <img
         src="/cancha1.png"
         alt="Cancha"
         class="field-image"
       />
+
 
       <div class="field-content">
 
@@ -72,7 +49,7 @@
             }}
           </h2>
 
-          <p>Techada · Césped sintético</p>
+          <p>Techada · Cesped sintético</p>
 
         </div>
 
