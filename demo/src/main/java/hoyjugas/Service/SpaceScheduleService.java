@@ -4,8 +4,10 @@ import hoyjugas.DTO.SpaceSchedule.SpaceScheduleRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
 import hoyjugas.Model.Space;
 import hoyjugas.Model.SpaceSchedule;
+import hoyjugas.Model.SystemConfig;
 import hoyjugas.Repository.SpaceRepository;
 import hoyjugas.Repository.SpaceScheduleRepository;
+import hoyjugas.Repository.SystemConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class SpaceScheduleService {
 
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final SpaceRepository spaceRepository;
+    private final SystemConfigRepository systemConfigRepository;
 
     @Transactional
     public SpaceScheduleResponseDTO addSchedule(Long spaceId, SpaceScheduleRequestDTO dto) {
@@ -92,6 +95,22 @@ public class SpaceScheduleService {
         if (!openingTime.isBefore(closingTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El horario de apertura debe ser anterior al de cierre");
+        }
+        SystemConfig config = systemConfigRepository.findById(1)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Configuración del sistema no encontrada"));
+        if (config.getComplexOpeningTime() != null &&
+                openingTime.isBefore(config.getComplexOpeningTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("El horario de apertura no puede ser antes de las %s",
+                            config.getComplexOpeningTime()));
+        }
+        if (config.getComplexClosingTime() != null &&
+                closingTime.isAfter(config.getComplexClosingTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("El horario de cierre no puede ser después de las %s",
+                            config.getComplexClosingTime()));
         }
     }
 }

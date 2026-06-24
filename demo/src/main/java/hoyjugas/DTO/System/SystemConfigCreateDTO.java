@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 @Data
 public class SystemConfigCreateDTO {
@@ -35,4 +36,7 @@ public class SystemConfigCreateDTO {
     @DecimalMin(value = "0.00", message = "El porcentaje de seña no puede ser negativo")
     @DecimalMax(value = "1.00", message = "El porcentaje de seña no puede ser mayor a 1")
     private BigDecimal normalDepositFactor;//dsps sacar
+
+    private LocalTime complexOpeningTime;
+    private LocalTime complexClosingTime;
 }

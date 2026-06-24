@@ -166,4 +166,16 @@ public class BookingController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/available-slots-today")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAvailableSlotsToday() {
+        return ResponseEntity.ok(Map.of("Turnos disponibles totales:",bookingService.countAvailableSlotsToday()));
+    }
+
+    @GetMapping("/schedule")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<SystemConfigScheduleResponseDTO> getComplexSchedule() {
+        return ResponseEntity.ok(bookingService.getComplexSchedule());
+    }
+
 }
