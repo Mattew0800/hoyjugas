@@ -38,9 +38,4 @@ public class SystemConfigCreateDTO {
     @Min(1)
     private Integer maxRecurringCancellations;
 
-    @NotNull
-    private LocalTime complexOpeningTime;
-
-    @NotNull
-    private LocalTime complexClosingTime;
 }

@@ -1,6 +1,7 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.Booking.*;
+import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
 import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
@@ -35,6 +36,7 @@ public class BookingService extends BaseBookingService {
     private final PricingService pricingService;
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final PaymentRepository paymentRepository;
+    private final ComplexScheduleRepository complexScheduleRepository;
 
     public BookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -42,7 +44,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,SpaceScheduleRepository spaceScheduleRepository,PaymentRepository paymentRepository) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -50,6 +52,7 @@ public class BookingService extends BaseBookingService {
         this.pricingService = pricingService;
         this.spaceScheduleRepository=spaceScheduleRepository;
         this.paymentRepository=paymentRepository;
+        this.complexScheduleRepository = complexScheduleRepository;
     }
 
 
@@ -460,12 +463,13 @@ public class BookingService extends BaseBookingService {
         return buildBookingResponseDTO(saved);
     }
 
-    public SystemConfigScheduleResponseDTO getComplexSchedule() {
-        SystemConfig config = getSystemConfig();
-        return new SystemConfigScheduleResponseDTO(
-                config.getComplexOpeningTime(),
-                config.getComplexClosingTime()
-        );
+    public ComplexScheduleResponseDTO getComplexSchedule() {
+        DayType today = pricingService.resolveDayType(LocalDate.now().getDayOfWeek());
+        return complexScheduleRepository.findByDayType(today)
+                .map(ComplexScheduleResponseDTO::fromEntity)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Hoy no estamos abiertos "));
     }
 
     public Integer countAvailableSlotsToday() {

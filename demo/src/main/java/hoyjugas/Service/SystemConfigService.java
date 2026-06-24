@@ -46,8 +46,6 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
-        config.setComplexOpeningTime(dto.getComplexOpeningTime());
-        config.setComplexClosingTime(dto.getComplexClosingTime());
         return config;
     }
 
@@ -59,9 +57,5 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
-        config.setComplexClosingTime(dto.getComplexClosingTime());
-        config.setComplexOpeningTime(dto.getComplexOpeningTime());
     }
-
-    
 }
