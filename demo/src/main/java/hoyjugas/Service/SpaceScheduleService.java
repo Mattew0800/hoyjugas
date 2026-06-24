@@ -2,9 +2,11 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
+import hoyjugas.Enum.DayType;
 import hoyjugas.Model.Space;
 import hoyjugas.Model.SpaceSchedule;
 import hoyjugas.Model.SystemConfig;
+import hoyjugas.Repository.ComplexScheduleRepository;
 import hoyjugas.Repository.SpaceRepository;
 import hoyjugas.Repository.SpaceScheduleRepository;
 import hoyjugas.Repository.SystemConfigRepository;
@@ -23,7 +25,7 @@ public class SpaceScheduleService {
 
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final SpaceRepository spaceRepository;
-    private final SystemConfigRepository systemConfigRepository;
+    private final ComplexScheduleRepository complexScheduleRepository;
 
     @Transactional
     public SpaceScheduleResponseDTO addSchedule(Long spaceId, SpaceScheduleRequestDTO dto) {
@@ -33,18 +35,14 @@ public class SpaceScheduleService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un horario para ese día en este espacio");
         }
-
-        validateSchedule(dto.getOpeningTime(), dto.getClosingTime());
-
+        validateSchedule(dto.getOpeningTime(), dto.getClosingTime(), dto.getDayType());
         SpaceSchedule schedule = new SpaceSchedule();
         schedule.setSpace(space);
         schedule.setDayType(dto.getDayType());
         schedule.setOpeningTime(dto.getOpeningTime());
         schedule.setClosingTime(dto.getClosingTime());
-
         return SpaceScheduleResponseDTO.fromEntity(spaceScheduleRepository.save(schedule));
     }
-
 
     @Transactional
     public SpaceScheduleResponseDTO updateSchedule(Long spaceId, Long scheduleId, SpaceScheduleRequestDTO dto) {
@@ -54,13 +52,10 @@ public class SpaceScheduleService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un horario para ese día en este espacio");
         }
-
-        validateSchedule(dto.getOpeningTime(), dto.getClosingTime());
-
+        validateSchedule(dto.getOpeningTime(), dto.getClosingTime(), dto.getDayType());
         schedule.setDayType(dto.getDayType());
         schedule.setOpeningTime(dto.getOpeningTime());
         schedule.setClosingTime(dto.getClosingTime());
-
         return SpaceScheduleResponseDTO.fromEntity(spaceScheduleRepository.save(schedule));
     }
 
@@ -83,7 +78,6 @@ public class SpaceScheduleService {
     private SpaceSchedule getScheduleOrThrow(Long scheduleId, Long spaceId) {
         SpaceSchedule schedule = spaceScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Horario no encontrado"));
-
         if (!schedule.getSpace().getId().equals(spaceId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El horario no pertenece al espacio indicado");
@@ -91,26 +85,22 @@ public class SpaceScheduleService {
         return schedule;
     }
 
-    private void validateSchedule(LocalTime openingTime, LocalTime closingTime) {
+    private void validateSchedule(LocalTime openingTime, LocalTime closingTime, DayType dayType) {
         if (!openingTime.isBefore(closingTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El horario de apertura debe ser anterior al de cierre");
         }
-        SystemConfig config = systemConfigRepository.findById(1)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Configuración del sistema no encontrada"));
-        if (config.getComplexOpeningTime() != null &&
-                openingTime.isBefore(config.getComplexOpeningTime())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("El horario de apertura no puede ser antes de las %s",
-                            config.getComplexOpeningTime()));
-        }
-        if (config.getComplexClosingTime() != null &&
-                closingTime.isAfter(config.getComplexClosingTime())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("El horario de cierre no puede ser después de las %s",
-                            config.getComplexClosingTime()));
-        }
+        complexScheduleRepository.findByDayType(dayType).ifPresent(complexSchedule -> {
+            if (openingTime.isBefore(complexSchedule.getOpeningTime())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("El horario de apertura no puede ser antes de las %s",
+                                complexSchedule.getOpeningTime()));
+            }
+            if (closingTime.isAfter(complexSchedule.getClosingTime())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("El horario de cierre no puede ser después de las %s",
+                                complexSchedule.getClosingTime()));
+            }
+        });
     }
 }

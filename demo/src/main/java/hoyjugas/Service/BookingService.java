@@ -1,10 +1,10 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.Booking.*;
+import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
 import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
-import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -33,6 +33,7 @@ public class BookingService extends BaseBookingService {
     private final PaymentRepository paymentRepository;
     private final WhatsAppService whatsAppService;
     private final CashMovementRepository cashMovementRepository;
+    private final ComplexScheduleRepository complexScheduleRepository;
 
     public BookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -40,7 +41,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, MercadoPagoService mercadoPagoService, WhatsAppService whatsAppService,CashMovementRepository cashMovementRepository) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, MercadoPagoService mercadoPagoService, WhatsAppService whatsAppService,CashMovementRepository cashMovementRepository,ComplexScheduleRepository complexScheduleRepository) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository,mercadoPagoService);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -50,6 +51,7 @@ public class BookingService extends BaseBookingService {
         this.paymentRepository=paymentRepository;
         this.whatsAppService = whatsAppService;
         this.cashMovementRepository=cashMovementRepository;
+        this.complexScheduleRepository = complexScheduleRepository;
     }
 
 
@@ -138,9 +140,6 @@ public class BookingService extends BaseBookingService {
                 .multiply(BigDecimal.valueOf(slots));
         BigDecimal minimumDeposit =
                 calculateDeposit(space, totalPrice);
-
-        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
-
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
@@ -247,8 +246,9 @@ public class BookingService extends BaseBookingService {
                     "Para cancelar un turno fijo usá el endpoint de cancelación de ciclo");
         }
         SystemConfig config = getSystemConfig();
-        if(ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime()) >= config.getCancellationHoursLimit()){
-            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "No se puede cancelar un turno antes de "+ config.getCancellationHoursLimit()+ "horas de que empiece el mismo");
+        if(ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime()) < config.getCancellationHoursLimit()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se puede cancelar con menos de " + config.getCancellationHoursLimit() + " horas de anticipación");
         }
         booking.setBookingStatus(BookingStatus.CANCELADO);
         booking.setCancelledAt(LocalDateTime.now());
@@ -425,6 +425,7 @@ public class BookingService extends BaseBookingService {
     public void markAsPaymentError(Long bookingId){
         Booking booking = getBookingOrThrow(bookingId);
         booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
+        bookingRepository.save(booking);
     }
 
     @Transactional
@@ -439,13 +440,14 @@ public class BookingService extends BaseBookingService {
         scheduleNotification(booking, NotificationType.AUSENTE);
     }
 
-    public SystemConfigScheduleResponseDTO getComplexSchedule() {
-        SystemConfig config = getSystemConfig();
-        return new SystemConfigScheduleResponseDTO(
-                config.getComplexOpeningTime(),
-                config.getComplexClosingTime()
-        );
-    }
+    public ComplexScheduleResponseDTO getComplexSchedule() {
+        DayType today = pricingService.resolveDayType(LocalDate.now().getDayOfWeek());
+        return complexScheduleRepository.findByDayType(today)
+                .map(ComplexScheduleResponseDTO::fromEntity)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Hoy no estamos abiertos "));
+}
 
     public Integer countAvailableSlotsToday() {
         LocalDate today = LocalDate.now();

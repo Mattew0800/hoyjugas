@@ -26,6 +26,8 @@ public class SystemConfig {
     @Column(columnDefinition = "TEXT")
     private String termsAndConditions;
 
+    private Integer recurringMonthsAhead;
+
     private BigDecimal recurringDepositMultiplier;
 
     private int recurringInitialDepositTurns;
@@ -35,8 +37,5 @@ public class SystemConfig {
     private String address;
 
     private String sportsComplexName;
-
-    private LocalTime complexOpeningTime;
-    private LocalTime complexClosingTime;
 
 }

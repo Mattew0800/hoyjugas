@@ -33,10 +33,4 @@ public class SystemConfigCreateDTO {
     @Size(max = 100, message = "El nombre del complejo no puede superar los 100 caracteres")
     private String sportsComplexName;
 
-    @DecimalMin(value = "0.00", message = "El porcentaje de seña no puede ser negativo")
-    @DecimalMax(value = "1.00", message = "El porcentaje de seña no puede ser mayor a 1")
-    private BigDecimal normalDepositFactor;//dsps sacar
-
-    private LocalTime complexOpeningTime;
-    private LocalTime complexClosingTime;
 }
