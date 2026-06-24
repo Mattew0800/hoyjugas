@@ -30,7 +30,7 @@ public class ProductService {
     private final SupplierRepository supplierRepository;
     private final StockMovementRepository stockMovementRepository;
 
-    public Page<ProductListDTO> getAll(ProductFilterDTO dto) {
+    public Page<ProductDetailDTO> getAll(ProductFilterDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(),
                 Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy()));
         return productRepository.findAllWithFilters(
@@ -40,7 +40,7 @@ public class ProductService {
                 dto.getLowStock(),
                 dto.getIsActive(),
                 pageable
-        ).map(ProductListDTO::fromEntity);
+        ).map(ProductDetailDTO::fromEntity);
     }
 
     public ProductDetailDTO getById(Long id) {
@@ -197,5 +197,13 @@ public class ProductService {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Producto no encontrado"));
+    }
+
+    public List<ProductListDTO> search(String query) {
+        return productRepository
+                .findByNameOrCodeActive(query)
+                .stream()
+                .map(ProductListDTO::fromEntity)
+                .toList();
     }
 }

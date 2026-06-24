@@ -138,8 +138,6 @@ public class BookingService extends BaseBookingService {
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(slots));
-        BigDecimal minimumDeposit =
-                calculateDeposit(space, totalPrice);
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
@@ -412,7 +410,6 @@ public class BookingService extends BaseBookingService {
         bookingRepository.save(saved);
         scheduleReminder(saved);
         whatsAppService.sendRescheduleNotification(original, saved);
-        scheduleNotification(original, NotificationType.REPROGRAMADO);
         return buildBookingResponseDTO(saved);
     }
 
@@ -429,7 +426,7 @@ public class BookingService extends BaseBookingService {
     }
 
     @Transactional
-    public void markAbsent(Long bookingId, User employee) {// ver como ligar al empleado de este cambio
+    public void markAbsent(Long bookingId, User employee) {//ver como ligar al empleado
         Booking booking = getBookingOrThrow(bookingId);
         if (!booking.getBookingStatus().equals(BookingStatus.CONFIRMADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -437,7 +434,7 @@ public class BookingService extends BaseBookingService {
         }
         booking.setBookingStatus(BookingStatus.FINALIZADO);
         bookingRepository.save(booking);
-        scheduleNotification(booking, NotificationType.AUSENTE);
+        whatsAppService.sendAbsentNotification(booking);
     }
 
     public ComplexScheduleResponseDTO getComplexSchedule() {

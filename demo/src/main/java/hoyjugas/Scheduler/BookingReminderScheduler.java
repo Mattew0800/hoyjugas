@@ -31,7 +31,7 @@ public class BookingReminderScheduler {
     @Transactional
     public void processReminders() {
         List<BookingNotification> pending = bookingNotificationRepository
-                .findByStatusAndTypeIn(NotificationStatus.PENDIENTE, List.of(NotificationType.RECUERDO_24H,NotificationType.CANCELADO,NotificationType.AUSENTE));
+                .findByStatusAndTypeIn(NotificationStatus.PENDIENTE, List.of(NotificationType.RECUERDO_24H,NotificationType.CANCELADO));
         for (BookingNotification notification : pending) {
             Booking booking = notification.getBooking();
              if (notification.getType() == NotificationType.RECUERDO_24H) {

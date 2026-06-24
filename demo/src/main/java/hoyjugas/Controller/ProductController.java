@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/product")
@@ -24,8 +27,8 @@ public class ProductController {
         return ResponseEntity.ok(productService.create(dto));
     }
 
-    @PostMapping("/")
-    @PreAuthorize("hasRole('ADMIN ')")
+    @PostMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDetailDTO> updateProduct(@Valid @RequestBody ProductUpdateRequestDTO dto) {
         return ResponseEntity.ok(productService.update(dto));
     }
@@ -41,5 +44,19 @@ public class ProductController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ProductListDTO> getByBarcode(@Valid @RequestBody BarcodeRequestDTO dto) {
         return ResponseEntity.ok(productService.getByBarcode(dto.getBarcode()));
+    }
+
+    @PostMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<ProductDetailDTO>> listProducts(
+            @Valid @RequestBody ProductFilterDTO dto) {
+        return ResponseEntity.ok(productService.getAll(dto));
+    }
+
+    @PostMapping("/search")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<List<ProductListDTO>> searchProducts(
+            @Valid @RequestBody ProductSearchRequestDTO dto) {
+        return ResponseEntity.ok(productService.search(dto.getQuery()));
     }
 }
