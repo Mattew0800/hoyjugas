@@ -471,4 +471,12 @@ public class BookingService extends BaseBookingService {
         }
         return totalAvailable;
     }
+
+    public BookingResponseDTO getNextBooking(Long clientId) {
+        return bookingRepository
+                .findNextBookingByClientId(clientId, LocalDateTime.now(), BookingStatus.CONFIRMADO)
+                .map(this::buildBookingResponseDTO)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
+    }
 }

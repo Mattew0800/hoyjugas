@@ -177,4 +177,9 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getComplexSchedule());
     }
 
+    @GetMapping("/next")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    }
 }

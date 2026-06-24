@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("admin/config")
+@RequestMapping("/admin/config")
 public class SystemConfigController {
 
     private final SystemConfigService systemConfigService;
