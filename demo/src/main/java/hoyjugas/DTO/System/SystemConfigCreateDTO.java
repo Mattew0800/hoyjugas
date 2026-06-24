@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 @Data
 public class SystemConfigCreateDTO {
@@ -36,4 +37,10 @@ public class SystemConfigCreateDTO {
     @NotNull
     @Min(1)
     private Integer maxRecurringCancellations;
+
+    @NotNull
+    private LocalTime complexOpeningTime;
+
+    @NotNull
+    private LocalTime complexClosingTime;
 }

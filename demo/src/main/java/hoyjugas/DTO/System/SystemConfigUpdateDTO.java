@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 @Data
 public class SystemConfigUpdateDTO {
@@ -30,4 +31,7 @@ public class SystemConfigUpdateDTO {
 
     @Min(value = 1)
     private Integer maxRecurringCancellations;
+
+    private LocalTime complexOpeningTime;
+    private LocalTime complexClosingTime;
 }

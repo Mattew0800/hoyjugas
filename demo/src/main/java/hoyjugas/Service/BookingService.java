@@ -4,6 +4,7 @@ import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
 import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
+import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -457,5 +458,39 @@ public class BookingService extends BaseBookingService {
         scheduleReminder(saved);
         scheduleNotification(saved, NotificationType.CANCELACION);
         return buildBookingResponseDTO(saved);
+    }
+
+    public SystemConfigScheduleResponseDTO getComplexSchedule() {
+        SystemConfig config = getSystemConfig();
+        return new SystemConfigScheduleResponseDTO(
+                config.getComplexOpeningTime(),
+                config.getComplexClosingTime()
+        );
+    }
+
+    public Integer countAvailableSlotsToday() {
+        LocalDate today = LocalDate.now();
+        List<Space> spaces = spaceRepository.findByIsActiveTrue();
+        int totalAvailable = 0;
+        for (Space space : spaces) {
+            DayType dayType = pricingService.resolveDayType(today.getDayOfWeek());
+            Optional<SpaceSchedule> schedule = spaceScheduleRepository
+                    .findBySpaceIdAndDayType(space.getId(), dayType);
+            if (schedule.isEmpty()) continue;
+            long totalMinutes = ChronoUnit.MINUTES.between(
+                    schedule.get().getOpeningTime(),
+                    schedule.get().getClosingTime());
+            List<Booking> occupied = bookingRepository.findBySpaceAndDate(
+                    space.getId(),
+                    today.atStartOfDay(),
+                    today.plusDays(1).atStartOfDay(),
+                    BookingStatus.CANCELADO);
+            long occupiedMinutes = occupied.stream()
+                    .mapToLong(b -> ChronoUnit.MINUTES.between(
+                            b.getStartDatetime(), b.getEndDatetime()))
+                    .sum();
+            totalAvailable += (totalMinutes - occupiedMinutes) / space.getSlotDuration();
+        }
+        return totalAvailable;
     }
 }

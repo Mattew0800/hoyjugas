@@ -1,6 +1,7 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.System.SystemConfigCreateDTO;
+import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.DTO.System.SystemConfigUpdateDTO;
 import hoyjugas.Model.SystemConfig;
 import hoyjugas.Repository.SystemConfigRepository;
@@ -34,6 +35,7 @@ public class SystemConfigService {
         return systemConfigRepository.save(config);
     }
 
+
     private SystemConfig toEntity(SystemConfigCreateDTO dto) {
         SystemConfig config = new SystemConfig();
 
@@ -44,6 +46,8 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
+        config.setComplexOpeningTime(dto.getComplexOpeningTime());
+        config.setComplexClosingTime(dto.getComplexClosingTime());
         return config;
     }
 
@@ -55,6 +59,8 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
+        config.setComplexClosingTime(dto.getComplexClosingTime());
+        config.setComplexOpeningTime(dto.getComplexOpeningTime());
     }
 
     

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -34,4 +35,7 @@ public class SystemConfig {
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal normalDepositFactor = new BigDecimal("0.30");
+
+    private LocalTime complexOpeningTime;
+    private LocalTime complexClosingTime;
 }

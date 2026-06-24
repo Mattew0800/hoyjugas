@@ -4,8 +4,7 @@ import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
-import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
-import hoyjugas.DTO.User.ClientIdRequestDTO;
+import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
 import hoyjugas.Service.UserService;
@@ -17,12 +16,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
-import java.math.BigDecimal;
+
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -127,4 +126,15 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
 
+    @GetMapping("/available-slots-today")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAvailableSlotsToday() {
+        return ResponseEntity.ok(Map.of("Turnos disponibles totales:",bookingService.countAvailableSlotsToday()));
+    }
+
+    @GetMapping("/schedule")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<SystemConfigScheduleResponseDTO> getComplexSchedule() {
+        return ResponseEntity.ok(bookingService.getComplexSchedule());
+    }
 }
