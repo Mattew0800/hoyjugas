@@ -85,14 +85,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("authToken", null);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return ResponseEntity.ok("Sesión cerrada");
+        return ResponseEntity.ok(Map.of("message","Sesión cerrada"));
     }
 
     private void setAuthCookie(HttpServletResponse response, String token) {
@@ -103,6 +103,5 @@ public class AuthController {
         cookie.setMaxAge(86400);
         response.addCookie(cookie);
     }
-
 
 }
