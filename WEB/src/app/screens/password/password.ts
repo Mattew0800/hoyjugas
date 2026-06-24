@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
+import {UserService} from '../../services/UserService/user-service';
 
 @Component({
   selector: 'app-change-password',
@@ -27,8 +28,13 @@ export class ChangePassword {
   hideNewPassword = true;
   hideConfirmPassword = true;
 
+  successMessage = '';
+  errorMessage = '';
+
+
   constructor(
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {}
 
   goBack(): void {
@@ -36,7 +42,48 @@ export class ChangePassword {
   }
 
   updatePassword(): void {
-    console.log('Actualizar contraseña');
+
+    if (!this.passwordsMatch) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (!this.hasMinLength) {
+      alert('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    const payload = {
+      oldPassword: this.currentPassword,
+      newPassword: this.newPassword,
+      newNewPassword: this.confirmPassword
+    };
+
+    this.userService.updateMe(payload)
+      .subscribe({
+        next: () => {
+
+          this.router.navigate(
+            ['/profile'],
+            {
+              state: {
+                passwordUpdated: true
+              }
+            }
+          );
+
+        },
+        error: err => {
+          console.error(err);
+          this.errorMessage =
+            'No se pudieron guardar los cambios';
+
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        }
+      });
+
   }
 
   get hasMinLength(): boolean {
