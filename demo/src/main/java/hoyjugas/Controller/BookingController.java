@@ -5,7 +5,6 @@ import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
 import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
-import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
 import hoyjugas.Service.UserService;
@@ -135,5 +134,11 @@ public class BookingController {
     @GetMapping("/schedule")
     public ResponseEntity<ComplexScheduleResponseDTO> getComplexSchedule() {
         return ResponseEntity.ok(bookingService.getComplexSchedule());
+    }
+
+    @GetMapping("/next")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
     }
 }

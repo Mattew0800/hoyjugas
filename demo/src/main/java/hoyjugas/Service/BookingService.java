@@ -18,14 +18,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Pageable;
-
-import static java.util.Calendar.HOUR;
 
 @Service
 public class BookingService extends BaseBookingService {
@@ -496,5 +492,13 @@ public class BookingService extends BaseBookingService {
             totalAvailable += (totalMinutes - occupiedMinutes) / space.getSlotDuration();
         }
         return totalAvailable;
+    }
+
+    public BookingResponseDTO getNextBooking(Long clientId) {
+        return bookingRepository
+                .findNextBookingByClientId(clientId, LocalDateTime.now(), BookingStatus.CONFIRMADO)
+                .map(this::buildBookingResponseDTO)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
     }
 }

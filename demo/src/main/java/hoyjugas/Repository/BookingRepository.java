@@ -15,6 +15,7 @@ import hoyjugas.Enum.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -117,5 +118,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("dateFrom") LocalDateTime dateFrom,
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable
+    );
+
+    @Query("""
+        SELECT b FROM Booking b
+        WHERE b.client.id = :clientId
+        AND b.bookingStatus = :status
+        AND b.startDatetime > :now
+        ORDER BY b.startDatetime ASC
+        """)
+    Optional<Booking> findNextBookingByClientId(
+            @Param("clientId") Long clientId,
+            @Param("now") LocalDateTime now,
+            @Param("status") BookingStatus status
     );
 }
