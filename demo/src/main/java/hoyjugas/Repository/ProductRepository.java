@@ -43,4 +43,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.stock <= p.minimumStock AND p.isActive = true")
     List<Product> findLowStock();
+
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.isActive = true
+        AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR LOWER(p.internalCode) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR LOWER(p.barcode) LIKE LOWER(CONCAT('%', :query, '%')))
+        ORDER BY p.name ASC
+        """)
+    List<Product> findByNameOrCodeActive(@Param("query") String query);
 }
