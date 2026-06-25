@@ -1,0 +1,25 @@
+<div class="stat-card">
+
+  <div class="icon-container">
+
+    <img
+      [src]="icon"
+      [alt]="title">
+
+  </div>
+
+  <div class="content">
+
+    <h2>{{ value }}</h2>
+
+    <h3>{{ title }}</h3>
+
+    @if (subtitle) {
+
+      <p>{{ subtitle }}</p>
+
+    }
+
+  </div>
+
+</div>

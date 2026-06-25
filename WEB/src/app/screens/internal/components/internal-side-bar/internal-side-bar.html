@@ -1,0 +1,50 @@
+<aside class="internal-sidebar">
+
+  <div>
+
+    <div class="logo-container">
+
+      <img
+        src="/AZTK%20ARENA.svg"
+        alt="AZTK Arena"
+        class="logo">
+
+    </div>
+
+    <nav class="menu">
+
+      <button
+        *ngFor="let item of menuItems"
+        class="menu-item"
+        [class.active]="item.active"
+        (click)="navigate(item.route)">
+
+        <img
+          [src]="item.icon"
+          [alt]="item.label">
+
+        <span>
+          {{ item.label }}
+        </span>
+
+      </button>
+
+    </nav>
+
+  </div>
+
+  <button
+    class="logout-button"
+    (click)="logout()">
+
+    <img
+      src="/assets/icons/logout.svg"
+      alt="Cerrar sesión">
+
+    <span>
+      Cerrar sesión
+    </span>
+
+  </button>
+
+</aside>

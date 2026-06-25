@@ -1,0 +1,99 @@
+.stat-card {
+
+  width: 180px;
+
+  height: 96px;
+
+  padding: 18px;
+
+  background: #111111;
+
+  border: 1px solid rgba(255,255,255,.06);
+
+  border-radius: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  transition: .2s;
+
+}
+
+.stat-card:hover {
+
+  border-color: rgba(206,167,100,.25);
+
+}
+
+.icon-container {
+
+  width: 48px;
+
+  height: 48px;
+
+  border-radius: 12px;
+
+  background: rgba(206,167,100,.08);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+}
+
+.icon-container img {
+
+  width: 22px;
+
+  height: 22px;
+
+}
+
+.content {
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
+.content h2 {
+
+  margin: 0;
+
+  color: white;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+}
+
+.content h3 {
+
+  margin: 4px 0 0;
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+}
+
+.content p {
+
+  margin-top: 4px;
+
+  color: #8A8A8A;
+
+  font-size: 11px;
+
+  line-height: 1.3;
+
+}

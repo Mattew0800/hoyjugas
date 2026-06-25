@@ -1,0 +1,41 @@
+<header class="internal-header">
+
+  <div class="brand">
+
+    <div class="brand-text">
+
+      <h1>{{ title }}</h1>
+
+      <span>{{ subtitle }}</span>
+
+    </div>
+
+  </div>
+
+  <div class="user-section">
+
+    <div class="user-info">
+
+      <span class="welcome">
+        Bienvenido
+      </span>
+
+      <span class="name">
+        {{ userName }}
+      </span>
+
+    </div>
+
+    <button
+      class="profile-button"
+      (click)="toggleMenu()">
+
+      <img
+        src="/assets/emojis/header-profile.svg"
+        alt="Usuario">
+
+    </button>
+
+  </div>
+
+</header>

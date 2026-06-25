@@ -1,0 +1,161 @@
+* {
+  font-family: Roboto, sans-serif;
+}
+
+.internal-sidebar {
+
+  width: 105px;
+
+  height: 100vh;
+
+  background: #050505;
+
+  border-right: 1px solid rgba(255,255,255,.06);
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  padding: 18px 10px;
+
+}
+
+.logo-container {
+
+  display: flex;
+
+  justify-content: center;
+
+  margin-bottom: 28px;
+
+}
+
+.logo {
+
+  width: 62px;
+
+}
+
+.menu {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+}
+
+.menu-item {
+
+  width: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: #B6B6B6;
+
+  border-radius: 10px;
+
+  padding: 12px 6px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  transition: .2s;
+
+}
+
+.menu-item img {
+
+  width: 18px;
+
+  height: 18px;
+
+}
+
+.menu-item span {
+
+  font-size: 11px;
+
+  text-align: center;
+
+  line-height: 1.2;
+
+}
+
+.menu-item:hover {
+
+  background: rgba(206,167,100,.08);
+
+  color: #CEA764;
+
+}
+
+.menu-item.active {
+
+  background: rgba(206,167,100,.15);
+
+  color: #CEA764;
+
+  border: 1px solid rgba(206,167,100,.25);
+
+}
+
+.logout-button {
+
+  border: none;
+
+  background: transparent;
+
+  color: #A5A5A5;
+
+  cursor: pointer;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 12px 6px;
+
+  border-radius: 10px;
+
+  transition: .2s;
+
+}
+
+.logout-button img {
+
+  width: 18px;
+
+}
+
+.logout-button span {
+
+  font-size: 11px;
+
+}
+
+.logout-button:hover {
+
+  background: rgba(255,80,80,.08);
+
+  color: #ff7373;
+
+}

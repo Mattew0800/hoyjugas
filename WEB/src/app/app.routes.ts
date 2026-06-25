@@ -12,6 +12,7 @@ import {PaymentSelection} from './screens/payment-selection/payment-selection';
 import {Profile} from './screens/profile/profile';
 import {ChangePassword} from './screens/password/password';
 import {HistoryBookings} from './screens/history-bookings/history-bookings';
+import {Dashboard} from './screens/internal/dashboard/dashboard';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 
@@ -29,6 +30,7 @@ export const routes: Routes = [
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
+  {path: 'internal/dashboard', component: Dashboard, },
   {path:'**', component:Error}
 
 ];

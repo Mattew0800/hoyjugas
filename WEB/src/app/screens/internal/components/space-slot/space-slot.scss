@@ -1,0 +1,214 @@
+.space-slot {
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  min-height: 110px;
+
+  padding: 10px 12px;
+
+  border-radius: 12px;
+
+  background: #151515;
+
+  border: 1px solid #2B2B2B;
+
+  transition: .2s;
+
+}
+
+.space-slot:hover {
+
+  border-color: rgba(206,167,100,.35);
+
+}
+
+.slot-header {
+
+  color: #CEA764;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid rgba(255,255,255,.05);
+
+}
+
+.slot-body {
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 6px;
+
+}
+
+.client {
+
+  color: white;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+}
+
+.phone {
+
+  color: #54D85A;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+}
+.available {
+
+  color: #FFFFFF;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  text-align: center;
+
+}
+
+.slot-footer {
+
+  min-height: 24px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  align-items: center;
+
+}
+
+.badge {
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+}
+
+.partial {
+
+  background: rgba(206,167,100,.18);
+
+  color: #CEA764;
+
+}
+
+.booked {
+
+  background: rgba(255,193,7,.15);
+
+  color: #FFC107;
+
+}
+
+.paid {
+
+  background: rgba(81,207,102,.15);
+
+  color: #51CF66;
+
+}
+
+.client-row {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+}
+
+.whatsapp-button {
+
+  width: 28px;
+
+  height: 28px;
+
+  border: none;
+
+  background: transparent;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  cursor: pointer;
+
+  padding: 0;
+
+}
+
+.whatsapp-button svg {
+
+  width: 22px;
+
+  height: 22px;
+
+  fill: #25D366;
+
+  transition: .2s;
+
+}
+
+.whatsapp-button:hover svg {
+
+  fill: #36E06A;
+
+}
+
+.badge {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+}
+
+.badge img {
+
+  width: 14px;
+
+  height: 14px;
+
+  object-fit: contain;
+
+}

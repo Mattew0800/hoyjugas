@@ -1,0 +1,68 @@
+<app-internal-side-bar></app-internal-side-bar>
+
+<div class="dashboard-container">
+
+  <app-internal-header
+    title="Turnos de hoy"
+    subtitle="Domingo 25 de mayo"
+    actionButtonText="Cambiar fecha">
+  </app-internal-header>
+
+  <main class="dashboard-content">
+
+    <div class="dashboard-header">
+
+      <div class="stats-container">
+
+        <app-stat-card
+          icon="/assets/icons/calendar.svg"
+          value="28"
+          title="Turnos de hoy"
+          subtitle="en todas las canchas">
+        </app-stat-card>
+
+        <app-stat-card
+          icon="/assets/icons/field.svg"
+          value="4 / 6"
+          title="Canchas ocupadas"
+          subtitle="ahora mismo">
+        </app-stat-card>
+
+        <app-stat-card
+          icon="/assets/icons/clock.svg"
+          value="09:30"
+          title="Próximo turno"
+          subtitle="en 15 minutos">
+        </app-stat-card>
+
+        <app-stat-card
+          icon="/assets/icons/money.svg"
+          value="$184.000"
+          title="Ingresos"
+          subtitle="estimados del día">
+        </app-stat-card>
+
+      </div>
+
+      <button class="change-date-btn">
+
+        Cambiar fecha
+
+      </button>
+
+    </div>
+
+    <div class="spaces-container">
+
+      @for(space of spaces; track space.id) {
+
+        <app-space-column
+          [space]="space">
+        </app-space-column>
+
+      }
+
+    </div>
+  </main>
+
+</div>

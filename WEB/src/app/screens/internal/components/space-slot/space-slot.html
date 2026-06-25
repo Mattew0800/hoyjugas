@@ -1,0 +1,82 @@
+<div class="space-slot">
+
+  <div class="slot-header">
+
+    {{ slot.startTime }} - {{ slot.endTime }}
+
+  </div>
+
+  <div class="slot-body">
+
+    @if(slot.status === 'FREE') {
+
+      <div class="available">
+
+        Disponible
+
+      </div>
+
+    } @else {
+
+      <div class="client-row">
+
+        <div class="client">
+
+          {{ slot.clientName }}
+
+        </div>
+
+        <button class="whatsapp-button">
+
+          <img
+            src="/assets/emojis/whatsapp-green.svg"
+            alt="WhatsApp">
+
+        </button>
+
+      </div>
+
+      <div class="phone">
+
+        {{ slot.phone }}
+
+      </div>
+
+    }
+
+  </div>
+
+  <div class="slot-footer">
+
+    @if(slot.status !== 'FREE') {
+
+      <span
+        class="badge"
+        [class.partial]="slot.status === 'PARTIAL'"
+        [class.paid]="slot.status === 'PAID'">
+
+         @if(slot.status === 'PARTIAL') {
+
+           <img
+             src="/assets/emojis/coin.svg"
+             alt="Seña">
+
+         }
+
+        @if(slot.status === 'PAID') {
+
+          <img
+            src="/assets/emojis/check.svg"
+            alt="Pago completo">
+
+        }
+
+        {{ statusLabel }}
+
+      </span>
+
+    }
+
+  </div>
+
+</div>
