@@ -142,6 +142,34 @@
 
 }
 
+.dashboard-body{
+
+  display:grid;
+
+  grid-template-columns: minmax(0, 1fr) 320px;
+
+  gap:28px;
+
+  align-items:start;
+
+}
+
+.dashboard-right {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  align-self: start;
+
+}
+
+.calendar-card {
+
+  width: 320px;
+
+}
+
 .spaces-container {
 
   display: flex;
@@ -153,18 +181,5 @@
   overflow-x: auto;
 
   padding-bottom: 10px;
-
-}
-
-
-.spaces-container {
-
-  display: flex;
-
-  gap: 20px;
-
-  overflow-x: auto;
-
-  align-items: flex-start;
 
 }

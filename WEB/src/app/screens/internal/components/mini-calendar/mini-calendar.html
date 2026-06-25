@@ -1,1 +1,69 @@
-<p>mini-calendar works!</p>
+<div class="calendar-card">
+
+  <h3>
+
+    Calendario
+
+  </h3>
+
+  <div class="calendar-header">
+
+    <button>
+
+      ‹
+
+    </button>
+
+    <span>
+
+      {{ month }}
+
+    </span>
+
+    <button>
+
+      ›
+
+    </button>
+
+  </div>
+
+  <div class="weekdays">
+
+    @for(day of weekDays; track day) {
+
+      <span>
+
+        {{ day }}
+
+      </span>
+
+    }
+
+  </div>
+
+  <div class="days">
+
+    @for(day of days; track $index) {
+
+      @if(day){
+
+        <button
+          class="day"
+          [class.selected]="day === selectedDay">
+
+          {{ day }}
+
+        </button>
+
+      } @else {
+
+        <div></div>
+
+      }
+
+    }
+
+  </div>
+
+</div>

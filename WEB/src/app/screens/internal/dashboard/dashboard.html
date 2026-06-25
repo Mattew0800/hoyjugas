@@ -52,17 +52,33 @@
 
     </div>
 
-    <div class="spaces-container">
+    <div class="dashboard-body">
 
-      @for(space of spaces; track space.id) {
+      <div class="dashboard-left">
 
-        <app-space-column
-          [space]="space">
-        </app-space-column>
+        <div class="spaces-container">
 
-      }
+          @for(space of spaces; track space.id) {
+
+            <app-space-column
+              [space]="space">
+            </app-space-column>
+
+          }
+
+        </div>
+
+      </div>
+
+      <div class="dashboard-right">
+
+        <app-mini-calendar></app-mini-calendar>
+
+      </div>
 
     </div>
+
+
   </main>
 
 </div>

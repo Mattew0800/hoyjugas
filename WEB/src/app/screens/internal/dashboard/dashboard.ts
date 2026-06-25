@@ -4,6 +4,7 @@ import { InternalSideBar } from '../components/internal-side-bar/internal-side-b
 import {StatCard} from '../components/stat-card/stat-card';
 import { SpaceColumn } from '../components/space-column/space-column';
 import {SpaceModel} from '../models/space-column.model';
+import { MiniCalendar } from '../components/mini-calendar/mini-calendar';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,7 +13,8 @@ import {SpaceModel} from '../models/space-column.model';
     InternalHeader,
     InternalSideBar,
     StatCard,
-    SpaceColumn
+    SpaceColumn,
+    MiniCalendar
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
