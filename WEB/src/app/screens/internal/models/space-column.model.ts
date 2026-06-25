@@ -10,6 +10,10 @@ export interface SpaceModel {
 
   slotDuration: number;
 
+  status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
+
+  nextBookingTime?: string;
+
   slots: SpaceSlotModel[];
 
 }

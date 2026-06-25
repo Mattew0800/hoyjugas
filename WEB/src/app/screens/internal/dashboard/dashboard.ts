@@ -29,6 +29,9 @@ export class Dashboard {
       type: 'Fútbol 5',
 
       slotDuration: 60,
+      status:'AVAILABLE',
+
+      nextBookingTime:'09:00',
 
       slots: [
 
@@ -69,6 +72,9 @@ export class Dashboard {
       type: 'Fútbol 8',
 
       slotDuration: 60,
+      status:'AVAILABLE',
+
+      nextBookingTime:'09:00',
 
       slots: [
 

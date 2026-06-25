@@ -2,17 +2,21 @@
 
   <div class="column-header">
 
-    <h3>
+    <div class="header-info">
 
-      {{ space.name }}
+      <h3>{{ space.name }}</h3>
 
-    </h3>
+      <span>{{ space.type }}</span>
 
-    <span>
+    </div>
 
-      {{ space.type }}
+    <div
+      class="status-indicator"
+      [class.available]="space.status === 'AVAILABLE'"
+      [class.occupied]="space.status === 'OCCUPIED'"
+      [class.maintenance]="space.status === 'MAINTENANCE'">
+    </div>
 
-    </span>
 
   </div>
 
@@ -25,6 +29,21 @@
       </app-space-slot>
 
     }
+
+  </div>
+
+  <div class="column-footer">
+
+    <img
+      src="/assets/emojis/clock.svg"
+      alt="Próximo turno">
+
+    <span>
+
+        Próximo turno:
+      {{ space.nextBookingTime }}
+
+    </span>
 
   </div>
 
