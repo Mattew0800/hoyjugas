@@ -41,10 +41,7 @@ public class Supplier {
     private AccountType accountType;
 
     private Integer paymentTermDays;
-
-    @Column(precision = 5, scale = 2)
-    private BigDecimal discount;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;      // rubro

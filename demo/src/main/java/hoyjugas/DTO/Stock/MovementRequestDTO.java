@@ -20,4 +20,7 @@ public class MovementRequestDTO {
 
     @NotBlank(message = "El PIN es obligatorio")
     private String employeePin;
+
+    @NotNull(message = "El id del producto es obligatorio")
+    private Long productId;
 }

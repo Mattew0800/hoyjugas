@@ -54,6 +54,8 @@ public class Product {
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    private BigDecimal discount;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();

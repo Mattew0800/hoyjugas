@@ -2,6 +2,7 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.Inventory.InventoryItemRequestDTO;
 import hoyjugas.DTO.Inventory.InventoryItemResponseDTO;
+import hoyjugas.DTO.Inventory.InventoryMovementRequestDTO;
 import hoyjugas.DTO.Inventory.InventoryMovementResponseDTO;
 import hoyjugas.DTO.Stock.MovementRequestDTO;
 import hoyjugas.Enum.MovementType;
@@ -89,7 +90,7 @@ public class InventoryService {
     }
 
     @Transactional
-    public InventoryMovementResponseDTO registerMovement(Long itemId, MovementRequestDTO dto, User employee) {
+    public InventoryMovementResponseDTO registerMovement(Long itemId, InventoryMovementRequestDTO dto, User employee) {
         InventoryItem item = getItemOrThrow(itemId);
 
         int quantityBefore = item.getQuantity();

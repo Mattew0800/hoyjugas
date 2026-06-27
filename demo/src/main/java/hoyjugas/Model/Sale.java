@@ -1,6 +1,7 @@
 package hoyjugas.Model;
 
 import hoyjugas.Enum.PaymentMethod;
+import hoyjugas.Enum.SaleStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,14 +21,14 @@ public class Sale {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String saleNumber;          // autogenerado
+    private String saleNumber;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime date = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
-    private User client;                // null si es venta sin cliente registrado
+    private User client;                // ver si dejar esto o eliminar directamente
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -38,10 +39,20 @@ public class Sale {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registered_by", nullable = false)
-    private User registeredBy;          // empleado — PIN
+    private User registeredBy;
+
+    @Enumerated(EnumType.STRING)
+    private SaleStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime cancelledAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="cancelled_by")
+    private User cancelledBy;
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     private List<SaleItem> items = new ArrayList<>();

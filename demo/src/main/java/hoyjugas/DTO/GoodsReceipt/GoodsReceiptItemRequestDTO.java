@@ -19,5 +19,7 @@ public class GoodsReceiptItemRequestDTO {
     @DecimalMin(value = "0.01")
     private BigDecimal unitCost;
 
+    private BigDecimal discount;
+
     private BigDecimal newSalePrice;    // opcional
 }

@@ -17,7 +17,6 @@ public class SupplierDetailDTO extends SupplierListDTO {
     private String accountNumber;
     private String accountType;
     private Integer paymentTermDays;
-    private BigDecimal discount;
 
     public static SupplierDetailDTO fromEntity(Supplier supplier) {
         SupplierDetailDTO dto = new SupplierDetailDTO();
@@ -35,7 +34,6 @@ public class SupplierDetailDTO extends SupplierListDTO {
         dto.setAccountType(supplier.getAccountType() != null
                 ? supplier.getAccountType().name() : null);
         dto.setPaymentTermDays(supplier.getPaymentTermDays());
-        dto.setDiscount(supplier.getDiscount());
 
         return dto;
     }

@@ -121,20 +121,16 @@ public class ProductService {
     }
 
     @Transactional
-    public StockMovementResponseDTO registerMovement(Long productId,MovementRequestDTO dto, User employee) {
-        Product product = getProductOrThrow(productId);
-
+    public StockMovementResponseDTO registerMovement(MovementRequestDTO dto, User employee) {
+        Product product = getProductOrThrow(dto.getProductId());
         int stockBefore = product.getStock();
         int stockAfter = calculateNewStock(stockBefore, dto.getQuantity(), dto.getType());
-
         if (stockAfter < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El stock resultante no puede ser negativo");
         }
-
         product.setStock(stockAfter);
         productRepository.save(product);
-
         StockMovement movement = new StockMovement();
         movement.setProduct(product);
         movement.setType(dto.getType());
@@ -144,16 +140,15 @@ public class ProductService {
         movement.setReason(dto.getReason());
         movement.setRegisteredBy(employee);
         movement.setMovementNumber(generateMovementNumber());
-
         return StockMovementResponseDTO.fromEntity(
                 stockMovementRepository.save(movement));
     }
 
-    public Page<StockMovementResponseDTO> getMovements(Long productId,StockMovementFilterDTO dto) {
+    public Page<StockMovementResponseDTO> getMovements(StockMovementFilterDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(),
                 Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy()));
         return stockMovementRepository.findAllWithFilters(
-                productId,
+                dto.getProductId(),
                 dto.getType(),
                 dto.getDateFrom(),
                 dto.getDateTo(),

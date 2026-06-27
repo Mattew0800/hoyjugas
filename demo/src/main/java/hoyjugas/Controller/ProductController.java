@@ -1,7 +1,11 @@
 package hoyjugas.Controller;
 
 import hoyjugas.DTO.Product.*;
+import hoyjugas.DTO.Stock.MovementRequestDTO;
+import hoyjugas.DTO.Stock.StockMovementFilterDTO;
+import hoyjugas.DTO.Stock.StockMovementResponseDTO;
 import hoyjugas.Service.ProductService;
+import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Page;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/product")
@@ -20,6 +24,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final UserService userService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
@@ -53,10 +58,30 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAll(dto));
     }
 
-    @PostMapping("/search")
+    @PostMapping("/search")//deja buscar por codigo, nombre, codigo de barras
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<List<ProductListDTO>> searchProducts(
             @Valid @RequestBody ProductSearchRequestDTO dto) {
         return ResponseEntity.ok(productService.search(dto.getQuery()));
     }
+
+    @PostMapping("/toggle-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>toggleStatus(@Valid @RequestBody ProductIdRequestDTO dto) {
+        productService.toggleStatus(dto.getId());
+        return ResponseEntity.ok(Map.of("message","Estado del producto actualizado correctamente"));
+    }
+
+    @PostMapping("/get-movements")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<StockMovementResponseDTO>> getMovements(@Valid @RequestBody StockMovementFilterDTO dto) {
+        return ResponseEntity.ok(productService.getMovements(dto));
+    }
+
+    @PostMapping("/register-movement")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<StockMovementResponseDTO> registerMovement(@Valid @RequestBody MovementRequestDTO dto){
+        return ResponseEntity.ok(productService.registerMovement(dto,userService.validateEmployeePin(dto.getEmployeePin())));
+    }
+
 }

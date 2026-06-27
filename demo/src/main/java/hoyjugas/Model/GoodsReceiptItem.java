@@ -29,7 +29,10 @@ public class GoodsReceiptItem {
     private BigDecimal unitCost;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal subtotal;        // quantity * unitCost
+    private BigDecimal subtotal;// quantity * unitCost
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discount;
 
     // Opcional: actualizar precio de venta al ingresar mercadería
     private BigDecimal newSalePrice;    // null si no se actualiza
