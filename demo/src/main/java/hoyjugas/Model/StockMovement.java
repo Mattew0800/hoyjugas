@@ -25,23 +25,23 @@ public class StockMovement {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MovementType type;          // INGRESO, EGRESO, AJUSTE
+    private MovementType type;
 
     @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false)
-    private Integer stockBefore;        // stock antes del movimiento
+    private Integer stockBefore;
 
     @Column(nullable = false)
-    private Integer stockAfter;         // stock después del movimiento
+    private Integer stockAfter;
 
     @Column(columnDefinition = "TEXT")
-    private String reason;              // motivo del movimiento
+    private String reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registered_by", nullable = false)
-    private User registeredBy;          // PIN
+    private User registeredBy;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

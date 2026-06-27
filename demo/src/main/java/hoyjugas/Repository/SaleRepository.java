@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import hoyjugas.Enum.PaymentMethod;
 
@@ -29,5 +31,22 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             @Param("dateFrom") LocalDateTime dateFrom,
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(s.totalAmount), 0) FROM Sale s
+        WHERE (:clientId IS NULL OR s.client.id = :clientId)
+        AND (:employeeId IS NULL OR s.registeredBy.id = :employeeId)
+        AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
+        AND (:dateFrom IS NULL OR s.date >= :dateFrom)
+        AND (:dateTo IS NULL OR s.date <= :dateTo)
+        AND s.status != 'CANCELADA'
+        """)
+    BigDecimal getTotalWithFilters(
+            @Param("clientId") Long clientId,
+            @Param("employeeId") Long employeeId,
+            @Param("paymentMethod") PaymentMethod paymentMethod,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo
     );
 }

@@ -3,12 +3,11 @@ package hoyjugas.DTO.Supplier;
 import hoyjugas.Enum.AccountType;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import java.math.BigDecimal;
 
 @Data
 public class SupplierRequestDTO {
     @NotBlank(message = "El número de proveedor es obligatorio")
-    private String supplierNumber;
+    private String supplierNumber;// basicamente codigo interno
 
     @NotBlank(message = "El nombre es obligatorio")
     private String name;
@@ -28,8 +27,4 @@ public class SupplierRequestDTO {
     private String accountNumber;
     private AccountType accountType;
     private Integer paymentTermDays;
-
-    @DecimalMin(value = "0.00")
-    @DecimalMax(value = "100.00")
-    private BigDecimal discount;
 }

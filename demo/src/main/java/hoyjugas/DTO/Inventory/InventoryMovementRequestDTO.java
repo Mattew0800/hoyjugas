@@ -1,4 +1,4 @@
-package hoyjugas.DTO.Stock;
+package hoyjugas.DTO.Inventory;
 
 import hoyjugas.Enum.MovementType;
 import jakarta.validation.constraints.Min;
@@ -7,7 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class MovementRequestDTO {
+public class InventoryMovementRequestDTO {
+    @NotNull(message = "El item es obligatorio")
+    private Long itemId;
+
     @NotNull(message = "El tipo es obligatorio")
     private MovementType type;
 
@@ -20,7 +23,4 @@ public class MovementRequestDTO {
 
     @NotBlank(message = "El PIN es obligatorio")
     private String employeePin;
-
-    @NotNull(message = "El id del producto es obligatorio")
-    private Long productId;
 }

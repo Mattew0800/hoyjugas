@@ -22,6 +22,7 @@ public class ProductDetailDTO {//el detalle del producto, solo admin manipula es
     private Boolean isActive;
     private String categoryName;
     private String supplierName;
+    private BigDecimal discount;
 
     public static ProductDetailDTO fromEntity(Product product) {
         ProductDetailDTO dto = new ProductDetailDTO();
@@ -39,6 +40,7 @@ public class ProductDetailDTO {//el detalle del producto, solo admin manipula es
         dto.setCategoryName(product.getCategory().getName());
         dto.setSupplierName(product.getSupplier() != null
                 ? product.getSupplier().getName() : null);
+        dto.setDiscount(product.getDiscount());
         return dto;
     }
 }

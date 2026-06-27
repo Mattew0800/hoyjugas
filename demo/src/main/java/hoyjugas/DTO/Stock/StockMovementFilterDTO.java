@@ -13,4 +13,5 @@ public class StockMovementFilterDTO {
     private int size = 20;
     private String sortBy = "createdAt";
     private String sortDirection = "desc";
+    private Long productId;
 }

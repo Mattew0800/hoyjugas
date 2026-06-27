@@ -19,8 +19,9 @@ public class SaleResponseDTO {
     private String registeredByName;
     private String notes;
     private List<SaleItemResponseDTO> items;
+    private List<String> stockAlerts;
 
-    public static SaleResponseDTO fromEntity(Sale sale) {
+    public static SaleResponseDTO fromEntity(Sale sale,List<String>alerts ) {
         SaleResponseDTO dto = new SaleResponseDTO();
         dto.setId(sale.getId());
         dto.setSaleNumber(sale.getSaleNumber());
@@ -34,6 +35,12 @@ public class SaleResponseDTO {
         dto.setItems(sale.getItems().stream()
                 .map(SaleItemResponseDTO::fromEntity)
                 .toList());
+        if(!alerts.isEmpty()){
+            dto.setStockAlerts(alerts);
+        }
         return dto;
+    }
+    public static SaleResponseDTO fromEntity(Sale sale) {
+        return fromEntity(sale, null);
     }
 }

@@ -18,11 +18,11 @@ public class ProductRequestDTO {
     private String name;
 
     @DecimalMin(value = "0.01")
-    private BigDecimal cost;
+    private BigDecimal cost; //cuanto pagan
 
     @NotNull(message = "El precio de venta es obligatorio")
     @DecimalMin(value = "0.01")
-    private BigDecimal salePrice;
+    private BigDecimal salePrice;//a cuanto venden
 
     @NotNull(message = "El stock mínimo es obligatorio")
     @Min(value = 0)

@@ -42,18 +42,13 @@ public class SupplierService {
     @Transactional
     public SupplierDetailDTO create(SupplierRequestDTO dto) {
         if (supplierRepository.existsBySupplierNumber(dto.getSupplierNumber())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un proveedor con ese número");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese número");
         }
         if (supplierRepository.existsByCuit(dto.getCuit())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un proveedor con ese CUIT");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese CUIT");
         }
-
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Rubro no encontrado"));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rubro no encontrado"));
         Supplier supplier = new Supplier();
         mapDtoToEntity(dto, supplier, category);
         return SupplierDetailDTO.fromEntity(supplierRepository.save(supplier));
@@ -97,7 +92,6 @@ public class SupplierService {
         supplier.setAccountNumber(dto.getAccountNumber());
         supplier.setAccountType(dto.getAccountType());
         supplier.setPaymentTermDays(dto.getPaymentTermDays());
-        supplier.setDiscount(dto.getDiscount());
     }
 
     public Supplier getSupplierOrThrow(Long id) {

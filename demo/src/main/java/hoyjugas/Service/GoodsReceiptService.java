@@ -37,8 +37,7 @@ public class GoodsReceiptService {
     @Transactional
     public GoodsReceiptResponseDTO create(GoodsReceiptRequestDTO dto, User employee) {
         Supplier supplier = supplierRepository.findById(dto.getSupplierId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Proveedor no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proveedor no encontrado"));
         GoodsReceipt receipt = new GoodsReceipt();
         receipt.setSupplier(supplier);
         receipt.setVoucher(dto.getVoucher());
@@ -59,30 +58,12 @@ public class GoodsReceiptService {
             item.setProduct(product);
             item.setQuantity(itemDto.getQuantity());
             item.setUnitCost(itemDto.getUnitCost());
+            item.setDiscount(itemDto.getDiscount());
             item.setSubtotal(subtotal);
             item.setNewSalePrice(itemDto.getNewSalePrice());
             items.add(item);
-            int stockBefore = product.getStock();
-            int stockAfter = stockBefore + itemDto.getQuantity();
-            product.setStock(stockAfter);
-            product.setCost(itemDto.getUnitCost());
-            if (itemDto.getNewSalePrice() != null) {
-                product.setSalePrice(itemDto.getNewSalePrice());
-            }
-            productRepository.save(product);
-            StockMovement movement = new StockMovement();
-            movement.setProduct(product);
-            movement.setType(MovementType.INGRESO);
-            movement.setQuantity(itemDto.getQuantity());
-            movement.setStockBefore(stockBefore);
-            movement.setStockAfter(stockAfter);
-            movement.setReason("Ingreso por remito " +
-                    (dto.getVoucher() != null ? dto.getVoucher() : ""));
-            movement.setRegisteredBy(employee);
-            movement.setMovementNumber(generateStockMovementNumber());
-            movement.setGoodsReceipt(receipt);
-            stockMovementRepository.save(movement);
-
+            updateProduct(product, itemDto);
+            registerStockMovement(receipt, product, itemDto, dto.getVoucher(), employee);
             total = total.add(subtotal);
         }
         receipt.setTotalAmount(total);
@@ -90,6 +71,34 @@ public class GoodsReceiptService {
         GoodsReceipt saved = goodsReceiptRepository.save(receipt);
         registerExpense(saved, employee);
         return GoodsReceiptResponseDTO.fromEntity(saved);
+    }
+
+    private void updateProduct(Product product, GoodsReceiptItemRequestDTO itemDto) {
+        product.setStock(product.getStock() + itemDto.getQuantity());
+        product.setCost(itemDto.getUnitCost());
+        if (itemDto.getNewSalePrice() != null) {
+            product.setSalePrice(itemDto.getNewSalePrice());
+        }
+        if (itemDto.getDiscount() != null) {
+            product.setDiscount(itemDto.getDiscount());
+        }
+        productRepository.save(product);
+    }
+
+    private void registerStockMovement(GoodsReceipt receipt,Product product,GoodsReceiptItemRequestDTO itemDto,String voucher,User employee) {
+        int stockBefore = product.getStock() - itemDto.getQuantity();
+        int stockAfter = product.getStock();
+        StockMovement movement = new StockMovement();
+        movement.setProduct(product);
+        movement.setType(MovementType.INGRESO);
+        movement.setQuantity(itemDto.getQuantity());
+        movement.setStockBefore(stockBefore);
+        movement.setStockAfter(stockAfter);
+        movement.setReason("Ingreso por remito " + (voucher != null ? voucher : ""));
+        movement.setRegisteredBy(employee);
+        movement.setMovementNumber(generateStockMovementNumber());
+        movement.setGoodsReceipt(receipt);
+        stockMovementRepository.save(movement);
     }
 
     public GoodsReceiptResponseDTO getById(Long id) {
