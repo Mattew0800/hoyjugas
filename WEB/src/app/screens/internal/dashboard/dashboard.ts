@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { InternalHeader } from '../components/internal-header/internal-header';
 import { InternalSideBar } from '../components/internal-side-bar/internal-side-bar';
 import {StatCard} from '../components/stat-card/stat-card';
 import { SpaceColumn } from '../components/space-column/space-column';
 import {SpaceModel} from '../models/space-column.model';
 import { MiniCalendar } from '../components/mini-calendar/mini-calendar';
+import {BookingService} from '../../../services/BookingService/booking-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,7 +20,41 @@ import { MiniCalendar } from '../components/mini-calendar/mini-calendar';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
-export class Dashboard {
+export class Dashboard implements OnInit{
+
+  constructor(
+    private bookingService: BookingService
+  ) {}
+
+  ngOnInit(): void {
+
+    this.bookingService.getBookings({
+
+      page: 0,
+
+      size: 20,
+
+      sortBy: 'startDatetime',
+
+      sortDirection: 'desc'
+
+    }).subscribe({
+
+      next: response => {
+
+        console.log('BOOKINGS', response);
+
+      },
+
+      error: error => {
+
+        console.error('ERROR', error);
+
+      }
+
+    });
+
+  }
 
   spaces: SpaceModel[] = [
 

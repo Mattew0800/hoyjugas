@@ -30,7 +30,7 @@ export const routes: Routes = [
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
-  {path: 'internal/dashboard', component: Dashboard, },
+  {path: 'internal/dashboard', component: Dashboard, canActivate:[authGuard]},
   {path:'**', component:Error}
 
 ];
