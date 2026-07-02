@@ -9,14 +9,14 @@ import hoyjugas.Model.User;
 import hoyjugas.Repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
@@ -29,6 +29,8 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final Key key;
     private final long jwtExpirationMs;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
 
     public AuthService(UserRepository userRepository, Key key, BCryptPasswordEncoder passwordEncoder, @Value("${jwt.expiration}") long jwtExpirationMs) {
         this.userRepository = userRepository;
@@ -47,14 +49,14 @@ public class AuthService {
                     "Correo o contraseña incorrectos");
         }
         String token = generateToken(user);
-        return new LoginResponseDTO(token, user.getEmail(), user.getName());
+        return new LoginResponseDTO(token, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     @Transactional
     public LoginResponseDTO registerUser(RegisterRequestDTO request) {
         User user = createUser(request, Role.USER, false, null);
         String token = generateToken(user);
-        return new LoginResponseDTO(token, user.getEmail(), user.getName());
+        return new LoginResponseDTO(token, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     @Transactional
@@ -85,7 +87,7 @@ public class AuthService {
     @Transactional
     public LoginResponseDTO registerAdmin(RegisterRequestDTO request) {
         User user = createUser(request, Role.ADMIN, false, null);
-        return new LoginResponseDTO(null, user.getEmail(), user.getName());
+        return new LoginResponseDTO(null, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     private User createUser(RegisterRequestDTO request, Role role, boolean hasPin, String rawPin) {
@@ -122,5 +124,14 @@ public class AuthService {
             tokenBuilder.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs));
         }
         return tokenBuilder.compact();
+    }
+
+    public void setAuthCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie("authToken", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(cookieSecure);//cambiar en prod
+        cookie.setPath("/");
+        cookie.setMaxAge(86400);
+        response.addCookie(cookie);
     }
 }

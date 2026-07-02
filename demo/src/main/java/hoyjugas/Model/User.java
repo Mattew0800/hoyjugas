@@ -36,7 +36,7 @@ public class User {
     @Size(min = 7,max = 9)
     private String dni;
 
-    @Size(min = 10,max = 10)
+    @Column(unique = true, nullable = false, length = 14)
     private String phone;
 
     @Column(length = 60)
@@ -52,7 +52,7 @@ public class User {
         user.setEmail(dto.getEmail());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setDni(dto.getDni());
-        user.setPhone(dto.getPhone());
+        user.setPhone("+549"+dto.getPhone());
         return user;
     }
 

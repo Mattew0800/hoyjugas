@@ -69,8 +69,13 @@ public class SecurityConfig {
                                 .preload(true))
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/hoyjugas/auth/register-employee").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register",
+                                "/auth/forgot-password",
+                                "/auth/reset-password"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -83,9 +88,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
         /*
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
+                "http://localhost:8080"
                 "http://localhost:8080",
         ));
         */

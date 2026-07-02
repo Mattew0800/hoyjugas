@@ -99,6 +99,25 @@
 
   </button>
 
+  @if(successMessage){
+
+    <div class="success-message">
+
+      {{ successMessage }}
+
+    </div>
+  }
+
+  @if(errorMessage){
+
+    <div class="error-message">
+
+      {{ errorMessage }}
+
+    </div>
+
+  }
+
   <button
     class="save-button"
     (click)="saveProfile()">
