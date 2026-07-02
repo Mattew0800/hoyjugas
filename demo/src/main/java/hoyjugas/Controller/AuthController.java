@@ -7,7 +7,7 @@ import hoyjugas.Service.PasswordResetService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,24 +16,16 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
-    @Value("${app.cookie.secure:false}")
-    private boolean cookieSecure;
-
-    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
-        this.authService = authService;
-        this.passwordResetService = passwordResetService;
-    }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponseDTO> register(
-            @Valid @RequestBody RegisterRequestDTO request,
-            HttpServletResponse response) {
+    public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request,HttpServletResponse response) {
         LoginResponseDTO result = authService.registerUser(request);
-        setAuthCookie(response, result.getToken());
+        authService.setAuthCookie(response, result.getToken());
         result.setToken(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -65,44 +57,29 @@ public class AuthController {
 
     @PostMapping("/register-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LoginResponseDTO> registerAdmin(
-            @Valid @RequestBody RegisterRequestDTO request,
-            HttpServletResponse response) {
+    public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
         LoginResponseDTO result = authService.registerAdmin(request);
-        setAuthCookie(response, result.getToken());
+        authService.setAuthCookie(response, result.getToken());
         result.setToken(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(
-            @Valid @RequestBody LoginRequestDTO request,
-            HttpServletResponse response) {
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request,HttpServletResponse response) {
         LoginResponseDTO result = authService.login(request);
-        setAuthCookie(response, result.getToken());
+        authService.setAuthCookie(response, result.getToken());
         result.setToken(null);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("authToken", null);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return ResponseEntity.ok("Sesión cerrada");
+        return ResponseEntity.ok(Map.of("message","Sesión cerrada"));
     }
-
-    private void setAuthCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("authToken", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);//cambiar en prod
-        cookie.setPath("/");
-        cookie.setMaxAge(86400);
-        response.addCookie(cookie);
-    }
-
-
 }
