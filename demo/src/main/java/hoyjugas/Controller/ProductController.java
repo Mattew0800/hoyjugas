@@ -26,22 +26,21 @@ public class ProductController {
     private final ProductService productService;
     private final UserService userService;
 
-    @PostMapping("/create")
+    @PostMapping("/create")//✔
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDetailDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto) {
         return ResponseEntity.ok(productService.create(dto));
     }
 
-    @PostMapping("/update")
+    @PostMapping("/update")//✔
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDetailDTO> updateProduct(@Valid @RequestBody ProductUpdateRequestDTO dto) {
         return ResponseEntity.ok(productService.update(dto));
     }
 
-    @PostMapping("/get")
+    @PostMapping("/get")//✔
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductDetailDTO> getProduct(
-            @Valid @RequestBody ProductIdRequestDTO dto) {
+    public ResponseEntity<ProductDetailDTO> getProduct(@Valid @RequestBody ProductIdRequestDTO dto) {
         return ResponseEntity.ok(productService.getById(dto.getId()));
     }
 
@@ -53,15 +52,13 @@ public class ProductController {
 
     @PostMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<ProductDetailDTO>> listProducts(
-            @Valid @RequestBody ProductFilterDTO dto) {
+    public ResponseEntity<Page<ProductDetailDTO>> listProducts(@Valid @RequestBody ProductFilterDTO dto) {
         return ResponseEntity.ok(productService.getAll(dto));
     }
 
     @PostMapping("/search")//deja buscar por codigo, nombre, codigo de barras
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<List<ProductListDTO>> searchProducts(
-            @Valid @RequestBody ProductSearchRequestDTO dto) {
+    public ResponseEntity<List<ProductListDTO>> searchProducts(@Valid @RequestBody ProductSearchRequestDTO dto) {
         return ResponseEntity.ok(productService.search(dto.getQuery()));
     }
 
@@ -72,13 +69,13 @@ public class ProductController {
         return ResponseEntity.ok(Map.of("message","Estado del producto actualizado correctamente"));
     }
 
-    @PostMapping("/get-movements")
+    @PostMapping("/get-movements")//✔
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<StockMovementResponseDTO>> getMovements(@Valid @RequestBody StockMovementFilterDTO dto) {
         return ResponseEntity.ok(productService.getMovements(dto));
     }
 
-    @PostMapping("/register-movement")
+    @PostMapping("/register-movement")//✔
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<StockMovementResponseDTO> registerMovement(@Valid @RequestBody MovementRequestDTO dto){
         return ResponseEntity.ok(productService.registerMovement(dto,userService.validateEmployeePin(dto.getEmployeePin())));

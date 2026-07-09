@@ -9,14 +9,12 @@ import hoyjugas.Model.User;
 import hoyjugas.Repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
@@ -47,14 +45,14 @@ public class AuthService {
                     "Correo o contraseña incorrectos");
         }
         String token = generateToken(user);
-        return new LoginResponseDTO(token, user.getEmail(), user.getName());
+        return new LoginResponseDTO(token, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     @Transactional
     public LoginResponseDTO registerUser(RegisterRequestDTO request) {
         User user = createUser(request, Role.USER, false, null);
         String token = generateToken(user);
-        return new LoginResponseDTO(token, user.getEmail(), user.getName());
+        return new LoginResponseDTO(token, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     @Transactional
@@ -85,7 +83,7 @@ public class AuthService {
     @Transactional
     public LoginResponseDTO registerAdmin(RegisterRequestDTO request) {
         User user = createUser(request, Role.ADMIN, false, null);
-        return new LoginResponseDTO(null, user.getEmail(), user.getName());
+        return new LoginResponseDTO(null, user.getEmail(), user.getName(),user.getRole().name());
     }
 
     private User createUser(RegisterRequestDTO request, Role role, boolean hasPin, String rawPin) {
