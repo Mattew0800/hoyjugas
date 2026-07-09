@@ -1,0 +1,252 @@
+$page-bg: #000;
+$gold: #d8b24c;
+$card-bg: #111;
+
+.page {
+  min-height: 200vh;
+  background: $page-bg;
+  color: white;
+}
+
+.content {
+  padding: 1rem;
+  padding-bottom: 120px;
+}
+
+.field-image {
+  width: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.field-card {
+  background: $card-bg;
+  border-radius: 20px;
+  padding: 1rem;
+  border: 1px solid #2b2b2b;
+}
+
+.field-card h2 {
+  margin: 0;
+}
+
+.subtitle {
+  color: #bdbdbd;
+  margin-bottom: 1rem;
+}
+
+.info-container {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-box {
+  flex: 1;
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: .75rem;
+  font-size: .8rem;
+}
+
+.label {
+  display: block;
+  color: $gold;
+  margin-bottom: .3rem;
+}
+
+.date-section {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: .75rem;
+    font-weight: 600;
+  }
+}
+
+.date-selector {
+  display: flex;
+  gap: .75rem;
+
+  overflow-x: auto;
+  padding-bottom: .25rem;
+
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.date-pill {
+  min-width: 88px;
+
+  padding: .6rem;
+
+  border-radius: 14px;
+  border: 1px solid $gold;
+
+  background: transparent;
+  color: $gold;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: .5rem;
+
+  flex-shrink: 0;
+
+  transition: all .2s ease;
+}
+
+.date-calendar {
+  width: 52px;
+  height: 52px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.month {
+  font-size: .55rem;
+  font-weight: 600;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  opacity: .8;
+}
+
+.day {
+  font-size: 1.25rem;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+.availability {
+  font-size: .7rem;
+  font-weight: 500;
+}
+
+.selected-date {
+  background: $gold;
+  color: black;
+}
+
+.selected-date .date-calendar {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.calendar-pill {
+  width: 52px;
+  min-width: 52px;
+  height: 52px;
+
+  border-radius: 12px;
+  border: 1px solid $gold;
+
+  background: transparent;
+  color: $gold;
+
+  font-size: 1.2rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.hours-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: .6rem;
+
+  margin-top: 1rem;
+}
+
+.hour-btn {
+  background: transparent;
+
+  border: 1px solid $gold;
+  border-radius: 10px;
+
+  color: $gold;
+
+  padding: .8rem;
+
+  transition: all .2s ease;
+}
+
+.selected {
+  background: $gold;
+  color: black;
+  font-weight: bold;
+}
+
+.unavailable {
+  opacity: .4;
+  border-color: #666;
+  color: #666;
+}
+
+.legend {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 1rem;
+
+  font-size: .75rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+
+  display: inline-block;
+
+  border-radius: 50%;
+
+  margin-right: .3rem;
+}
+
+.available-dot {
+  border: 1px solid $gold;
+}
+
+.selected-dot {
+  background: $gold;
+}
+
+.unavailable-dot {
+  background: #666;
+}
+
+.reserve-btn {
+  width: 100%;
+
+  margin-top: 1.5rem;
+
+  padding: 1rem;
+
+  border: none;
+  border-radius: 12px;
+
+  background: $gold;
+  color: black;
+
+  font-weight: bold;
+  letter-spacing: 2px;
+}

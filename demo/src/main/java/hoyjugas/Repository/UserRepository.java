@@ -3,7 +3,6 @@ package hoyjugas.Repository;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
 

@@ -1,14 +1,15 @@
 package hoyjugas.Config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import hoyjugas.Service.UserService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,7 +18,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -31,19 +31,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain filterChain)throws ServletException, IOException {
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String jwt = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        String token = extractToken(request);
+
+        if (token != null) {
             try {
                 Claims claims = Jwts.parser()
-                        .verifyWith(key)
+                        .setSigningKey(key)
                         .build()
-                        .parseSignedClaims(jwt)
-                        .getPayload();
+                        .parseClaimsJws(token)
+                        .getBody();
+
                 String email = claims.getSubject();
                 String role = (String) claims.get("role");
+
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     userService.findByEmail(email).ifPresent(user -> {
                         var userDetails = new UserDetailsImpl(
@@ -62,19 +66,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     });
                 }
             } catch (io.jsonwebtoken.ExpiredJwtException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("El token ha expirado");
-                return;
-            } catch (io.jsonwebtoken.security.SignatureException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Firma del token inválida");
-                return;
+                logger.info("Token expirado para request: {}" + request.getRequestURI());
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Error procesando el token JWT");
-                return;
+                logger.warn("Error validando token: {}"+ e.getMessage());
             }
         }
+
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("authToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        return null;
     }
 }

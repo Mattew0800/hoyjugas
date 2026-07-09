@@ -1,0 +1,179 @@
+.history-container {
+  background: #050505;
+
+  min-height: 100vh;
+
+  padding: 24px;
+  padding-bottom: 140px;
+}
+
+.title {
+  color: white;
+
+  font-size: 32px;
+  font-weight: 700;
+
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #8a8a8a;
+
+  margin-bottom: 24px;
+}
+
+.tabs {
+  display: flex;
+
+  background: #0f0f0f;
+
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+
+  padding: 4px;
+
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  flex: 1;
+
+  height: 42px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: transparent;
+
+  color: #8a8a8a;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.tab-button.active {
+  background: #151515;
+  color: #d9b44a;
+}
+
+.booking-card {
+  background: #0f0f0f;
+
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+
+  padding: 16px;
+
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.date-box {
+  width: 54px;
+  height: 54px;
+
+  border-radius: 12px;
+
+  background: #1a1a1a;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.month {
+  color: #8a8a8a;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.day {
+  color: white;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.booking-info {
+  flex: 1;
+}
+
+.booking-info h3 {
+  color: white;
+
+  font-size: 16px;
+
+  margin: 0 0 4px;
+}
+
+.time {
+  color: #d9b44a;
+
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 6px 10px;
+
+  border-radius: 10px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.deposit {
+  background: rgba(217,180,74,.15);
+  color: #d9b44a;
+}
+
+.paid {
+  background: rgba(0,208,132,.15);
+  color: #00d084;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 16px;
+
+  color: #8a8a8a;
+}
+
+.card-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+
+  border-top: 1px solid rgba(255,255,255,.08);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-footer span {
+  color: #777;
+}
+
+.details-button {
+  background: none;
+  border: none;
+
+  color: #d9b44a;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}

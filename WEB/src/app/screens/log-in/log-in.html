@@ -1,0 +1,139 @@
+<div class="login-page">
+
+  <div class="top-bar">
+      <span class="back-arrow" (click)="continueBoolean ? goBack() : goToOnboarding()">
+        ←
+      </span>
+  </div>
+
+  <div class="content">
+
+    @if (!continueBoolean) {
+
+      <div class="title-section">
+        <h1>Iniciar Sesión</h1>
+
+      </div>
+
+      <form action="" [formGroup]="form" (submit)="continue()">
+        <div class="form-section" [formGroup]="form">
+          <div>
+            <label for="">Ingresa tu email</label>
+            <input
+              type="text"
+              placeholder="ejemplo@gmail.com"
+              formControlName="email"
+            />
+
+          </div>
+
+
+          <button type="submit">
+            Continuar
+          </button>
+
+        </div>
+      </form>
+
+      <p class="terms">
+        Al continuar, aceptas los
+
+        <a href="/terminos">
+          términos de servicio
+        </a>
+
+        y la
+
+        <a href="/privacidad">
+          política de privacidad
+        </a>
+
+      </p>
+
+      <div class="divider">
+        <div class="line"></div>
+        <span>or</span>
+        <div class="line"></div>
+      </div>
+
+      <div class="social-buttons">
+
+        <button class="social-btn">
+          <fa-icon [icon]="faGoogle"></fa-icon>
+        </button>
+
+        <button class="social-btn">
+          <fa-icon [icon]="faEnvelope"></fa-icon>
+        </button>
+
+        <button class="social-btn">
+          <fa-icon [icon]="faApple"></fa-icon>
+        </button>
+
+      </div>
+
+      <p class="register-text">
+        ¿No tienes una cuenta?
+        <span class="register-link" (click)="goToSignUp()">
+        Regístrate
+          </span>
+      </p>
+    } @else {
+
+      <div class="title-section">
+        <h1>Iniciar Sesión</h1>
+
+      </div>
+
+      <form action="" [formGroup]="form" (submit)="login()">
+        <div class="form-section">
+          <div class="password-input-wrapper">
+            <label for="">Ingresa tu contraseña</label>
+
+            <div class="input-container">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Aj#9fo1U@23"
+                formControlName="password"
+              />
+              <fa-icon
+                [icon]="showPassword ? faEye : faEyeSlash"
+                class="eye-icon"
+                (click)="togglePasswordVisibility()"
+              ></fa-icon>
+            </div>
+
+          </div>
+
+          <button type="submit">
+            Continuar
+          </button>
+          @if(formErrorMsg!= '') {
+            <p class="error-message">
+              {{ formErrorMsg }}
+            </p>
+          }
+        </div>
+      </form>
+
+
+      <p class="terms">
+        Al continuar, aceptas los
+
+        <a href="/terminos">
+          términos de servicio
+        </a>
+
+        y la
+
+        <a href="/privacidad">
+          política de privacidad
+        </a>
+
+      </p>
+
+    }
+  </div>
+
+</div>
+

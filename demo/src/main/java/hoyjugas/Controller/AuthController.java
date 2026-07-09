@@ -4,29 +4,30 @@ import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.PasswordResetService;
-import hoyjugas.Service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080", "https://nomadia-viajes.vercel.app"})
 public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
-    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.registerUser(request));
+    public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request,HttpServletResponse response) {
+        LoginResponseDTO result = authService.registerUser(request);
+        authService.setAuthCookie(response, result.getToken());
+        result.setToken(null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @PostMapping("/register-employee")
@@ -38,11 +39,12 @@ public class AuthController {
     @PostMapping("/promote-to-employee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> promoteToEmployee(@Valid @RequestBody EmailRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.promoteToEmployee(dto.getEmail()));
+        authService.promoteToEmployee(dto.getEmail());
+        return ResponseEntity.ok(Map.of("message", "Empleado promocionado correctamente!"));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody @Valid EmailRequestDTO request){
+    public ResponseEntity<?> forgotPassword(@RequestBody @Valid EmailRequestDTO request) {
         passwordResetService.sendResetLink(request.getEmail());
         return ResponseEntity.ok("Si el email existe, se envió un link de recuperación.");
     }
@@ -54,18 +56,30 @@ public class AuthController {
     }
 
     @PostMapping("/register-admin")
-    public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.registerAdmin(request));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
+        LoginResponseDTO result = authService.registerAdmin(request);
+        authService.setAuthCookie(response, result.getToken());
+        result.setToken(null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request,HttpServletResponse response) {
+        LoginResponseDTO result = authService.login(request);
+        authService.setAuthCookie(response, result.getToken());
+        result.setToken(null);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("authToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(Map.of("message","Sesión cerrada"));
     }
 }
