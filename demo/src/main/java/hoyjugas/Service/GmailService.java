@@ -103,7 +103,7 @@ public class GmailService {
                text-decoration:none;border-radius:5px;">
                Cambiar contraseña
             </a>
-            <p style="margin-top:20px;">Este link expira en 30 minutos.</p>
+            <p style="margin-top:20px;">Este link expira en 30 minutos, si usted no solicitó este mail, desestimelo</p>
         </div>
         """.formatted(resetLink);
         sendEmail(to, subject, htmlContent);
