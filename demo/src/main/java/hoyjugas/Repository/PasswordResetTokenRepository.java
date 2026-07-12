@@ -1,5 +1,6 @@
 package hoyjugas.Repository;
-
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import hoyjugas.Model.PasswordResetToken;
 import hoyjugas.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
