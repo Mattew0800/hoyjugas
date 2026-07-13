@@ -1,0 +1,44 @@
+<nav class="bottom-navbar">
+
+  <a
+    routerLink="/home"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="nav-item"
+  >
+    <div class="icon">
+      <img src="assets/emojis/home.svg" alt="Inicio">
+    </div>
+
+    <span>Inicio</span>
+
+    <div class="active-dot"></div>
+  </a>
+
+  <a
+    href="https://wa.me/5492234566785?text=Hola,%20quiero%20hacer%20una%20consulta"
+    target="_blank"
+    class="nav-item"
+  >
+    <div class="icon">
+      <img src="assets/emojis/whatsapp.svg" alt="Contacto">
+    </div>
+
+    <span>Contacto</span>
+  </a>
+
+  <a
+    routerLink="/profile"
+    routerLinkActive="active"
+    class="nav-item"
+  >
+    <div class="icon">
+      <img src="assets/emojis/profile.svg" alt="Perfil">
+    </div>
+
+    <span>Perfil</span>
+
+    <div class="active-dot"></div>
+  </a>
+
+</nav>

@@ -1,0 +1,31 @@
+<div class="ONBOARDING-CONTAINER">
+  <!-- Contenedor superior - Logo -->
+  <div class="ONBOARDING-TOP">
+    <div class="onboarding-logo">
+    <app-svg-loader svgPath="/AZTK ARENA.svg"></app-svg-loader>
+    </div>
+  </div>
+
+  <div class="phrase-container">
+    <p>"EL FUTBOL ES LA ÚNICA RELIGIÓN QUE NO TIENE ATEOS"</p>
+    <p>Eduardo Galeano</p>
+  </div>
+
+
+  <div class="ONBOARDING-MIDDLE">
+
+    <img src="/onboarding_image.png" alt="Onboarding" class="ONBOARDING-IMAGE">
+
+  </div>
+
+  <!-- Contenedor de la imagen ball - Centrada justo arriba del CTA -->
+  <div class="ONBOARDING-BALL">
+    <img #ballImage src="/ball_image.png" alt="Ball" class="BALL-IMAGE">
+  </div>
+
+  <!-- Contenedor inferior - Botón -->
+  <div class="ONBOARDING-BOTTOM">
+    <button (click)="onContinueClick()">Continuar</button>
+  </div>
+</div>
+

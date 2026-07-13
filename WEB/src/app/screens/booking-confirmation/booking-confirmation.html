@@ -1,0 +1,114 @@
+<app-header></app-header>
+
+<div class="confirmation-container">
+
+  <button
+    class="back-button"
+    (click)="editBooking()">
+    ← Modificar horario
+  </button>
+
+  <img
+    src="/cancha1.png"
+    alt="Cancha"
+    class="field-image"
+  />
+
+  <div class="divider"></div>
+
+  <h1 class="title">
+    Verificá los datos<br>
+    de tu turno
+  </h1>
+
+  <div class="booking-card">
+
+    <!-- Cancha -->
+    <div class="info-row">
+
+      <div class="info-icon">
+        <img src="assets/emojis/estadio.svg" alt="Cancha">
+      </div>
+
+      <div class="info-content">
+        <p class="label">CANCHA SELECCIONADA</p>
+
+        <p class="value">
+          {{ booking.fieldName }}
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Fecha -->
+    <div class="info-row">
+
+      <div class="info-icon">
+        <img src="assets/emojis/calendario.svg" alt="Fecha">
+      </div>
+
+      <div class="info-content">
+        <p class="label">FECHA Y HORARIO</p>
+
+        <p class="value gold">
+          {{ booking.date }}
+          | {{ booking.startTime }}
+          - {{ booking.endTime }}
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Usuario -->
+    <div class="info-row">
+
+      <div class="info-icon">
+        <img src="assets/emojis/persona.svg" alt="Usuario">
+      </div>
+
+      <div class="info-content">
+        <p class="label">A NOMBRE DE</p>
+
+        <p class="value">
+          {{ booking.userName }}
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Precio -->
+    <div class="info-row">
+
+      <div class="info-icon">
+        <img src="assets/emojis/dinero.svg" alt="Dinero">
+      </div>
+
+      <div class="info-content">
+
+        <p class="label">
+          VALOR TOTAL DEL BLOQUE
+        </p>
+
+        <p class="price">
+          ${{ booking.price }}
+        </p>
+
+        <small>
+          El tipo de pago se elige en el siguiente paso
+        </small>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<button
+  class="payment-button"
+  (click)="continueToPayment()">
+  IR A PAGAR
+</button>
+
+<app-bottom-navbar></app-bottom-navbar>

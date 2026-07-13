@@ -1,0 +1,20 @@
+# IDE
+.idea/
+*.iml
+
+# Node
+node_modules/
+
+# OAuth / Gmail
+tokens/
+
+# Java
+**/target/
+demo/src/main/resources/credentials/credentials.json
+
+# Angular
+WEB/dist/
+WEB/.angular/
+
+# Logs
+*.log

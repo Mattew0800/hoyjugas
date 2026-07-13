@@ -1,0 +1,115 @@
+<app-header></app-header>
+
+<div class="payment-container">
+
+  <img
+    src="/cancha1.png"
+    alt="Cancha"
+    class="field-image"
+  >
+
+  <div class="payment-card">
+
+    <div class="card-header">
+
+      <button
+        class="back-button"
+        (click)="goBack()">
+        ← Volver
+      </button>
+
+      <h1>
+        Resumen de Tu Reserva
+      </h1>
+
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="price-row">
+      💰 Precio del Turno:
+      <span>${{ totalPrice }}</span>
+    </div>
+
+    <p class="section-title">
+      Opciones de Pago:
+    </p>
+
+    <div class="payment-options">
+
+      <button
+        class="option-card"
+        [class.selected]="selectedPayment === 'full'"
+        (click)="selectPayment('full')">
+
+        <span>PAGAR TOTAL</span>
+
+        <strong>
+          ${{ totalPrice }}
+        </strong>
+
+      </button>
+
+      <button
+        class="option-card"
+        [class.selected]="selectedPayment === 'deposit'"
+        (click)="selectPayment('deposit')">
+
+        <span>PAGAR SEÑA (50%)</span>
+
+        <strong>
+          ${{ totalPrice / 2 }}
+        </strong>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="payment-card">
+
+    <div class="payment-method-header">
+      💳 Datos de Pago
+    </div>
+
+    <div class="mercadopago-card">
+
+      <div class="card-brands">
+
+        <img src="assets/payment methods/visa.svg" alt="Visa">
+        <img src="assets/payment methods/mastercard.svg" alt="Mastercard">
+        <img src="assets/payment methods/amex.svg" alt="Amex">
+        <img src="assets/payment methods/mercado pago.svg" alt="Mercado Pago">
+
+      </div>
+
+      <div>
+
+        <h3 class="pago">Pago Seguro</h3>
+
+        <p class="pago">
+          Con Tarjeta de Débito, Crédito o Efectivo.
+        </p>
+
+        <small class="pago">
+          Procesado de forma segura por Mercado Pago.
+        </small>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<button
+  class="pay-button"
+  (click)="proceedToMercadoPago()">
+
+  REALIZAR PAGO
+
+</button>
+
+<app-bottom-navbar></app-bottom-navbar>

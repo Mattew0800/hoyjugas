@@ -1,0 +1,247 @@
+
+
+@media (min-width: 1024px) {
+  .LOG-IN-SCREEN{
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: lightgray;
+  }
+  .ALERT-CONTAINER{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: sandybrown;
+  }
+
+  .ALERT-MESSAGE{
+    color: white;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+  }
+
+}
+
+/* sign-up.component.scss */
+
+.signup-page {
+  width: 100%;
+  height: 100dvh;
+  background-color: #1c1c1c;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: #CEA764;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  z-index: 1000;
+}
+
+.back-arrow {
+  font-size: 24px;
+  color: #121212;
+  cursor: pointer;
+}
+
+.content {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 18px;
+  padding-bottom: 20px;
+  margin-top: 56px;
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.title-section {
+  margin-bottom: 24px;
+
+  h1 {
+    font-family: Roboto, sans-serif;
+    color: #CEA764;
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-family: Roboto, sans-serif;
+    color: #858585;
+    font-size: 16.84px;
+    font-weight: 400;
+  }
+
+  input {
+    height: 52px;
+    border-radius: 12px;
+    border: 1px solid #c9a15c;
+    background: transparent;
+    padding: 0 14px;
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s ease;
+
+    &::placeholder {
+      color: #7f7f7f;
+    }
+
+    &.input-error {
+      border-color: #ff4444;
+      background-color: rgba(255, 68, 68, 0.1);
+    }
+  }
+}
+
+.terms-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+
+  input {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    accent-color: #c9a15c;
+    border: 2px solid #c9a15c;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
+
+    &:checked {
+      background-color: #c9a15c;
+      border-color: #c9a15c;
+    }
+
+    &:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #000;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    &.checkbox-error {
+      border-color: #ff4444 !important;
+      accent-color: #ff4444 !important;
+      box-shadow: 0 0 0 1px #ff4444;
+
+      &:checked {
+        background-color: #ff4444 !important;
+        border-color: #ff4444 !important;
+      }
+
+      &:not(:checked) {
+        border-color: #ff4444 !important;
+      }
+    }
+  }
+
+  label {
+    color: #c9a15c;
+    font-size: 16px;
+    font-family: Roboto, sans-serif;
+    transition: color 0.3s ease;
+    cursor: pointer;
+    flex: 1;
+
+    &.label-error {
+      color: #ff4444;
+      text-decoration: underline;
+      text-decoration-color: #ff4444;
+      text-underline-offset: 3px;
+    }
+  }
+
+  .error-message {
+    color: #ff4444;
+    font-size: 13px;
+    font-family: Roboto, sans-serif;
+    margin-top: 4px;
+    display: block;
+    width: 100%;
+    animation: slideIn 0.2s ease-out;
+  }
+}
+
+button {
+  height: 54px;
+  border: none;
+  border-radius: 12px;
+  background: white;
+  color: #121212;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 13px;
+  font-family: Roboto, sans-serif;
+  margin-top: 4px;
+  display: block;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+

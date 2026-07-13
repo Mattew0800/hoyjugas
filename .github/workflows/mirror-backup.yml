@@ -1,0 +1,21 @@
+name: Mirror Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror repository
+        run: |
+          git remote add backup https://${{ secrets.BACKUP_TOKEN }}@github.com/${{ secrets.BACKUP_REPO }}.git
+          git push --mirror backup

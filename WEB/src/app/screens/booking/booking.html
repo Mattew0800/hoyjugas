@@ -1,0 +1,86 @@
+<div class="reservations-screen">
+
+  <app-header></app-header>
+
+
+
+  <div class="fields-list">
+    <div class="filters">
+      <div class="slider" [style.transform]="'translateX(' + (activeIndex * 100) + '%)'"></div>
+
+      <button
+        class="filter-button"
+        [class.active]="selectedFieldType === 'futbol5'"
+        (click)="selectFieldType('futbol5')">
+
+        Fútbol 5
+
+      </button>
+
+      <button
+        class="filter-button"
+        [class.active]="selectedFieldType === 'futbol7'"
+        (click)="selectFieldType('futbol7')">
+
+        Fútbol 7
+
+      </button>
+
+    </div>
+
+    <div class="field-card" (click)="goToFieldSchedule()">
+
+      <img
+        src="/cancha1.png"
+        alt="Cancha"
+        class="field-image"
+      />
+
+
+      <div class="field-content">
+
+        <div class="field-info">
+
+          <h2>
+            {{
+              selectedFieldType === 'futbol5'
+                ? 'Cancha 1 - Fútbol 5'
+                : 'Cancha 2 - Fútbol 7'
+            }}
+          </h2>
+
+          <p>Techada · Cesped sintético</p>
+
+        </div>
+
+        <div class="field-footer">
+
+          <span>08:00 - 23:00</span>
+
+          <span class="price">
+            {{
+              selectedFieldType === 'futbol5'
+                ? '$8.000/h'
+                : '$12.000/h'
+            }}
+          </span>
+
+        </div>
+
+        <button
+          class="view-button"
+          (click)="goToFieldSchedule()">
+
+          Ver turnos
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <app-bottom-navbar></app-bottom-navbar>
+
+</div>
