@@ -51,7 +51,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository, MercadoPagoService mercadoPagoService,CashMovementRepository cashMovementRepository,WhatsAppService whatsAppService) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, MercadoPagoService mercadoPagoService, WhatsAppService whatsAppService,CashMovementRepository cashMovementRepository,ComplexScheduleRepository complexScheduleRepository) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
