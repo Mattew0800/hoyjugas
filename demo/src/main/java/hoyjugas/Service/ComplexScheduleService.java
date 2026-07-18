@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalTime;
 import java.util.List;
 
@@ -40,6 +39,7 @@ public class ComplexScheduleService {
     }
 
     private void validateSchedule(LocalTime openingTime, LocalTime closingTime) {
+        if (closingTime.equals(LocalTime.MIDNIGHT)) return;
         if (!openingTime.isBefore(closingTime)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El horario de apertura debe ser anterior al de cierre");

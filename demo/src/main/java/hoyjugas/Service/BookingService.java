@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,6 @@ public class BookingService extends BaseBookingService {
         this.complexScheduleRepository = complexScheduleRepository;
     }
 
-
     public List<SpaceAvailabilityDTO> getAvailability(Long spaceId, LocalDate date) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
@@ -66,11 +66,20 @@ public class BookingService extends BaseBookingService {
                         "No hay horario configurado para ese espacio y día"
                 ));
         LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
-        LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
+        LocalDateTime endOfDay;
+        if (schedule.getClosingTime().equals(LocalTime.MIDNIGHT) ||
+                schedule.getClosingTime().isBefore(schedule.getOpeningTime())) {
+            endOfDay = date.plusDays(1).atTime(schedule.getClosingTime());
+            if (schedule.getClosingTime().equals(LocalTime.MIDNIGHT)) {
+                endOfDay = date.plusDays(1).atStartOfDay();
+            }
+        } else {
+            endOfDay = date.atTime(schedule.getClosingTime());
+        }
         List<Booking> ocuppiedBookings = bookingRepository.findBySpaceAndDate(
                 spaceId,
                 date.atStartOfDay(),
-                date.plusDays(1).atStartOfDay(),
+                endOfDay,
                 BookingStatus.CANCELADO
         );
         List<SpaceAvailabilityDTO> slots = new ArrayList<>();
@@ -444,7 +453,7 @@ public class BookingService extends BaseBookingService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Hoy no estamos abiertos "));
-}
+    }
 
     public Integer countAvailableSlotsToday() {
         LocalDate today = LocalDate.now();
@@ -455,9 +464,18 @@ public class BookingService extends BaseBookingService {
             Optional<SpaceSchedule> schedule = spaceScheduleRepository
                     .findBySpaceIdAndDayType(space.getId(), dayType);
             if (schedule.isEmpty()) continue;
-            long totalMinutes = ChronoUnit.MINUTES.between(
-                    schedule.get().getOpeningTime(),
-                    schedule.get().getClosingTime());
+            LocalTime openingTime = schedule.get().getOpeningTime();
+            LocalTime closingTime = schedule.get().getClosingTime();
+            long totalMinutes;
+            if (closingTime.equals(LocalTime.MIDNIGHT) || closingTime.isBefore(openingTime)) {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT)
+                        + ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, closingTime);
+                if (closingTime.equals(LocalTime.MIDNIGHT)) {
+                    totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT);
+                }
+            } else {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, closingTime);
+            }
             List<Booking> occupied = bookingRepository.findBySpaceAndDate(
                     space.getId(),
                     today.atStartOfDay(),

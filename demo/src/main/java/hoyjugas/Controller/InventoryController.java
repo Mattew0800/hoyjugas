@@ -20,7 +20,7 @@ public class InventoryController {
     private final InventoryService inventoryService;
     private final UserService userService;
 
-    @PostMapping("/create")
+    @PostMapping("/create-item")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InventoryItemResponseDTO> create(@Valid @RequestBody InventoryItemRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(inventoryService.create(dto));

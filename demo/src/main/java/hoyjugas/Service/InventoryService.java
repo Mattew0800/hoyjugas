@@ -92,15 +92,12 @@ public class InventoryService {
     @Transactional
     public InventoryMovementResponseDTO registerMovement(Long itemId, InventoryMovementRequestDTO dto, User employee) {
         InventoryItem item = getItemOrThrow(itemId);
-
         int quantityBefore = item.getQuantity();
         int quantityAfter = calculateNewQuantity(quantityBefore, dto.getQuantity(), dto.getType());
-
         if (quantityAfter < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "La cantidad resultante no puede ser negativa");
         }
-
         item.setQuantity(quantityAfter);
         inventoryItemRepository.save(item);
         InventoryMovement movement = new InventoryMovement();
@@ -112,18 +109,20 @@ public class InventoryService {
         movement.setReason(dto.getReason());
         movement.setRegisteredBy(employee);
         movement.setMovementNumber(generateMovementNumber());
-
-        return InventoryMovementResponseDTO.fromEntity(
-                inventoryMovementRepository.save(movement));
+        return InventoryMovementResponseDTO.fromEntity(inventoryMovementRepository.save(movement));
     }
 
     public List<InventoryMovementResponseDTO> getMovementsByItem(Long itemId) {
         getItemOrThrow(itemId);
-        return inventoryMovementRepository
+        List<InventoryMovementResponseDTO> inventoryMovement = inventoryMovementRepository
                 .findByInventoryItemIdOrderByCreatedAtDesc(itemId)
                 .stream()
                 .map(InventoryMovementResponseDTO::fromEntity)
                 .toList();
+        if (inventoryMovement.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se han encontrado movimientos de este item");
+        }
+        return inventoryMovement;
     }
 
     private int calculateNewQuantity(int current, int quantity, MovementType type) {

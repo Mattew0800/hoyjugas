@@ -34,7 +34,6 @@ public class GoodsReceiptController {
                 .body(goodsReceiptService.create(dto, employee));
     }
 
-
     @PostMapping("/get")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<GoodsReceiptResponseDTO> getById(@Valid @RequestBody GoodsReceiptIdRequestDTO dto) {

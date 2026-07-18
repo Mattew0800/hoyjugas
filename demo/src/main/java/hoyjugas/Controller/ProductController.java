@@ -26,13 +26,13 @@ public class ProductController {
     private final ProductService productService;
     private final UserService userService;
 
-    @PostMapping("/create")//✔
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDetailDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto) {
         return ResponseEntity.ok(productService.create(dto));
     }
 
-    @PostMapping("/update")//✔
+    @PostMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDetailDTO> updateProduct(@Valid @RequestBody ProductUpdateRequestDTO dto) {
         return ResponseEntity.ok(productService.update(dto));
@@ -44,7 +44,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getById(dto.getId()));
     }
 
-    @PostMapping("/barcode")
+    @PostMapping("/barcode")//en caso de que se quiera buscar aparte, medio redundante teniendo el filtrado completo pero al menos está
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ProductListDTO> getByBarcode(@Valid @RequestBody BarcodeRequestDTO dto) {
         return ResponseEntity.ok(productService.getByBarcode(dto.getBarcode()));
@@ -69,13 +69,13 @@ public class ProductController {
         return ResponseEntity.ok(Map.of("message","Estado del producto actualizado correctamente"));
     }
 
-    @PostMapping("/get-movements")//✔
+    @PostMapping("/get-movements")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<StockMovementResponseDTO>> getMovements(@Valid @RequestBody StockMovementFilterDTO dto) {
         return ResponseEntity.ok(productService.getMovements(dto));
     }
 
-    @PostMapping("/register-movement")//✔
+    @PostMapping("/register-movement")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<StockMovementResponseDTO> registerMovement(@Valid @RequestBody MovementRequestDTO dto){
         return ResponseEntity.ok(productService.registerMovement(dto,userService.validateEmployeePin(dto.getEmployeePin())));
