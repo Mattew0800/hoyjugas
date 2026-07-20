@@ -47,12 +47,7 @@ public class Sale {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(nullable = false, updatable = false)
     private LocalDateTime cancelledAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="cancelled_by")
-    private User cancelledBy;
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     private List<SaleItem> items = new ArrayList<>();

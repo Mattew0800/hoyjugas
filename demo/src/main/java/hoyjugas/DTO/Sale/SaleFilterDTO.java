@@ -1,6 +1,8 @@
 package hoyjugas.DTO.Sale;
 
+
 import hoyjugas.Enum.PaymentMethod;
+import hoyjugas.Enum.SaleStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -15,4 +17,5 @@ public class SaleFilterDTO {
     private int size = 20;
     private String sortBy = "date";
     private String sortDirection = "desc";
+    private SaleStatus status;
 }

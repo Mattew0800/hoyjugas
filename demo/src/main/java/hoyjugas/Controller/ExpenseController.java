@@ -66,4 +66,5 @@ public class ExpenseController {
     public ResponseEntity<Page<ExpenseResponseDTO>> getAll(@Valid @RequestBody ExpenseFilterDTO dto) {
         return ResponseEntity.ok(expenseService.getAll(dto));
     }
+
 }

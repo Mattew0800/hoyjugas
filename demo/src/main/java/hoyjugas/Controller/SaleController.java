@@ -44,6 +44,6 @@ public class SaleController {
     @PostMapping("/cancel")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<SaleResponseDTO> cancel(@Valid @RequestBody SaleCancelRequestDTO dto) {
-        return ResponseEntity.ok(saleService.cancelSale(dto.getId(),userService.validateEmployeePin(dto.getPin())));
+        return ResponseEntity.ok(saleService.cancelSale(dto.getId(),userService.validateEmployeePin(dto.getEmployeePin())));
     }
 }

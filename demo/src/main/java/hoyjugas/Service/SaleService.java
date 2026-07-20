@@ -28,6 +28,7 @@ public class SaleService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CashMovementRepository cashMovementRepository;
+    private final CashMovementService cashMovementService;
 
     @Transactional
     public SaleResponseDTO createSale(SaleRequestDTO dto, User employee) {
@@ -80,11 +81,11 @@ public class SaleService {
         }
         sale.setTotalAmount(total);
         sale.setItems(items);
+        sale.setStatus(SaleStatus.COMPLETADA);
         Sale saved = saleRepository.save(sale);
         registerCashMovement(saved, employee);
         return SaleResponseDTO.fromEntity(saved, alerts);
     }
-
     public SaleResponseDTO getById(Long id) {
         return SaleResponseDTO.fromEntity(getSaleOrThrow(id));
     }
@@ -104,6 +105,9 @@ public class SaleService {
 
     public SalePageResponseDTO getAll(SaleFilterDTO dto) {
 
+        SaleStatus status = dto.getStatus() != null
+                ? dto.getStatus()
+                : SaleStatus.COMPLETADA;
         Pageable pageable = PageRequest.of(
                 dto.getPage(),
                 dto.getSize(),
@@ -119,6 +123,7 @@ public class SaleService {
                 dto.getPaymentMethod(),
                 dto.getDateFrom(),
                 dto.getDateTo(),
+                status,
                 pageable
         );
 
@@ -127,7 +132,8 @@ public class SaleService {
                 dto.getEmployeeId(),
                 dto.getPaymentMethod(),
                 dto.getDateFrom(),
-                dto.getDateTo()
+                dto.getDateTo(),
+                status
         );
 
         return new SalePageResponseDTO(
@@ -170,12 +176,11 @@ public class SaleService {
 
     private Sale getSaleOrThrow(Long id) {
         return saleRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Venta no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venta no encontrada"));
     }
 
     @Transactional
-    public SaleResponseDTO cancelSale(Long saleId, User employee) {
+    public SaleResponseDTO cancelSale(Long saleId,User employee) {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Venta no encontrada"));
         if (sale.getStatus() == SaleStatus.CANCELADA) {
@@ -188,7 +193,14 @@ public class SaleService {
         }
         sale.setStatus(SaleStatus.CANCELADA);
         sale.setCancelledAt(LocalDateTime.now());
-        sale.setCancelledBy(employee);
+        CashMovement cancellation = new CashMovement();
+        cancellation.setReceiptNumber(generateReceiptNumber());
+        cancellation.setPaymentMethod(sale.getPaymentMethod());
+        cancellation.setAmount(sale.getTotalAmount());
+        cancellation.setType(CashMovementType.DEVOLUCION);
+        cancellation.setSale(sale);
+        cancellation.setRegisteredBy(employee);
+        cashMovementRepository.save(cancellation);
         return SaleResponseDTO.fromEntity(saleRepository.save(sale));
     }
 }

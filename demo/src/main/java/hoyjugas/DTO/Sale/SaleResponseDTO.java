@@ -35,11 +35,12 @@ public class SaleResponseDTO {
         dto.setItems(sale.getItems().stream()
                 .map(SaleItemResponseDTO::fromEntity)
                 .toList());
-        if(!alerts.isEmpty()){
+        if (alerts != null && !alerts.isEmpty()) {
             dto.setStockAlerts(alerts);
         }
         return dto;
     }
+
     public static SaleResponseDTO fromEntity(Sale sale) {
         return fromEntity(sale, null);
     }

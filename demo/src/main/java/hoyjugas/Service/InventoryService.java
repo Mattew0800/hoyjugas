@@ -67,18 +67,15 @@ public class InventoryService {
     @Transactional
     public InventoryItemResponseDTO update(Long id, InventoryItemRequestDTO dto) {
         InventoryItem item = getItemOrThrow(id);
-
         Category category = dto.getCategoryId() != null
                 ? categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Rubro no encontrado"))
                 : null;
-
         item.setName(dto.getName());
         item.setMinimumQuantity(dto.getMinimumQuantity());
         item.setDescription(dto.getDescription());
         item.setCategory(category);
-
         return InventoryItemResponseDTO.fromEntity(inventoryItemRepository.save(item));
     }
 
@@ -129,7 +126,7 @@ public class InventoryService {
         return switch (type) {
             case INGRESO -> current + quantity;
             case EGRESO -> current - quantity;
-            case AJUSTE -> quantity;  // el ajuste setea la cantidad directamente
+            case AJUSTE -> quantity;
         };
     }
 
@@ -140,7 +137,6 @@ public class InventoryService {
 
     private InventoryItem getItemOrThrow(Long id) {
         return inventoryItemRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Item de inventario no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item de inventario no encontrado"));
     }
 }
