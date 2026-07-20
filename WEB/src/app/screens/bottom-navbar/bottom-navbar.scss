@@ -1,19 +1,28 @@
 .bottom-navbar {
   position: fixed;
-  bottom: 0;
-  left: 0;
+  /* Separamos del borde inferior usando el safe-area para iOS + un margen extra */
+  bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
 
-  width: 100%;
-  height: 82px;
+  /* Centrado absoluto */
+  left: 50%;
+  transform: translateX(-50%);
 
-  background: #0f0f0f;
-  border-top: 1px solid #1f1f1f;
+  /* Tamaño y forma de la burbuja */
+  width: 85%;
+  max-width: 360px; /* Evita que sea muy ancha en pantallas grandes */
+  height: 55px;
+  border-radius: 40px; /* Bordes completamente redondeados */
+
+  /* Estilo visual flotante (Glassmorphism sutil) */
+  background: rgba(25, 25, 25, 0.85); /* Gris muy oscuro, casi negro, con transparencia */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Borde claro muy sutil para dar volumen */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* Sombra para despegarlo del fondo */
 
   display: flex;
-  justify-content: space-around;
+  justify-content: space-evenly;
   align-items: center;
-
-  padding-bottom: env(safe-area-inset-bottom);
 
   z-index: 1000;
 }
@@ -24,20 +33,22 @@
   align-items: center;
   justify-content: center;
 
-  gap: 4px;
+  gap: 6px; /* Espacio entre el icono y el punto activo */
 
   text-decoration: none;
-  color: #5f5f5f;
+  /* Área táctil generosa */
+  padding: 10px 20px;
 
   transition: all 0.2s ease;
 
   .icon {
-    width: 24px;
-    height: 24px;
-
+    width: 26px; /* Iconos un poco más grandes al no tener texto */
+    height: 26px;
+    margin-top: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease;
 
     img {
       width: 100%;
@@ -45,39 +56,121 @@
       object-fit: contain;
       display: block;
 
+      /* Color inactivo original */
       filter: brightness(0) saturate(100%) invert(38%) sepia(0%)
       saturate(0%) hue-rotate(187deg) brightness(92%) contrast(85%);
     }
   }
 
-  span {
-    font-size: 12px;
-    font-weight: 400;
+  .icon.phone img {
+    transform: translateY(-4px);
   }
 
   .active-dot {
-    width: 6px;
-    height: 6px;
-
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-
-    background: #c9a15c;
-
+    background: #c9a15c; /* Dorado */
     opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
 
-    transition: opacity 0.2s ease;
+  /* Micro-interacción: se achica un poco al tocarlo */
+  &:active .icon {
+    transform: scale(0.9);
   }
 }
 
 .nav-item.active {
-  color: #c9a15c;
+  .icon {
 
-  .icon img {
-    filter: brightness(0) saturate(100%) invert(73%) sepia(31%)
-    saturate(540%) hue-rotate(358deg) brightness(92%) contrast(88%);
+    img {
+      filter: brightness(0) saturate(100%) invert(73%) sepia(31%)
+      saturate(540%) hue-rotate(358deg) brightness(92%) contrast(88%);
+    }
   }
 
   .active-dot {
     opacity: 1;
+    transform: translateY(-2px);
   }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  align-items: end;
+  justify-content: center;
+
+  transform: translateY(-5rem);
+
+  z-index: 2000;
+}
+
+.whatsapp-modal {
+  width: 200px;
+  height: 75px;
+  padding: 8px;
+
+  border-radius: 20px;
+
+  background: rgba(25, 25, 25, 0.95);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+  text-align: center;
+
+  p {
+    color: white;
+    font-size: 14px;
+    margin-bottom: 0.4rem;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.actions button {
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  font-size: 18px;
+
+  transition: transform .2s ease;
+}
+
+.actions button:hover {
+  transform: scale(1.05);
+}
+
+.cancel {
+  background: #888;
+  color: #000;
+
+}
+
+.confirm {
+  background: #c9a15c;
+  color: #000;
+}
+
+.phone-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
 }

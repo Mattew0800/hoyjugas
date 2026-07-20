@@ -12,6 +12,8 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class BottomNavbar {
 
+  showWhatsappModal = false;
+
   constructor(private router: Router) {}
 
   goToHome(): void {
@@ -24,5 +26,16 @@ export class BottomNavbar {
 
   goToProfile(): void {
     this.router.navigate(['/profile']);
+  }
+
+
+
+  openWhatsapp(): void {
+    window.open(
+      'https://wa.me/5492234566785?text=Hola,%20quiero%20hacer%20una%20consulta',
+      '_blank'
+    );
+
+    this.showWhatsappModal = false;
   }
 }
