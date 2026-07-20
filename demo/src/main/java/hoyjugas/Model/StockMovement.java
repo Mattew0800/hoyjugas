@@ -46,7 +46,6 @@ public class StockMovement {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Solo para INGRESO — referencia al remito
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goods_receipt_id")
     private GoodsReceipt goodsReceipt;

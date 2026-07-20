@@ -63,12 +63,16 @@ public class GoodsReceiptService {
             item.setNewSalePrice(itemDto.getNewSalePrice());
             items.add(item);
             updateProduct(product, itemDto);
-            registerStockMovement(receipt, product, itemDto, dto.getVoucher(), employee);
             total = total.add(subtotal);
         }
         receipt.setTotalAmount(total);
         receipt.setItems(items);
         GoodsReceipt saved = goodsReceiptRepository.save(receipt);
+        for (GoodsReceiptItemRequestDTO itemDto : dto.getItems()) {
+            Product product = productRepository.findById(itemDto.getProductId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+            registerStockMovement(saved, product, itemDto, dto.getVoucher(), employee);
+        }
         registerExpense(saved, employee);
         return GoodsReceiptResponseDTO.fromEntity(saved);
     }

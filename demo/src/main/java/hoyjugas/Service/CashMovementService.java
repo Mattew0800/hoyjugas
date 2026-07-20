@@ -25,7 +25,6 @@ public class CashMovementService {
     public Page<CashMovementListDTO> getAll(CashMovementFilterDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(),
                 Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy()));
-
         return cashMovementRepository.findAllWithFilters(
                 dto.getDateFrom(),
                 dto.getDateTo(),
@@ -46,22 +45,23 @@ public class CashMovementService {
                 Pageable.unpaged()
         ).getContent();
 
-        BigDecimal totalIngresos = movements.stream()
+        BigDecimal totalIncome = movements.stream()
                 .filter(m -> m.getType() == CashMovementType.TURNO
                         || m.getType() == CashMovementType.VENTA)
                 .map(CashMovement::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalEgresos = movements.stream()
+        BigDecimal totalOutcome = movements.stream()
                 .filter(m -> m.getType() == CashMovementType.GASTO
                         || m.getType() == CashMovementType.DEVOLUCION)
                 .map(CashMovement::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new CashMovementSummaryDTO(
-                totalIngresos,
-                totalEgresos,
-                totalIngresos.subtract(totalEgresos)
+                totalIncome,
+                totalOutcome,
+                totalIncome.subtract(totalOutcome)
         );
     }
+
 }

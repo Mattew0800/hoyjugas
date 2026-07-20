@@ -1,5 +1,6 @@
 package hoyjugas.Repository;
 
+import hoyjugas.Enum.SaleStatus;
 import hoyjugas.Model.Sale;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +23,7 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
             AND (:dateFrom IS NULL OR s.date >= :dateFrom)
             AND (:dateTo IS NULL OR s.date <= :dateTo)
+            AND (:status IS NULL OR s.status = :status)
             ORDER BY s.date DESC
             """)
     Page<Sale> findAllWithFilters(
@@ -30,6 +32,7 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             @Param("paymentMethod") PaymentMethod paymentMethod,
             @Param("dateFrom") LocalDateTime dateFrom,
             @Param("dateTo") LocalDateTime dateTo,
+            @Param("status")SaleStatus status,
             Pageable pageable
     );
 
@@ -40,13 +43,14 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
         AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
         AND (:dateFrom IS NULL OR s.date >= :dateFrom)
         AND (:dateTo IS NULL OR s.date <= :dateTo)
-        AND s.status != 'CANCELADA'
+        AND (:status IS NULL OR s.status = :status)
         """)
     BigDecimal getTotalWithFilters(
             @Param("clientId") Long clientId,
             @Param("employeeId") Long employeeId,
             @Param("paymentMethod") PaymentMethod paymentMethod,
             @Param("dateFrom") LocalDateTime dateFrom,
-            @Param("dateTo") LocalDateTime dateTo
+            @Param("dateTo") LocalDateTime dateTo,
+            @Param("status")SaleStatus status
     );
 }

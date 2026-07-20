@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @Data
 public class SaleCancelRequestDTO extends SaleIdRequestDTO{
     @NotBlank(message = "El pin es obligatorio")
-    private String pin;
+    private String employeePin;
 }

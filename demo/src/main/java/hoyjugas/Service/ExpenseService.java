@@ -44,8 +44,7 @@ public class ExpenseService {
     @Transactional
     public ExpenseConceptResponseDTO createConcept(ExpenseConceptRequestDTO dto) {
         if (expenseConceptRepository.existsByNameIgnoreCase(dto.getName())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un concepto con ese nombre");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un concepto con ese nombre");
         }
         ExpenseConcept concept = new ExpenseConcept();
         concept.setName(dto.getName());
@@ -68,14 +67,12 @@ public class ExpenseService {
         ExpenseConcept concept = expenseConceptRepository.findById(dto.getConceptId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Concepto no encontrado"));
-
         Supplier supplier = null;
         if (dto.getSupplierId() != null) {
             supplier = supplierRepository.findById(dto.getSupplierId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "Proveedor no encontrado"));
         }
-
         Expense expense = new Expense();
         expense.setMovementNumber(generateExpenseNumber());
         expense.setConcept(concept);

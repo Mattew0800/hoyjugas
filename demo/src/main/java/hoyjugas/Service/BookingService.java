@@ -450,9 +450,7 @@ public class BookingService extends BaseBookingService {
         DayType today = pricingService.resolveDayType(LocalDate.now().getDayOfWeek());
         return complexScheduleRepository.findByDayType(today)
                 .map(ComplexScheduleResponseDTO::fromEntity)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Hoy no estamos abiertos "));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Hoy no estamos abiertos "));
     }
 
     public Integer countAvailableSlotsToday() {
