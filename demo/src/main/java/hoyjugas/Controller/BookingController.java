@@ -7,6 +7,8 @@ import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
 import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
+import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
+import hoyjugas.DTO.User.ClientIdRequestDTO;
 import hoyjugas.Model.Booking;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
@@ -121,20 +123,19 @@ public class BookingController {
                         Sort.by(Sort.Direction.fromString(dto.getSortDirection()), dto.getSortBy()))
         ));
     }
-//    @PostMapping("/process-refund")
-//    @PreAuthorize("hasRole('EMPLOYEE')")
-//    public ResponseEntity<BookingResponseDTO> processRefund(
-//            @Valid @RequestBody ProcessRefundRequestDTO dto) {
-//        User employee = userService.validateEmployeePin(dto.getEmployeePin());
-//        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
-//    }
 
+    @PostMapping("/process-refund")//para casos específicos, no esta terminado
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<BookingResponseDTO> processRefund(@Valid @RequestBody ProcessRefundRequestDTO dto) {
+        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
+    }
 
-//    @PostMapping("/client-debt")
-//    @PreAuthorize("hasRole('USER')")
-//    public ResponseEntity<BigDecimal> getClientDebt(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
-//        return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
-//    }
+    @PostMapping("/client-debt")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BigDecimal> getClientDebt(@Valid @RequestBody ClientIdRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getClientDebt(dto.getClientId(),me.getId()));
+    }
 
     @PostMapping("/reschedule")
     @PreAuthorize("hasRole('USER')")

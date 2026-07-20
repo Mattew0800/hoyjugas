@@ -325,28 +325,22 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO processRefund(Long bookingId, ProcessRefundRequestDTO dto, User employee) {
         Booking booking = getBookingOrThrow(bookingId);
-
         if (!booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está cancelado");
         }
-
         if (booking.getRefunded()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La devolución ya fue procesada");
         }
-
         Payment refund = paymentRepository
                 .findByBookingIdAndTypeAndStatus(bookingId, PaymentType.DEVOLUCION, PaymentStatus.PENDIENTE)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay devolución pendiente"));
-
         refund.setMethod(dto.getPaymentMethod());
         refund.setCollectedBy(employee);
         refund.setStatus(PaymentStatus.PAGADO);
         refund.setTransactionId(dto.getTransactionId());
         paymentRepository.save(refund);
-
         booking.setRefunded(true);
         bookingRepository.save(booking);
-
         return buildBookingResponseDTO(booking);
     }
 
@@ -495,4 +489,6 @@ public class BookingService extends BaseBookingService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
     }
+
+
 }
