@@ -1,8 +1,9 @@
-import {Component, Inject, Renderer2} from '@angular/core';
+import {Component, Inject, OnInit, Renderer2} from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Router } from '@angular/router';
 import {CommonModule, DOCUMENT} from '@angular/common';
+import {BookingService} from '../../services/BookingService/booking-service';
 
 @Component({
   selector: 'app-booking',
@@ -14,16 +15,19 @@ import {CommonModule, DOCUMENT} from '@angular/common';
   templateUrl: './booking.html',
   styleUrl: './booking.scss',
 })
-export class Booking {
+export class Booking implements OnInit{
 
   selectedFieldType: 'futbol5' | 'futbol7' = 'futbol5';
 
   selectedDate: Date = new Date();
 
+  closingTime: string = "";
+
   constructor(
     private router: Router,
     private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    public bService: BookingService
   ) {
 
   }
@@ -31,6 +35,7 @@ export class Booking {
   ngOnInit() {
     //this.meta.updateTag({ name: 'theme-color', content: '#CEA764' });
     this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
+
   }
 
   get activeIndex(): number {
@@ -52,4 +57,8 @@ export class Booking {
   goToFieldSchedule(): void {
     this.router.navigate(['/field-schedule']);
   }
+
+
+
 }
+
