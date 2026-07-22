@@ -19,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +50,7 @@ public class BookingController {
     }
 
     @PostMapping("/detail")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookingResponseDTO> getBooking(@Valid @RequestBody BookingDetailRequestDTO dto) {
         return ResponseEntity.ok(bookingService.getBooking(dto.getBookingId()));
     }

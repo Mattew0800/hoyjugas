@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalTime;
 import java.util.List;
 
@@ -29,20 +28,34 @@ public class ComplexScheduleService {
     @Transactional
     public ComplexScheduleResponseDTO save(ComplexScheduleRequestDTO dto) {
         validateSchedule(dto.getOpeningTime(), dto.getClosingTime());
-        ComplexSchedule schedule = complexScheduleRepository
-                .findByDayType(dto.getDayType())
-                .orElse(new ComplexSchedule());
+        ComplexSchedule schedule = new ComplexSchedule();
         schedule.setDayType(dto.getDayType());
         schedule.setOpeningTime(dto.getOpeningTime());
         schedule.setClosingTime(dto.getClosingTime());
-        return ComplexScheduleResponseDTO.fromEntity(
-                complexScheduleRepository.save(schedule));
+        return ComplexScheduleResponseDTO.fromEntity(complexScheduleRepository.save(schedule));
     }
 
     private void validateSchedule(LocalTime openingTime, LocalTime closingTime) {
         if (!openingTime.isBefore(closingTime)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El horario de apertura debe ser anterior al de cierre");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El horario de apertura debe ser anterior al de cierre");
         }
+    }
+
+    @Transactional
+    public void deleteComplexSchedule(Long id) {
+        ComplexSchedule schedule = complexScheduleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Horario no encontrado" ));
+        complexScheduleRepository.delete(schedule);
+    }
+
+    @Transactional
+    public ComplexScheduleResponseDTO updateComplexSchedule(Long id, ComplexScheduleRequestDTO dto) {
+        ComplexSchedule schedule=complexScheduleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Horario no encontrado"));
+        validateSchedule(dto.getOpeningTime(), dto.getClosingTime());
+        schedule.setDayType(dto.getDayType());
+        schedule.setOpeningTime(dto.getOpeningTime());
+        schedule.setClosingTime(dto.getClosingTime());
+        return ComplexScheduleResponseDTO.fromEntity(complexScheduleRepository.save(schedule));
     }
 }
