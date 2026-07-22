@@ -36,8 +36,10 @@ public class ComplexScheduleService {
     }
 
     private void validateSchedule(LocalTime openingTime, LocalTime closingTime) {
+        if (closingTime.equals(LocalTime.MIDNIGHT)) return;
         if (!openingTime.isBefore(closingTime)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El horario de apertura debe ser anterior al de cierre");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El horario de apertura debe ser anterior al de cierre");
         }
     }
 

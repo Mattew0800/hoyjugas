@@ -571,9 +571,18 @@ public class BookingService extends BaseBookingService {
             Optional<SpaceSchedule> schedule = spaceScheduleRepository
                     .findBySpaceIdAndDayType(space.getId(), dayType);
             if (schedule.isEmpty()) continue;
-            long totalMinutes = ChronoUnit.MINUTES.between(
-                    schedule.get().getOpeningTime(),
-                    schedule.get().getClosingTime());
+            LocalTime openingTime = schedule.get().getOpeningTime();
+            LocalTime closingTime = schedule.get().getClosingTime();
+            long totalMinutes;
+            if (closingTime.equals(LocalTime.MIDNIGHT) || closingTime.isBefore(openingTime)) {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT)
+                        + ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, closingTime);
+                if (closingTime.equals(LocalTime.MIDNIGHT)) {
+                    totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT);
+                }
+            } else {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, closingTime);
+            }
             List<Booking> occupied = bookingRepository.findBySpaceAndDate(
                     space.getId(),
                     today.atStartOfDay(),
