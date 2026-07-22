@@ -167,7 +167,7 @@ public class WhatsAppService {
                 
                  La seña abonada no es reembolsable por ausencia.
                 
-                Si creés que es un error, no dudes en comunicarte con nosotros.
+                Si creés que es un error, no dudes en comunicarte con nosotros!.
                 """,
                     client.getName(),
                     config.getSportsComplexName(),

@@ -448,13 +448,13 @@ public class BookingService extends BaseBookingService {
     //}
 
     @Transactional
-    public void markAbsent(Long bookingId, User employee) {//ver como ligar al empleado
+    public void markAbsent(Long bookingId, User employee) {
         Booking booking = getBookingOrThrow(bookingId);
         if (!booking.getBookingStatus().equals(BookingStatus.CONFIRMADO)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El turno no está confirmado");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está confirmado");
         }
         booking.setBookingStatus(BookingStatus.FINALIZADO);
+        booking.setMarkedAbsentBy(employee);
         bookingRepository.save(booking);
         whatsAppService.sendAbsentNotification(booking);
     }

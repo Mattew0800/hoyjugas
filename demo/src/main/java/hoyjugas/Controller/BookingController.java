@@ -135,8 +135,7 @@ public class BookingController {
     @PostMapping("/mark-absent")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<?> markAbsent(@Valid @RequestBody MarkAbsentRequestDTO dto) {
-        User employee = userService.validateStaffPin(dto.getEmployeePin());
-        bookingService.markAbsent(dto.getBookingId(), employee);
+        bookingService.markAbsent(dto.getBookingId(), userService.validateStaffPin(dto.getEmployeePin()));
         return ResponseEntity.ok(Map.of("message","Reserva marcada como ausente exitosamente"));
     }
 
