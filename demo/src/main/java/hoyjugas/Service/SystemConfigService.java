@@ -57,7 +57,6 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
-
     }
 
     

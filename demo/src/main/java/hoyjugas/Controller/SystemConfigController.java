@@ -20,20 +20,14 @@ public class SystemConfigController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SystemConfig> addSystemConfig(
-            @Valid @RequestBody SystemConfigCreateDTO dto
-    ) {
+    public ResponseEntity<SystemConfig> addSystemConfig(@Valid @RequestBody SystemConfigCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(systemConfigService.createConfig(dto));
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SystemConfig> updateSystemConfig(
-            @Valid @RequestBody SystemConfigUpdateDTO dto
-    ) {
-        return ResponseEntity.ok(
-                systemConfigService.updateConfig(dto)
-        );
+    public ResponseEntity<SystemConfig> updateSystemConfig(@Valid @RequestBody SystemConfigUpdateDTO dto) {
+        return ResponseEntity.ok(systemConfigService.updateConfig(dto));
     }
 }

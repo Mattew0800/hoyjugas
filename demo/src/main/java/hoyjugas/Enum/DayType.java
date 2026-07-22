@@ -10,5 +10,6 @@ public enum DayType {
     DOMINGO,
     FIN_DE_SEMANA,
     DIA_DE_SEMANA,
-    FERIADO
+    FERIADO,
+    HOY
 }
