@@ -21,7 +21,7 @@ public interface CashMovementRepository extends JpaRepository<CashMovement, Long
             AND (:paymentMethod IS NULL OR c.paymentMethod = :paymentMethod)
             AND (:type IS NULL OR c.type = :type)
             AND (:employeeId IS NULL OR c.registeredBy.id = :employeeId)
-            ORDER BY c.date DESC
+            ORDER BY c.date ASC
             """)
     Page<CashMovement> findAllWithFilters(
             @Param("dateFrom") LocalDateTime dateFrom,

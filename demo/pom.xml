@@ -197,6 +197,12 @@
 			<version>5.2.3</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-full</artifactId>
+			<version>5.2.3</version>
+		</dependency>
+		<!-- Creacion pdf -->
+		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itext7-core</artifactId>
 			<version>7.2.5</version>

@@ -150,7 +150,7 @@ public class GoodsReceiptService {
         return String.format("REM-%08d", count);
     }
 
-    private String generateStockMovementNumber() {
+    public String generateStockMovementNumber() {
         long count = stockMovementRepository.count() + 1;
         return String.format("MOV-%08d", count);
     }
