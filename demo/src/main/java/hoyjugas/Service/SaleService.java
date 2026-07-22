@@ -2,6 +2,7 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.Sale.*;
 import hoyjugas.Enum.CashMovementType;
+import hoyjugas.Enum.MovementType;
 import hoyjugas.Enum.SaleStatus;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -24,11 +25,11 @@ import java.util.List;
 public class SaleService {
 
     private final SaleRepository saleRepository;
-    private final SaleItemRepository saleItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CashMovementRepository cashMovementRepository;
-    private final CashMovementService cashMovementService;
+    private final StockMovementRepository stockMovementRepository;
+    private final GoodsReceiptService goodsReceiptService;
 
     @Transactional
     public SaleResponseDTO createSale(SaleRequestDTO dto, User employee) {
@@ -73,6 +74,16 @@ public class SaleService {
             items.add(item);
             product.setStock(product.getStock() - itemDto.getQuantity());
             productRepository.save(product);
+            StockMovement movement = new StockMovement();
+            movement.setProduct(product);
+            movement.setType(MovementType.EGRESO);
+            movement.setQuantity(itemDto.getQuantity());
+            movement.setStockBefore(product.getStock() + itemDto.getQuantity()); // antes del descuento
+            movement.setStockAfter(product.getStock());
+            movement.setReason("Venta " + sale.getSaleNumber());
+            movement.setRegisteredBy(employee);
+            movement.setMovementNumber(goodsReceiptService.generateStockMovementNumber());
+            stockMovementRepository.save(movement);
             total = total.add(subtotal);
             if (product.getStock() <= product.getMinimumStock()) {
                 alerts.add(String.format("⚠️ %s quedó con stock bajo (%d unidades)",
@@ -190,6 +201,16 @@ public class SaleService {
             Product product = item.getProduct();
             product.setStock(product.getStock() + item.getQuantity());
             productRepository.save(product);
+            StockMovement movement = new StockMovement();
+            movement.setProduct(item.getProduct());
+            movement.setType(MovementType.INGRESO);
+            movement.setQuantity(item.getQuantity());
+            movement.setStockBefore(product.getStock() - item.getQuantity());
+            movement.setStockAfter(product.getStock());
+            movement.setReason("Anulación venta " + sale.getSaleNumber());
+            movement.setRegisteredBy(employee);
+            movement.setMovementNumber(goodsReceiptService.generateStockMovementNumber());
+            stockMovementRepository.save(movement);
         }
         sale.setStatus(SaleStatus.CANCELADA);
         sale.setCancelledAt(LocalDateTime.now());

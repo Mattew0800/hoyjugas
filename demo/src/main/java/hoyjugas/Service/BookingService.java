@@ -490,5 +490,4 @@ public class BookingService extends BaseBookingService {
                         HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
     }
 
-
 }

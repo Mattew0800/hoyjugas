@@ -1,6 +1,5 @@
 package hoyjugas.DTO.Sale;
 
-
 import hoyjugas.Enum.PaymentMethod;
 import hoyjugas.Enum.SaleStatus;
 import lombok.Data;

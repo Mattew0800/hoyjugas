@@ -17,8 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import hoyjugas.Model.Category;
+
+import static hoyjugas.Service.FormatUtils.formatEnum;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +31,7 @@ public class InventoryService {
     private final InventoryItemRepository inventoryItemRepository;
     private final InventoryMovementRepository inventoryMovementRepository;
     private final CategoryRepository categoryRepository;
-    private final UserService userService;
+    private final ExcelService excelService;
 
     public List<InventoryItemResponseDTO> getAll() {
         return inventoryItemRepository.findAll()
@@ -138,5 +142,29 @@ public class InventoryService {
     private InventoryItem getItemOrThrow(Long id) {
         return inventoryItemRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item de inventario no encontrado"));
+    }
+
+    public byte[] exportMovementsExcel(Long itemId) {
+        List<InventoryMovement> movements = inventoryMovementRepository
+                .findByInventoryItemIdOrderByCreatedAtAsc(itemId);
+        List<String> headers = List.of(
+                "N° Movimiento", "Item", "Tipo", "Cantidad",
+                "Antes", "Después", "Motivo", "Empleado", "Fecha");
+        List<List<String>> rows = movements.stream()
+                .map(m -> List.of(
+                        m.getMovementNumber(),
+                        m.getInventoryItem().getName(),
+                        formatEnum(m.getType().name()),
+                        String.valueOf(m.getQuantity()),
+                        String.valueOf(m.getQuantityBefore()),
+                        String.valueOf(m.getQuantityAfter()),
+                        m.getReason() != null ? m.getReason() : "",
+                        m.getRegisteredBy().getName(),
+                        m.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                ))
+                .toList();
+
+        return excelService.export(headers, rows,
+                "Movimientos " + (itemId != null ? "item " + itemId : "inventario"));
     }
 }

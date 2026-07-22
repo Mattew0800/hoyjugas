@@ -19,7 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static hoyjugas.Service.FormatUtils.formatEnum;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final ExcelService excelService;
 
     public Page<ProductDetailDTO> getAll(ProductFilterDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(),
@@ -200,5 +205,31 @@ public class ProductService {
                 .stream()
                 .map(ProductListDTO::fromEntity)
                 .toList();
+    }
+
+    public byte[] exportStockMovementsExcel(StockMovementFilterDTO dto) {
+        List<StockMovement> movements = stockMovementRepository
+                .findAllWithFilters(dto.getProductId(), dto.getType(),
+                        dto.getDateFrom(), dto.getDateTo(), Pageable.unpaged())
+                .getContent();
+        List<String> headers = List.of(
+                "N° Movimiento", "Producto", "Código", "Tipo", "Cantidad",
+                "Stock Antes", "Stock Después", "Motivo", "Empleado", "Fecha");
+        List<List<String>> rows = movements.stream()
+                .map(m -> List.of(
+                        m.getMovementNumber(),
+                        m.getProduct().getName(),
+                        m.getProduct().getInternalCode(),
+                        formatEnum(m.getType().name()),
+                        String.valueOf(m.getQuantity()),
+                        String.valueOf(m.getStockBefore()),
+                        String.valueOf(m.getStockAfter()),
+                        m.getReason() != null ? m.getReason() : "",
+                        m.getRegisteredBy().getName(),
+                        m.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                ))
+                .toList();
+
+        return excelService.export(headers, rows, "Movimientos stock");
     }
 }
