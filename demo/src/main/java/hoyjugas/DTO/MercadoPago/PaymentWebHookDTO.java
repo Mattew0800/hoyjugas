@@ -1,7 +1,7 @@
 package hoyjugas.DTO.MercadoPago;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-
 
 @Getter
 @Setter
@@ -30,9 +30,9 @@ public class PaymentWebHookDTO {
 
 
     @Data
-public class PaymentWebHookDTOData{
-    @JsonProperty("id")
-   private  String id;
-}
+    public class PaymentWebHookDTOData{
+        @JsonProperty("id")
+        private  String id;
+    }
 
 }
