@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -45,9 +44,7 @@ public class SpaceService {
     @Transactional
     public SpaceResponseDTO updateSpace(Long spaceId, SpaceRequestDTO dto) {
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Espacio no encontrado"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         space.setName(dto.getName());
         space.setType(dto.getType());
         space.setSlotDuration(dto.getSlotDuration());

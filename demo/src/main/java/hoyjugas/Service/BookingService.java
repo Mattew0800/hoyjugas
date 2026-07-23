@@ -5,7 +5,6 @@ import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.PaymentRequestDTO;
 import hoyjugas.DTO.Payment.ProcessRefundRequestDTO;
 import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
-import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
@@ -15,8 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -311,8 +313,15 @@ public class BookingService extends BaseBookingService {
                 });
     }
 
-    public BookingResponseDTO getBooking(Long bookingId) {
-        return buildBookingResponseDTO(getBookingOrThrow(bookingId));
+    public BookingResponseDTO getBooking(Long bookingId,Long userId,Role role) {
+        Booking booking= getBookingOrThrow(bookingId);
+        if(role.equals(Role.ADMIN)||role.equals(Role.EMPLOYEE)){
+            return buildBookingResponseDTO(booking);
+        }
+        if(!booking.getClient().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes ver este turno");
+        }
+        return buildBookingResponseDTO(booking);
     }
 
     public BigDecimal getClientDebt(Long clientId,Long requesterId) {
@@ -436,7 +445,6 @@ public class BookingService extends BaseBookingService {
                 PaymentType.DEVOLUCION,
                 PaymentStatus.PAGADO
         );
-
         Booking newBooking = buildBooking(
                 original.getClient(),
                 space,
@@ -459,13 +467,106 @@ public class BookingService extends BaseBookingService {
         return buildBookingResponseDTO(saved);
     }
 
+    @Transactional(readOnly = true)
     public ComplexScheduleResponseDTO getComplexSchedule() {
-        DayType today = pricingService.resolveDayType(LocalDate.now().getDayOfWeek());
-        return complexScheduleRepository.findByDayType(today)
-                .map(ComplexScheduleResponseDTO::fromEntity)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Hoy no estamos abiertos "));
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        List<ComplexSchedule> yesterdaySchedules = findSchedules(today.minusDays(1));
+        for (ComplexSchedule schedule : yesterdaySchedules) {
+            boolean crossesMidnight = schedule.getClosingTime().equals(LocalTime.MIDNIGHT)
+                    || schedule.getClosingTime().isBefore(schedule.getOpeningTime());
+            if (crossesMidnight && now.isBefore(schedule.getClosingTime())) {
+                return new ComplexScheduleResponseDTO(schedule.getOpeningTime(),formatDayOfWeek(today.minusDays(1).getDayOfWeek()), schedule.getClosingTime(),true);
+            }
+        }
+        List<ComplexSchedule> todaySchedules = findSchedules(today);
+        for (ComplexSchedule schedule : todaySchedules) {
+            boolean crossesMidnight = schedule.getClosingTime().equals(LocalTime.MIDNIGHT)
+                    || schedule.getClosingTime().isBefore(schedule.getOpeningTime());
+            boolean isOpen = crossesMidnight
+                    ? !now.isBefore(schedule.getOpeningTime()) || now.isBefore(schedule.getClosingTime())
+                    : !now.isBefore(schedule.getOpeningTime()) && now.isBefore(schedule.getClosingTime());
+            if (isOpen) {
+                return new ComplexScheduleResponseDTO(
+                        schedule.getOpeningTime(),
+                        formatDayOfWeek(today.getDayOfWeek()),
+                        schedule.getClosingTime(),
+                        true
+                );
+            }
+        }
+        for (ComplexSchedule schedule : todaySchedules) {
+            if (now.isBefore(schedule.getOpeningTime())) {
+                return new ComplexScheduleResponseDTO(
+                        schedule.getOpeningTime(),
+                        formatDayType(DayType.HOY),
+                        schedule.getClosingTime(),
+                        false
+                );
+            }
+        }
+        for (int i = 1; i <= 7; i++) {
+            LocalDate nextDay = today.plusDays(i);
+            List<ComplexSchedule> schedules = findSchedules(nextDay);
+            if (!schedules.isEmpty()) {
+                ComplexSchedule first = schedules.getFirst();
+                return new ComplexScheduleResponseDTO(
+                        first.getOpeningTime(),
+                        formatDayOfWeek(nextDay.getDayOfWeek()),
+                        first.getClosingTime(),
+                        false
+                );
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No hay horarios configurados.");
+    }
+
+    private String formatDayType(DayType dayType) {
+        return switch (dayType) {
+            case LUNES -> "Lunes";
+            case MARTES -> "Martes";
+            case MIERCOLES -> "Miércoles";
+            case JUEVES -> "Jueves";
+            case VIERNES -> "Viernes";
+            case SABADO -> "Sábado";
+            case DOMINGO -> "Domingo";
+            default -> dayType.name();
+        };
+    }
+
+
+    private List<ComplexSchedule> findSchedules(LocalDate date) {
+        DayType specificDay = switch (date.getDayOfWeek()) {
+            case MONDAY -> DayType.LUNES;
+            case TUESDAY -> DayType.MARTES;
+            case WEDNESDAY -> DayType.MIERCOLES;
+            case THURSDAY -> DayType.JUEVES;
+            case FRIDAY -> DayType.VIERNES;
+            case SATURDAY -> DayType.SABADO;
+            case SUNDAY -> DayType.DOMINGO;
+        };
+        List<ComplexSchedule> schedules =
+                complexScheduleRepository.findAllByDayTypeOrderByOpeningTime(specificDay);
+        if (!schedules.isEmpty()) {
+            return schedules;
+        }
+        DayType grouped = switch (date.getDayOfWeek()) {
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> DayType.DIA_DE_SEMANA;
+            case SATURDAY, SUNDAY -> DayType.FIN_DE_SEMANA;
+        };
+        return complexScheduleRepository.findAllByDayTypeOrderByOpeningTime(grouped);
+    }
+
+    private String formatDayOfWeek(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "Lunes";
+            case TUESDAY -> "Martes";
+            case WEDNESDAY -> "Miércoles";
+            case THURSDAY -> "Jueves";
+            case FRIDAY -> "Viernes";
+            case SATURDAY -> "Sábado";
+            case SUNDAY -> "Domingo";
+        };
     }
 
     public Integer countAvailableSlotsToday() {
@@ -477,9 +578,18 @@ public class BookingService extends BaseBookingService {
             Optional<SpaceSchedule> schedule = spaceScheduleRepository
                     .findBySpaceIdAndDayType(space.getId(), dayType);
             if (schedule.isEmpty()) continue;
-            long totalMinutes = ChronoUnit.MINUTES.between(
-                    schedule.get().getOpeningTime(),
-                    schedule.get().getClosingTime());
+            LocalTime openingTime = schedule.get().getOpeningTime();
+            LocalTime closingTime = schedule.get().getClosingTime();
+            long totalMinutes;
+            if (closingTime.equals(LocalTime.MIDNIGHT) || closingTime.isBefore(openingTime)) {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT)
+                        + ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, closingTime);
+                if (closingTime.equals(LocalTime.MIDNIGHT)) {
+                    totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT);
+                }
+            } else {
+                totalMinutes = ChronoUnit.MINUTES.between(openingTime, closingTime);
+            }
             List<Booking> occupied = bookingRepository.findBySpaceAndDate(
                     space.getId(),
                     today.atStartOfDay(),
