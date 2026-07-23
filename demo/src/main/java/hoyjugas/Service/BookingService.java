@@ -313,8 +313,12 @@ public class BookingService extends BaseBookingService {
                 });
     }
 
-    public BookingResponseDTO getBooking(Long bookingId) {
-        return buildBookingResponseDTO(getBookingOrThrow(bookingId));
+    public BookingResponseDTO getBooking(Long bookingId,Long userId) {
+        Booking booking= getBookingOrThrow(bookingId);
+        if(!booking.getClient().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes ver este turno");
+        }
+        return buildBookingResponseDTO(booking);
     }
 
     public BigDecimal getClientDebt(Long clientId,Long requesterId) {

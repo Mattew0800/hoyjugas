@@ -35,7 +35,7 @@ public class ComplexScheduleController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@Valid @RequestBody ComplexScheduleIdRequestDTO dto) {
         complexScheduleService.deleteComplexSchedule(dto.getId());
-        return ResponseEntity.ok(Map.of("message: ", "Horario eliminado exitosamente!"));
+        return ResponseEntity.ok(Map.of("message ", "Horario eliminado exitosamente!"));
     }
 
     @PutMapping("/update")

@@ -96,7 +96,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
                 "http://localhost:8080",
-                "http://localhost:8080"
+                "http://localhost:3306"
         ));
        
         configuration.setAllowedOriginPatterns(List.of("*"));
