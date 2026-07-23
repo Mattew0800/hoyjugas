@@ -13,7 +13,7 @@ export class BookingService {
   }
 
   getAvaliableSlotsToday(){
-    return this.http.get(`${this.API_URL}/available-slots-today`, { withCredentials: true });
+    return this.http.get<AvailableSlotsResponse>(`${this.API_URL}/available-slots-today`, { withCredentials: true });
   }
 
   getComplexSchedule(){

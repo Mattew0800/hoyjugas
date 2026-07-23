@@ -23,6 +23,7 @@ export class Home implements OnInit, OnDestroy{
 
   complexClosed: boolean = false;
   scheduleError: boolean = false;
+  avaliableSlotsToday: number = 0;
 
   constructor(
     private meta: Meta,
@@ -57,6 +58,7 @@ export class Home implements OnInit, OnDestroy{
   getAvaliableSlotsToday(){
     return this.bService.getAvaliableSlotsToday().subscribe({
       next: (r)=>{
+        this.avaliableSlotsToday = r["Turnos disponibles totales:"];
         console.log(r);
       },
       error: (e)=>{
