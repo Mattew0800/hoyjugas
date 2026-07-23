@@ -51,8 +51,8 @@ public class BookingController {
 
     @PostMapping("/detail")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> getBooking(@Valid @RequestBody BookingDetailRequestDTO dto) {
-        return ResponseEntity.ok(bookingService.getBooking(dto.getBookingId()));
+    public ResponseEntity<BookingResponseDTO> getBooking(@Valid @RequestBody BookingDetailRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl client) {
+        return ResponseEntity.ok(bookingService.getBooking(dto.getBookingId(),client.getId(),client.getRole()));
     }
 
     @PostMapping("/complete")
