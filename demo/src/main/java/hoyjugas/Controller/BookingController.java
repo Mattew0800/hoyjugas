@@ -34,7 +34,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("bookings")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
 public class BookingController {
 
