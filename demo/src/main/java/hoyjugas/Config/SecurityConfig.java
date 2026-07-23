@@ -73,7 +73,10 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/register",
                                 "/auth/forgot-password",
-                                "/auth/reset-password"
+                                "/auth/reset-password",
+                                "/bookings/schedule",
+                                "/bookings/available-slots-today",
+                                "/complex-schedule/get-all"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -92,7 +95,8 @@ public class SecurityConfig {
         
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                "http://localhost:3306"
         ));
        
         configuration.setAllowedOriginPatterns(List.of("*"));
