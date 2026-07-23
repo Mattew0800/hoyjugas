@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RequiredArgsConstructor
-public abstract class BaseBookingService {
+public abstract class BaseBookingService{
 
     protected final BookingNotificationRepository bookingNotificationRepository;
     protected final SystemConfigRepository systemConfigRepository;
@@ -36,6 +36,7 @@ public abstract class BaseBookingService {
                         "Configuración del sistema no encontrada"
                 ));
     }
+
     protected User getClientOrThrow(Long clientId) {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
@@ -78,14 +79,14 @@ public abstract class BaseBookingService {
                 .filter(p -> p.getType() == PaymentType.DEVOLUCION)
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal neto = totalPaid.subtract(totalReturned);
-        if (totalPaid.compareTo(BigDecimal.ZERO) > 0 && neto.compareTo(BigDecimal.ZERO) <= 0) {
+        BigDecimal netPaid = totalPaid.subtract(totalReturned);
+        if (totalPaid.compareTo(BigDecimal.ZERO) > 0 && netPaid.compareTo(BigDecimal.ZERO) <= 0) {
             return PaymentStatus.REEMBOLSADO;
         }
-        if (neto.compareTo(totalAmount) >= 0) {
+        if (netPaid.compareTo(totalAmount) >= 0) {
             return PaymentStatus.PAGADO;
         }
-        if (neto.compareTo(BigDecimal.ZERO) > 0) {
+        if (netPaid.compareTo(BigDecimal.ZERO) > 0) {
             return PaymentStatus.RESERVADO;
         }
         return PaymentStatus.NO_PAGADO;
@@ -117,9 +118,9 @@ public abstract class BaseBookingService {
                         PaymentType.DEPOSITO,
                         PaymentStatus.PAGADO
                 );
-        BigDecimal totalCobrado = paymentRepository
+        BigDecimal totalCollected = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
-        BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCobrado).max(BigDecimal.ZERO);
+        BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCollected).max(BigDecimal.ZERO);
         String createdByName = booking.getCreatedBy() != null
                 ? booking.getCreatedBy().getName()
                 : null;
@@ -143,4 +144,19 @@ public abstract class BaseBookingService {
         transfer.setStatus(PaymentStatus.PAGADO);
         return transfer;
     }
+
+    protected void scheduleReminder(Booking booking) {
+        boolean alreadyExists = bookingNotificationRepository
+                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
+        if (!alreadyExists) {
+            SystemConfig config = getSystemConfig();
+            BookingNotification notif = new BookingNotification();
+            notif.setBooking(booking);
+            notif.setType(NotificationType.RECUERDO_24H);
+            notif.setStatus(NotificationStatus.PENDIENTE);
+            notif.setHoursBefore(config.getReminderHoursBeforeBooking());
+            bookingNotificationRepository.save(notif);
+        }
+    }
+
 }

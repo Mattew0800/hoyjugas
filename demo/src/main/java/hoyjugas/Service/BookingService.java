@@ -99,7 +99,6 @@ public class BookingService extends BaseBookingService {
                 current = slotEnd;
             }
         }
-
         return slots;
     }
 
@@ -110,28 +109,13 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
-                .multiply(BigDecimal.valueOf(slots));
-        BigDecimal minDeposit = space.getDepositValue();
-        if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("El monto mínimo es $%.2f", minDeposit));
-        }
-        if (dto.getDepositAmount().compareTo(totalPrice) > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El monto no puede superar el total");
-        }
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime()).multiply(BigDecimal.valueOf(slots));
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setSlots(slots);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
-        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
-                null, null, PaymentType.DEPOSITO);
-        deposit.setStatus(PaymentStatus.PAGADO);
-        paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -250,7 +234,6 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO cancelBooking(CancelBookingRequestDTO dto, User employee) {
         Long bookingId = dto.getBookingId();
         Booking booking = getBookingOrThrow(bookingId);
-
         if (booking.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar un turno finalizado");
         }
@@ -308,7 +291,6 @@ public class BookingService extends BaseBookingService {
                                     dto.setPaymentCollectedByName(p.getCollectedBy().getName());
                                 }
                             });
-
                     return dto;
                 });
     }
@@ -353,46 +335,25 @@ public class BookingService extends BaseBookingService {
                 .toList();
     }
 
-    private void scheduleReminder(Booking booking) {
-        boolean yaExiste = bookingNotificationRepository
-                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
-
-        if (!yaExiste) {
-            SystemConfig config = getSystemConfig();
-            BookingNotification notif = new BookingNotification();
-            notif.setBooking(booking);
-            notif.setType(NotificationType.RECUERDO_24H);
-            notif.setStatus(NotificationStatus.PENDIENTE);
-            notif.setHoursBefore(config.getReminderHoursBeforeBooking());
-            bookingNotificationRepository.save(notif);
-        }
-    }
-
     @Transactional
     public BookingResponseDTO processRefund(Long bookingId, ProcessRefundRequestDTO dto, User employee) {
         Booking booking = getBookingOrThrow(bookingId);
-
         if (!booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está cancelado");
         }
-
         if (booking.getRefunded()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La devolución ya fue procesada");
         }
-
         Payment refund = paymentRepository
                 .findByBookingIdAndTypeAndStatus(bookingId, PaymentType.DEVOLUCION, PaymentStatus.PENDIENTE)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay devolución pendiente"));
-
         refund.setMethod(dto.getPaymentMethod());
         refund.setCollectedBy(employee);
         refund.setStatus(PaymentStatus.PAGADO);
         refund.setTransactionId(dto.getTransactionId());
         paymentRepository.save(refund);
-
         booking.setRefunded(true);
         bookingRepository.save(booking);
-
         return buildBookingResponseDTO(booking);
     }
 
@@ -410,7 +371,6 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO rescheduleBooking(RescheduleBookingRequestDTO dto, User employee) {
         Booking original = getBookingOrThrow(dto.getOriginalBookingId());
-
         if (original.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se puede reprogramar un turno finalizado");
@@ -757,5 +717,17 @@ public class BookingService extends BaseBookingService {
             }
         }
         return count;
+    }
+
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    }
+
+    public void markAsPaymentError(Long bookingId){
+        Booking booking = getBookingOrThrow(bookingId);
+        booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
+        bookingRepository.save(booking);
     }
 }

@@ -69,4 +69,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             @Param("type") PaymentType type,
             @Param("status") PaymentStatus status
     );
+
+    Optional<Payment> findByTransactionId(String transactionId);
 }
