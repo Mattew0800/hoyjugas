@@ -2,6 +2,7 @@ package hoyjugas.Controller;
 
 import hoyjugas.DTO.MercadoPago.PaymentWebHookDTO;
 import hoyjugas.Service.BookingService;
+import hoyjugas.Service.MpPaymentConfirmationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class MercadoPagoWebhookController {
 
     private final BookingService bookingService;
+    private final MpPaymentConfirmationService mpPaymentConfirmationService;
 
     @PostMapping({"/mp", "/"})
     public ResponseEntity<Void> handleWebhook(@RequestBody PaymentWebHookDTO payload) {
@@ -24,7 +26,7 @@ public class MercadoPagoWebhookController {
         }
         try {
             Long paymentId = Long.parseLong(payload.getData().getId());
-            bookingService.confirmMpPaymentFromPaymentId(paymentId);
+            mpPaymentConfirmationService.confirmMpPaymentFromPaymentId(paymentId);
             return ResponseEntity.ok().build();
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().build();

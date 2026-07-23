@@ -1,20 +1,24 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.Booking.BookingResponseDTO;
-import hoyjugas.Enum.*;
+import hoyjugas.Enum.NotificationStatus;
+import hoyjugas.Enum.NotificationType;
+import hoyjugas.Enum.PaymentMethod;
+import hoyjugas.Enum.PaymentStatus;
+import hoyjugas.Enum.PaymentType;
+import hoyjugas.Enum.Role;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class BaseBookingService {
+public abstract class BaseBookingService{
 
     protected final BookingNotificationRepository bookingNotificationRepository;
     protected final SystemConfigRepository systemConfigRepository;
@@ -22,7 +26,6 @@ public abstract class BaseBookingService {
     protected final SpaceRepository spaceRepository;
     protected final PaymentRepository paymentRepository;
     protected final BookingRepository bookingRepository;
-    protected final MercadoPagoService mercadoPagoService;
 
     protected void scheduleNotification(Booking booking, NotificationType type) {
         BookingNotification notif = new BookingNotification();
@@ -90,11 +93,6 @@ public abstract class BaseBookingService {
         return PaymentStatus.RESERVADO;
     }
 
-    protected BigDecimal calculateDeposit(Space space, BigDecimal totalPrice) {
-        return space.getDepositValue()
-                .min(totalPrice);
-    }
-
     protected void assignBookingNumbers(List<Booking> bookings) {
         bookings.forEach(b ->
                 b.setBookingNumber("BK-" + String.format("%08d", b.getId()))
@@ -116,16 +114,21 @@ public abstract class BaseBookingService {
                         PaymentType.INTERNO,
                         PaymentStatus.NO_PAGADO
                 );
+
         BigDecimal totalCollected = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
+
         BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCollected).max(BigDecimal.ZERO);
+
         String createdByName = booking.getCreatedBy() != null
                 ? booking.getCreatedBy().getName()
                 : null;
+
         String collectedByName = paymentRepository
                 .findFirstByBookingIdAndTypeOrderByCreatedAtDesc(booking.getId(), PaymentType.PAGO_TOTAL)
                 .map(p -> p.getCollectedBy() != null ? p.getCollectedBy().getName() : null)
                 .orElse(null);
+
         return BookingResponseDTO.fromEntity(booking, depositAmount, remainingAmount, createdByName, collectedByName);
     }
 
@@ -155,58 +158,5 @@ public abstract class BaseBookingService {
             notif.setHoursBefore(config.getReminderHoursBeforeBooking());
             bookingNotificationRepository.save(notif);
         }
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    public void confirmMpPaymentFromPaymentId(Long paymentId) {
-        if (paymentId == null) {
-            return;
-        }
-        com.mercadopago.resources.payment.Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
-        if (mpPayment == null) {
-            return;
-        }
-        if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
-            return;
-        }
-        processApprovedPayment(mpPayment);
-    }
-
-    private void processApprovedPayment(com.mercadopago.resources.payment.Payment mpPayment) {
-        String externalRef = mpPayment.getExternalReference();
-        if (externalRef == null || externalRef.isBlank()) {
-            return;
-        }
-        Long bookingId = Long.parseLong(externalRef);
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Turno no encontrado con id: " + bookingId));
-        String transactionId = String.valueOf(mpPayment.getId());
-        if (paymentRepository.findByTransactionId(transactionId).isPresent()) {
-            return;
-        }
-        BigDecimal transactionAmount = mpPayment.getTransactionAmount();
-        PaymentType paymentType = determinePaymentType(booking, transactionAmount);
-        Payment payment = buildPayment(
-                booking,
-                PaymentMethod.MERCADOPAGO,
-                transactionAmount,
-                transactionId,
-                null,
-                paymentType
-        );
-        payment.setStatus(PaymentStatus.PAGADO);
-        paymentRepository.save(payment);
-        PaymentStatus newPaymentStatus = calculatePaymentStatus(booking.getId(), booking.getTotalAmount());
-        booking.setPaymentStatus(newPaymentStatus);
-        bookingRepository.save(booking);
-        scheduleReminder(booking);
-    }
-
-    private PaymentType determinePaymentType(Booking booking, BigDecimal paidAmount) {
-        return paidAmount.compareTo(booking.getTotalAmount()) >= 0
-                ? PaymentType.PAGO_TOTAL
-                : PaymentType.SEÑA;
     }
 }

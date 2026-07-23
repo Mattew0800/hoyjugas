@@ -11,6 +11,8 @@ import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 import hoyjugas.Enum.PaymentType;
 import hoyjugas.Model.Booking;
+import hoyjugas.Model.MpPaymentAudit;
+import hoyjugas.Repository.MpPaymentAuditRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
-import static com.mercadopago.MercadoPagoConfig.getAccessToken;
 
 @Slf4j
 @Service
@@ -38,6 +39,8 @@ public class MercadoPagoService {
     @Value("${mp.webhook.url}")
     private String webhookUrl;
 
+    private final MpPaymentAuditRepository mpPaymentAuditRepository;
+
     public String createPreference(Booking booking, PaymentType paymentType) throws MPApiException, MPException {
         try {
             BigDecimal amount = calculateAmount(booking, paymentType);
@@ -54,17 +57,24 @@ public class MercadoPagoService {
                     .failure(failureUrl + "?bookingId=" + booking.getId())
                     .pending(pendingUrl + "?bookingId=" + booking.getId())
                     .build();
-            PreferenceRequest preferenceRequest = PreferenceRequest.builder()//MAPEAR Y AUDITAR
+            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(List.of(item))
                     .backUrls(backUrls)
                     .externalReference(String.valueOf(booking.getId()))
                     .notificationUrl(webhookUrl)
                     .build();
             Preference preference = client.create(preferenceRequest);
+            MpPaymentAudit audit = new MpPaymentAudit();
+            audit.setBooking(booking);
+            audit.setPreferenceId(preference.getId());
+            audit.setPreferenceAmount(amount);
+            audit.setBooking(booking);
+            audit.setPreferenceId(preference.getId());
+            audit.setPreferenceAmount(amount);
+            mpPaymentAuditRepository.save(audit);
             return preference.getInitPoint();
         } catch (MPApiException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al crear preferencia: " + e.getApiResponse().getContent());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al crear preferencia en mercado pago " );
         } catch (MPException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al comunicarse con Mercado Pago");
