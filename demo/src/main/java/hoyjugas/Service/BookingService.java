@@ -272,12 +272,10 @@ public class BookingService extends BaseBookingService {
                 .findAllWithFilters(clientId, spaceId, status, employeeId, dateFrom, dateTo, pageable)
                 .map(booking -> {
                     BookingListDTO dto = BookingListDTO.fromEntity(booking);
-
-                    BigDecimal totalCobrado = paymentRepository.findTotalByBookingIdExcludingType(
+                    BigDecimal totalCollected = paymentRepository.findTotalByBookingIdExcludingType(
                             booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
                     dto.setRemainingAmount(booking.getTotalAmount()
-                            .subtract(totalCobrado).max(BigDecimal.ZERO));
-
+                            .subtract(totalCollected).max(BigDecimal.ZERO));
                     paymentRepository.findFirstByBookingIdAndTypeOrderByCreatedAtDesc(
                                     booking.getId(), PaymentType.PAGO_TOTAL)
                             .ifPresent(p -> {
@@ -285,13 +283,19 @@ public class BookingService extends BaseBookingService {
                                     dto.setPaymentCollectedByName(p.getCollectedBy().getName());
                                 }
                             });
-
                     return dto;
                 });
     }
 
-    public BookingResponseDTO getBooking(Long bookingId) {
-        return buildBookingResponseDTO(getBookingOrThrow(bookingId));
+    public BookingResponseDTO getBooking(Long bookingId,Long userId,Role role) {
+        Booking booking= getBookingOrThrow(bookingId);
+        if(role.equals(Role.ADMIN)||role.equals(Role.EMPLOYEE)){
+            return buildBookingResponseDTO(booking);
+        }
+        if(!booking.getClient().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes ver este turno");
+        }
+        return buildBookingResponseDTO(booking);
     }
 
     public BigDecimal getClientDebt(Long clientId,Long requesterId) {

@@ -1,11 +1,12 @@
 package hoyjugas.Config;
+
+import hoyjugas.Enum.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import hoyjugas.Model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -17,14 +18,15 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
     private String password;
     private List<? extends GrantedAuthority> authorities;
+    private Role role;
 
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-        );
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
+                user.getRole());
     }
 
     @Override
