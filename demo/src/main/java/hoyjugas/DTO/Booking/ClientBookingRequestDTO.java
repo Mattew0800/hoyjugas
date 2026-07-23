@@ -2,9 +2,7 @@ package hoyjugas.DTO.Booking;
 
 import hoyjugas.Enum.PaymentMethod;
 import hoyjugas.Enum.PaymentType;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -27,4 +25,9 @@ public class ClientBookingRequestDTO {
 
     @NotNull(message = "El tipo de pago es obligatorio")
     private PaymentType paymentType;
+
+    @NotNull(message = "La cantidad de horas es obligatoria")
+    @Min(value = 1, message = "Mínimo 1 hora")
+    @Max(value = 4, message = "Máximo 4 horas")
+    private Integer slots;
 }

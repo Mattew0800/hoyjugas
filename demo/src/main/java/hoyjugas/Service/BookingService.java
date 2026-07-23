@@ -100,19 +100,19 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         if (dto.getPaymentType() != PaymentType.PAGO_TOTAL && dto.getPaymentType() != PaymentType.SEÑA) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Tipo de pago no soportado.");
         }
-        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-        BigDecimal depositToPay = dto.getPaymentType() == PaymentType.PAGO_TOTAL
-                ? totalPrice
-                : space.getDepositFactor();
-        if (depositToPay.compareTo(totalPrice) > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "La seña no puede superar el monto total");
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(dto.getSlots()));
+        if (dto.getPaymentType() == PaymentType.SEÑA &&
+                space.getDepositValue().compareTo(totalPrice) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"La seña no puede superar el monto total");
         }
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setTermsAccepted(dto.getTermsAccepted());
