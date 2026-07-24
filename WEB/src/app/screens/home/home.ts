@@ -21,6 +21,8 @@ export class Home implements OnInit, OnDestroy{
 
   closingTime: string = "";
 
+  noSchedules = false;
+
   complexClosed: boolean = false;
   scheduleError: boolean = false;
   avaliableSlotsToday: number = 0;
@@ -71,6 +73,13 @@ export class Home implements OnInit, OnDestroy{
     return this.bService.getComplexSchedule().subscribe({
       next: (r)=>{
         console.log(r);
+        const onlyOpen =
+          Object.keys(r).length === 1 && 'open' in r;
+
+        if (onlyOpen) {
+          this.noSchedules = true;
+          return;
+        }
       },
       error: (e)=>{
         if (e.status === 404) {

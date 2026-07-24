@@ -51,7 +51,7 @@
           <div class="stat-info">
 
             <h3>
-              @if(!complexClosed){
+              @if(!complexClosed && !noSchedules){
                 {{closingTime}}
               }@else{
                 Cerrado
@@ -59,7 +59,13 @@
 
             </h3>
 
-            <span>horario de cierre</span>
+            <span>
+              @if(noSchedules){
+                sin horarios aún
+              }@else{
+                horario de cierre
+              }
+            </span>
 
           </div>
 
