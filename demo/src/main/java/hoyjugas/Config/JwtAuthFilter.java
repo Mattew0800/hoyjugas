@@ -1,5 +1,6 @@
 package hoyjugas.Config;
 
+import hoyjugas.Enum.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
@@ -48,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 user.getEmail(),
                                 user.getPassword(),
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role)),
-                                user.getRole()
+                                Role.valueOf(role)
                         );
                         var authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,

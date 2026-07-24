@@ -30,7 +30,7 @@ public class PaymentWebHookDTO {
 
 
     @Data
-    public class PaymentWebHookDTOData{
+    public static class PaymentWebHookDTOData{
         @JsonProperty("id")
         private  String id;
     }

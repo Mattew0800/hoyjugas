@@ -115,17 +115,13 @@ public class BookingService extends BaseBookingService {
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         if (dto.getPaymentType() != PaymentType.PAGO_TOTAL && dto.getPaymentType() != PaymentType.SEÑA) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Tipo de pago no soportado.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tipo de pago no soportado.");
         }
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(dto.getSlots()));
         if (dto.getPaymentType() == PaymentType.SEÑA &&
                 space.getDepositValue().compareTo(totalPrice) > 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La seña no puede superar el monto total"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"La seña no puede superar el monto total");
         }
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setTermsAccepted(dto.getTermsAccepted());
@@ -200,11 +196,9 @@ public class BookingService extends BaseBookingService {
     }
 
     private void validateAvailability(Long spaceId, LocalDateTime start, LocalDateTime end) {
-        boolean overlaps = bookingRepository.existsOverlappingBooking(
-                spaceId, start, end, BookingStatus.CANCELADO);
+        boolean overlaps = bookingRepository.existsOverlappingBooking(spaceId, start, end, BookingStatus.CANCELADO);
         if (overlaps) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "El espacio ya está reservado en ese horario");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"El espacio ya está reservado en ese horario");
         }
     }
 

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @RestController
@@ -23,11 +24,12 @@ public class MercadoPagoWebhookController {
             return ResponseEntity.badRequest().build();
         }
         try {
+            String rawPayload = new ObjectMapper().writeValueAsString(payload);
             Long paymentId = Long.parseLong(payload.getData().getId());
-            mpPaymentConfirmationService.confirmMpPaymentFromPaymentId(paymentId);
+            mpPaymentConfirmationService.confirmMpPaymentFromPaymentId(paymentId, rawPayload);
             return ResponseEntity.ok().build();
         } catch (NumberFormatException e) {
-            log.warn("paymentId inválido en webhook de Mercado Pago: {}", payload.getData().getId(), e);
+            log.warn("paymentId inválido en webhook: {}", payload.getData().getId());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error("Error procesando webhook de Mercado Pago", e);

@@ -49,7 +49,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     }
 
     @Transactional
-    public void confirmMpPaymentFromPaymentId(Long paymentId) {
+    public void confirmMpPaymentFromPaymentId(Long paymentId,String rawPayload) {
         Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
         if (mpPayment == null) return;
         if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
@@ -58,6 +58,11 @@ public class MpPaymentConfirmationService extends BaseBookingService {
         }
         processApprovedPayment(mpPayment);
         updateAuditOnApproval(mpPayment);
+        mpPaymentAuditRepository.findByPaymentId(String.valueOf(paymentId))
+                .ifPresent(audit -> {
+                    audit.setRawWebhookPayload(rawPayload);
+                    mpPaymentAuditRepository.save(audit);
+                });
     }
 
     private void processApprovedPayment(Payment mpPayment) {
@@ -132,14 +137,10 @@ public class MpPaymentConfirmationService extends BaseBookingService {
             audit.setNetAmount(mpPayment.getTransactionDetails() != null
                     ? mpPayment.getTransactionDetails().getNetReceivedAmount()
                     : null);
-            audit.setMpCommission(
-                    mpPayment.getTransactionAmount() != null
-                            && mpPayment.getTransactionDetails() != null
-                            && mpPayment.getTransactionDetails().getNetReceivedAmount() != null
-                            ? mpPayment.getTransactionAmount().subtract(
-                            mpPayment.getTransactionDetails().getNetReceivedAmount())
-                            : null
-            );
+            if (mpPayment.getTransactionDetails() != null&& mpPayment.getTransactionDetails().getNetReceivedAmount() != null) {
+                audit.setMpCommission(mpPayment.getTransactionAmount()
+                        .subtract(mpPayment.getTransactionDetails().getNetReceivedAmount()));
+            }
             if (mpPayment.getPayer() != null) {
                 String firstName = mpPayment.getPayer().getFirstName() != null
                         ? mpPayment.getPayer().getFirstName()
