@@ -2,33 +2,30 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.Login.UserResponseDTO;
 import hoyjugas.DTO.Login.UserUpdateDTO;
+import hoyjugas.DTO.User.EmployeeCreatedDTO;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.Optional;
+import java.util.Random;
+
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthService authService;
-
-    public UserService(BCryptPasswordEncoder passwordEncoder, AuthService authService, UserRepository userRepository) {
-        this.passwordEncoder = passwordEncoder;
-        this.authService = authService;
-        this.userRepository = userRepository;
-    }
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
@@ -59,6 +56,18 @@ public class UserService {
         validateAndProcessPasswordChange(existing, dto);
         dto.applyToEntity(existing, allowRoleChange);
         return userRepository.save(existing);
+    }
+
+    public EmployeeCreatedDTO resetPin(Long employeeId) {
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+        if (!employee.getRole().equals(Role.EMPLOYEE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
+        }
+        String rawPin = String.format("%04d", new Random().nextInt(10000));
+        employee.setPin(passwordEncoder.encode(rawPin));
+        userRepository.save(employee);
+        return new EmployeeCreatedDTO(employee, rawPin);
     }
 
     private void validateAndProcessPasswordChange(User user, UserUpdateDTO dto) {
@@ -96,6 +105,31 @@ public class UserService {
         if (dto.getRole() != null && dto.getRole() != user.getRole() && user.getRole() == Role.USER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permisos para cambiar el rol de usuario.");
         }
+    }
+
+    public User validateEmployeePin(String rawPin) {
+        return userRepository.findByRole(Role.EMPLOYEE).stream()
+                .filter(e -> e.getPin() != null && passwordEncoder.matches(rawPin, e.getPin()))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "PIN incorrecto"));
+    }
+
+    public User getClientById(Long id) {
+        return userRepository.findById(id)
+                .filter(user -> user.getRole().equals(Role.USER))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente no encontrado"
+                ));
+    }
+
+    public User getEmployeeById(Long id) {
+        return userRepository.findById(id)
+                .filter(user -> user.getRole().equals(Role.EMPLOYEE))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente no encontrado"
+                ));
     }
 }
 
