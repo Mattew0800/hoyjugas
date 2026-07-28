@@ -3,9 +3,8 @@
 <div class="dashboard-container">
 
   <app-internal-header
-    title="Turnos de hoy"
-    subtitle="Domingo 25 de mayo"
-    actionButtonText="Cambiar fecha">
+    [title]="headerTitle"
+    [subtitle]="headerSubtitle">
   </app-internal-header>
 
   <main class="dashboard-content">
@@ -15,33 +14,32 @@
       <div class="stats-container">
 
         <app-stat-card
-          icon="/assets/icons/calendar.svg"
-          value="28"
+          icon="assets/icons/calendar.svg"
+          [value]="stats.todayBookings.toString()"
           title="Turnos de hoy"
-          subtitle="en todas las canchas">
+          subtitle="Hoy">
         </app-stat-card>
 
         <app-stat-card
           icon="/assets/icons/field.svg"
-          value="4 / 6"
+          [value]="stats.occupiedSpaces.toString()"
           title="Canchas ocupadas"
           subtitle="ahora mismo">
         </app-stat-card>
 
         <app-stat-card
           icon="/assets/icons/clock.svg"
-          value="09:30"
+          [value]="stats.nextBookingTime"
           title="Próximo turno"
-          subtitle="en 15 minutos">
+          [subtitle]="stats.nextBookingSubtitle">
         </app-stat-card>
 
         <app-stat-card
           icon="/assets/icons/money.svg"
-          value="$184.000"
+          [value]="'$' + stats.estimatedRevenue.toLocaleString('es-AR')"
           title="Ingresos"
           subtitle="estimados del día">
         </app-stat-card>
-
       </div>
 
       <button class="change-date-btn">
@@ -72,7 +70,9 @@
 
       <div class="dashboard-right">
 
-        <app-mini-calendar></app-mini-calendar>
+        <app-mini-calendar
+          (dateSelected)="onDateSelected($event)">
+        </app-mini-calendar>
 
       </div>
 

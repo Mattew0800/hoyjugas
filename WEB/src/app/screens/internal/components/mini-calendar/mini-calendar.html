@@ -1,42 +1,30 @@
 <div class="calendar-card">
 
   <h3>
-
     Calendario
-
   </h3>
 
   <div class="calendar-header">
 
-    <button>
-
+    <button (click)="previousMonth()">
       ‹
-
     </button>
 
     <span>
-
       {{ month }}
-
     </span>
 
-    <button>
-
+    <button (click)="nextMonth()">
       ›
-
     </button>
 
   </div>
 
   <div class="weekdays">
 
-    @for(day of weekDays; track day) {
+    @for (day of weekDays; track day) {
 
-      <span>
-
-        {{ day }}
-
-      </span>
+      <span>{{ day }}</span>
 
     }
 
@@ -44,13 +32,14 @@
 
   <div class="days">
 
-    @for(day of days; track $index) {
+    @for (day of days; track $index) {
 
-      @if(day){
+      @if (day !== null) {
 
         <button
           class="day"
-          [class.selected]="day === selectedDay">
+          [class.selected]="day === selectedDay"
+          (click)="selectDay(day)">
 
           {{ day }}
 
@@ -58,7 +47,7 @@
 
       } @else {
 
-        <div></div>
+        <div class="empty-day"></div>
 
       }
 
