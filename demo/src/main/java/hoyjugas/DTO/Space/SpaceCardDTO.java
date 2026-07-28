@@ -2,28 +2,26 @@ package hoyjugas.DTO.Space;
 
 import hoyjugas.Model.Space;
 import lombok.Data;
-
-import java.math.BigDecimal;
+import lombok.NoArgsConstructor;
 
 @Data
-public class SpaceListDTO {
-
+@NoArgsConstructor
+public class SpaceCardDTO {
     private Long id;
     private String name;
     private String type;
     private Integer slotDuration;
     private Boolean isActive;
-    private int pricingCount;
-    private BigDecimal fixedDeposit;
-    public static SpaceListDTO fromEntity(Space space) {
-        SpaceListDTO dto = new SpaceListDTO();
+    private String imageUrl;
+
+    public static SpaceCardDTO fromEntity(Space space) {
+        SpaceCardDTO dto = new SpaceCardDTO();
         dto.setId(space.getId());
         dto.setName(space.getName());
         dto.setType(space.getType().name());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
-        dto.setPricingCount(space.getPricings().size());
-        dto.setFixedDeposit(space.getDepositValue());
+        dto.setImageUrl(space.getPhotoUrl());
         return dto;
     }
 }
