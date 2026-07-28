@@ -3,7 +3,6 @@ package hoyjugas.DTO.Space;
 import hoyjugas.DTO.SpacePricing.SpacePricingDTO;
 import hoyjugas.Model.Space;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +19,7 @@ public class SpaceResponseDTO {
     private BigDecimal fixedDeposit;
     private List<SpacePricingDTO> pricings;
     private String depositInfo;
+    private String photoUrl;
 
     public static SpaceResponseDTO fromEntity(Space space) {
         SpaceResponseDTO dto = new SpaceResponseDTO();
@@ -28,9 +28,9 @@ public class SpaceResponseDTO {
         dto.setType(space.getType().name());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
-        dto.setDepositFactor(space.getDepositFactor());
-        dto.setFixedDeposit(space.getFixedDeposit());
-
+        dto.setDepositFactor(space.getFixedDeposit());
+        dto.setFixedDeposit(space.getDepositValue());
+        dto.setPhotoUrl(space.getPhotoUrl());
         dto.setPricings(space.getPricings().stream()
                 .map(SpacePricingDTO::fromEntity)
                 .sorted(Comparator.comparing(SpacePricingDTO::getDayType)
@@ -42,10 +42,10 @@ public class SpaceResponseDTO {
     }
 
     private static String buildDepositInfo(Space space) {
-        if (space.getFixedDeposit() != null && space.getFixedDeposit().compareTo(BigDecimal.ZERO) > 0) {
-            return String.format("Seña fija de $%s", space.getFixedDeposit().toPlainString());
+        if (space.getDepositValue() != null && space.getDepositValue().compareTo(BigDecimal.ZERO) > 0) {
+            return String.format("Seña fija de $%s", space.getDepositValue().toPlainString());
         }
-        BigDecimal factor = space.getDepositFactor();
+        BigDecimal factor = space.getFixedDeposit();
         if (factor != null && factor.compareTo(BigDecimal.ZERO) > 0) {
             return String.format("Seña del %d%% del total", factor.multiply(new BigDecimal("100")).intValue());
         }

@@ -29,4 +29,7 @@ public class SpaceRequestDTO {
 
     @DecimalMin(value = "0.01", message = "La seña fija debe ser mayor a 0")
     private BigDecimal fixedDeposit;
+
+    @Size(max=500)
+    private String photoUrl;
 }

@@ -86,32 +86,28 @@ public class SpaceController {
 
     @PostMapping("/schedule/add")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(
-            @Valid @RequestBody SpaceScheduleParentRequestDTO dto) {
+    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(@Valid @RequestBody SpaceScheduleParentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(spaceScheduleService.addSchedule(dto.getSpaceId(), dto.getSchedule()));
     }
 
     @PutMapping("/schedule/update")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(
-            @Valid @RequestBody SpaceScheduleUpdateRequestDTO dto) {
+    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(@Valid @RequestBody SpaceScheduleUpdateRequestDTO dto) {
         return ResponseEntity.ok(spaceScheduleService.updateSchedule(
                 dto.getSpaceId(), dto.getScheduleId(), dto.toScheduleRequestDTO()));
     }
 
     @DeleteMapping("/schedule/delete")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteSchedule(
-            @Valid @RequestBody SpaceScheduleDeleteRequestDTO dto) {
+    public ResponseEntity<Void> deleteSchedule(@Valid @RequestBody SpaceScheduleDeleteRequestDTO dto) {
         spaceScheduleService.deleteSchedule(dto.getSpaceId(), dto.getScheduleId());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/schedule/get-by-space")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SpaceScheduleResponseDTO>> getSchedulesBySpace(
-            @Valid @RequestBody SpaceDetailRequestDTO dto) {
+    public ResponseEntity<List<SpaceScheduleResponseDTO>> getSchedulesBySpace(@Valid @RequestBody SpaceDetailRequestDTO dto) {
         return ResponseEntity.ok(spaceScheduleService.getSchedulesBySpace(dto.getSpaceId()));
     }
 }

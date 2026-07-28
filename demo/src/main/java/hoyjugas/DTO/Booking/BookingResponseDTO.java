@@ -21,6 +21,7 @@ public class BookingResponseDTO {
     private Long spaceId;
     private String spaceName;
     private String spaceType;
+    private String photoUrl;
 
     private LocalDateTime startDatetime;
     private LocalDateTime endDatetime;
@@ -60,6 +61,7 @@ public class BookingResponseDTO {
         dto.setSpaceId(booking.getSpace().getId());
         dto.setSpaceName(booking.getSpace().getName());
         dto.setSpaceType(booking.getSpace().getType().name());
+        dto.setPhotoUrl(booking.getSpace().getPhotoUrl());
 
         dto.setStartDatetime(booking.getStartDatetime());
         dto.setEndDatetime(booking.getEndDatetime());

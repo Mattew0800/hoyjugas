@@ -1,5 +1,6 @@
 package hoyjugas.Service;
 
+import hoyjugas.DTO.Space.SpaceCardDTO;
 import hoyjugas.DTO.Space.SpaceListDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
 import hoyjugas.DTO.Space.SpaceRequestDTO;
@@ -35,8 +36,8 @@ public class SpaceService {
         space.setType(dto.getType());
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
-        space.setDepositFactor(dto.getDepositFactor());
-        space.setFixedDeposit(dto.getFixedDeposit());
+        space.setFixedDeposit(dto.getDepositFactor());
+        space.setDepositValue(dto.getFixedDeposit());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }
@@ -49,8 +50,8 @@ public class SpaceService {
         space.setType(dto.getType());
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive());
-        space.setDepositFactor(dto.getDepositFactor());
-        space.setFixedDeposit(dto.getFixedDeposit());
+        space.setFixedDeposit(dto.getDepositFactor());
+        space.setDepositValue(dto.getFixedDeposit());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }
@@ -169,6 +170,21 @@ public class SpaceService {
         space.getPricings().remove(pricing);
         spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(space);
+    }
+
+    public List<SpaceCardDTO> getSpaceCards() {
+        return spaceRepository.findByIsActiveTrue()
+                .stream()
+                .map(SpaceCardDTO::fromEntity)
+                .toList();
+    }
+
+    public SpaceCardDTO getSpaceCard(Long spaceId) {
+        Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Espacio no encontrado"
+                ));
+        return SpaceCardDTO.fromEntity(space);
     }
 }
 

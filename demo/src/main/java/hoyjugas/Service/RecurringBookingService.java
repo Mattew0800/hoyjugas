@@ -119,7 +119,7 @@ public class RecurringBookingService extends BaseBookingService{
             Space space,
             SystemConfig config
     ) {
-        BigDecimal deposit = space.getFixedDeposit();
+        BigDecimal deposit = space.getDepositValue();
 
         if (bookingNumber <= config.getRecurringInitialDepositTurns()) {
             deposit = deposit.multiply(
