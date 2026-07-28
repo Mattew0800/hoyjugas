@@ -38,6 +38,7 @@ public class SpaceService {
         space.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         space.setFixedDeposit(dto.getDepositFactor());
         space.setDepositValue(dto.getFixedDeposit());
+        space.setPhotoUrl(dto.getPhotoUrl());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }
@@ -52,6 +53,7 @@ public class SpaceService {
         space.setIsActive(dto.getIsActive());
         space.setFixedDeposit(dto.getDepositFactor());
         space.setDepositValue(dto.getFixedDeposit());
+        space.setPhotoUrl(dto.getPhotoUrl());
         Space saved = spaceRepository.save(space);
         return SpaceResponseDTO.fromEntity(saved);
     }
