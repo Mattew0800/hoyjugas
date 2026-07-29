@@ -37,9 +37,12 @@ public class Space {
     private List<SpacePricing> pricings = new ArrayList<>();
 
     @Column(precision = 5, scale = 2)
-    private BigDecimal depositFactor;
+    private BigDecimal fixedDeposit;//% del valor total del turno, tbh no lo uso pero queda dsps lo saco
 
     @Column(precision = 10, scale = 2,nullable = false)
-    private BigDecimal fixedDeposit;//monto de seña
+    private BigDecimal depositValue;//monto de seña
+
+    @Column(length=500)
+    private String photoUrl;
 }
 

@@ -18,7 +18,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +102,7 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
         BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
-        BigDecimal minDeposit = space.getFixedDeposit();
+        BigDecimal minDeposit = space.getDepositValue();
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));

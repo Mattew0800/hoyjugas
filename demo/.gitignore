@@ -41,4 +41,5 @@ client_secret.json
 *.log
 
 # ===== Spring config sensible =====
-application-local.properties
+**/application.properties
+**/application-local.properties

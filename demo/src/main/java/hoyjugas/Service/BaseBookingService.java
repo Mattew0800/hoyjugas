@@ -92,7 +92,7 @@ public abstract class BaseBookingService {
     }
 
     protected BigDecimal calculateDeposit(Space space, BigDecimal totalPrice) {
-        return space.getFixedDeposit()
+        return space.getDepositValue()
                 .min(totalPrice);
     }
     protected void assignBookingNumbers(List<Booking> bookings) {

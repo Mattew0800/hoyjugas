@@ -27,6 +27,10 @@ public class SpaceRequestDTO {
     @DecimalMax(value = "1.00", message = "El factor de seña no puede superar 1.00")
     private BigDecimal depositFactor;
 
+    @NotNull(message = "La seña fija es obligatoria")
     @DecimalMin(value = "0.01", message = "La seña fija debe ser mayor a 0")
     private BigDecimal fixedDeposit;
+
+    @Size(max=500)
+    private String photoUrl;
 }
