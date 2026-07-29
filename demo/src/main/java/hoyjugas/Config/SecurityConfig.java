@@ -76,7 +76,10 @@ public class SecurityConfig {
                                 "/auth/reset-password",
                                 "/bookings/schedule",
                                 "/bookings/available-slots-today",
-                                "/complex-schedule/get-all"
+                                "/complex-schedule/get-all",
+                                "/bookings/spaces-card",
+                                "/bookings/space-card",
+                                "/bookings/availability"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

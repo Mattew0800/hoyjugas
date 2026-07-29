@@ -5,11 +5,15 @@ import hoyjugas.DTO.Booking.*;
 import hoyjugas.DTO.Booking.BookingDetailRequestDTO;
 import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
+import hoyjugas.DTO.Space.SpaceCardDTO;
+import hoyjugas.DTO.Space.SpaceIdRequestDTO;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
+import hoyjugas.Service.SpaceService;
 import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -29,12 +33,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
-
-    @PostMapping("/availability")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<SpaceAvailabilityDTO>> getAvailability(@Valid @RequestBody AvailabilityRequestDTO dto) {
-        return ResponseEntity.ok(bookingService.getAvailability(dto.getSpaceId(), dto.getDate()));
-    }
+    private final SpaceService spaceService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -126,6 +125,13 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
 
+    @GetMapping("/next")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    }
+
+    //endpoints publicos
     @GetMapping("/available-slots-today")
     public ResponseEntity<?> getAvailableSlotsToday() {
         return ResponseEntity.ok(Map.of("Turnos disponibles totales:",bookingService.countAvailableSlotsToday()));
@@ -136,9 +142,18 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getComplexSchedule());
     }
 
-    @GetMapping("/next")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
-        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    @PostMapping("/availability")
+    public ResponseEntity<List<SpaceAvailabilityDTO>> getAvailability(@Valid @RequestBody AvailabilityRequestDTO dto) {
+        return ResponseEntity.ok(bookingService.getAvailability(dto.getSpaceId(), dto.getDate()));
+    }
+
+    @GetMapping("/spaces-card")
+    public ResponseEntity<List<SpaceCardDTO>> getSpaceCards() {
+        return ResponseEntity.ok(spaceService.getSpaceCards());
+    }
+
+    @PostMapping("/space-card")
+    public ResponseEntity<SpaceCardDTO> getSpace(@Valid @RequestBody SpaceIdRequestDTO dto) {
+        return ResponseEntity.ok(spaceService.getSpaceCard(dto.getSpaceId()));
     }
 }
