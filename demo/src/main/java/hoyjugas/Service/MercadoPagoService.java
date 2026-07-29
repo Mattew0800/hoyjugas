@@ -66,6 +66,7 @@ public class MercadoPagoService {
             Preference preference = client.create(preferenceRequest);
             MpPaymentAudit audit = new MpPaymentAudit();
             audit.setBooking(booking);
+            audit.setExternalReference(String.valueOf(booking.getId()));
             audit.setPreferenceAmount(amount);
             audit.setPreferenceId(preference.getId());
             mpPaymentAuditRepository.save(audit);

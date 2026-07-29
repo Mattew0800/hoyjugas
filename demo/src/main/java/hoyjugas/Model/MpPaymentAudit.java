@@ -25,6 +25,9 @@ public class MpPaymentAudit {
     @Column(length = 100, nullable = false)
     private String preferenceId;
 
+    @Column(length = 10000)
+    private String externalReference;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preferenceAmount;
 

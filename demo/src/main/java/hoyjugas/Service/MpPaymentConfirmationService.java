@@ -8,7 +8,10 @@ import hoyjugas.Model.Booking;
 import hoyjugas.Model.MpPaymentAudit;
 import hoyjugas.Model.MpPaymentStatusHistory;
 import hoyjugas.Repository.*;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.HttpStatus;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -49,20 +52,26 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     }
 
     @Transactional
-    public void confirmMpPaymentFromPaymentId(Long paymentId,String rawPayload) {
+    @Retryable(value = CannotAcquireLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 100))
+    public void confirmMpPaymentFromPaymentId(Long paymentId, String rawPayload) {
         Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
         if (mpPayment == null) return;
+        String externalRef = mpPayment.getExternalReference();
+        if (externalRef == null) return;
+        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
+            audit.setRawWebhookPayload(rawPayload);
+            mpPaymentAuditRepository.save(audit);
+        });
         if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
             updateAuditStatus(mpPayment);
             return;
         }
         processApprovedPayment(mpPayment);
         updateAuditOnApproval(mpPayment);
-        mpPaymentAuditRepository.findByPaymentId(String.valueOf(paymentId))
-                .ifPresent(audit -> {
-                    audit.setRawWebhookPayload(rawPayload);
-                    mpPaymentAuditRepository.save(audit);
-                });
+    }
+
+    private String getExternalReference(Payment mpPayment) {
+        return mpPayment.getExternalReference();
     }
 
     private void processApprovedPayment(Payment mpPayment) {
@@ -99,9 +108,9 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     @Transactional
     public void updateAuditStatus(Payment mpPayment) {
         LocalDateTime now = LocalDateTime.now();
-        String preferenceId = getPreferenceId(mpPayment);
-        if (preferenceId == null) return;
-        mpPaymentAuditRepository.findByPreferenceId(preferenceId).ifPresent(audit -> {
+        String externalRef = getExternalReference(mpPayment);
+        if (externalRef == null) return;
+        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
             String previousStatus = audit.getPaymentStatus();
             audit.setPaymentId(mpPayment.getId() != null ? String.valueOf(mpPayment.getId()) : null);
             audit.setPaymentStatus(mpPayment.getStatus());
@@ -114,6 +123,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
                     mpPayment.getStatus(),
                     mpPayment.getStatusDetail(),
                     now
+
             );
             mpPaymentStatusHistoryRepository.save(history);
         });
@@ -122,9 +132,9 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     @Transactional
     public void updateAuditOnApproval(Payment mpPayment) {
         LocalDateTime now = LocalDateTime.now();
-        String preferenceId = getPreferenceId(mpPayment);
-        if (preferenceId == null) return;
-        mpPaymentAuditRepository.findByPreferenceId(preferenceId).ifPresent(audit -> {
+        String externalRef = getExternalReference(mpPayment);
+        if (externalRef == null) return;
+        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
             String previousStatus = audit.getPaymentStatus();
             audit.setPaymentId(mpPayment.getId() != null ? String.valueOf(mpPayment.getId()) : null);
             audit.setPaymentStatus(mpPayment.getStatus());
@@ -175,6 +185,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
         history.setNewStatus(newStatus);
         history.setStatusDetail(statusDetail);
         history.setChangedAt(changedAt);
+        history.setRawPayload(audit.getRawWebhookPayload());
         return history;
     }
 
