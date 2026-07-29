@@ -8,6 +8,9 @@ import { MiniCalendar } from '../components/mini-calendar/mini-calendar';
 import {BookingService} from '../../../services/BookingService/booking-service';
 import { BookingListModel } from '../models/booking-list.model';
 import { SpaceSlotModel } from '../models/space-slot.model';
+import {SpaceCardModel} from '../models/space-card.model';
+import { forkJoin } from 'rxjs';
+import {SpaceService} from '../../../services/SpaceService/SpaceService';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,7 +28,8 @@ import { SpaceSlotModel } from '../models/space-slot.model';
 export class Dashboard implements OnInit {
 
   constructor(
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private spaceService: SpaceService
   ) {
   }
 
@@ -37,28 +41,37 @@ export class Dashboard implements OnInit {
 
   private loadBookings(): void {
 
-    this.bookingService.getBookings({
+    forkJoin({
 
-      dateFrom: this.formatDateStart(this.selectedDate),
+      spaces: this.spaceService.getSpaceCards(),
 
-      dateTo: this.formatDateEnd(this.selectedDate),
+      bookings: this.bookingService.getBookings({
 
-      page: 0,
-      size: 20,
-      sortBy: 'startDatetime',
-      sortDirection: 'desc'
+        dateFrom: this.formatDateStart(this.selectedDate),
+        dateTo: this.formatDateEnd(this.selectedDate),
+
+        page: 0,
+        size: 20,
+        sortBy: 'startDatetime',
+        sortDirection: 'desc'
+
+      })
 
     }).subscribe({
 
-      next: response => {
+      next: ({ spaces, bookings }) => {
 
-        console.log('BOOKINGS', response);
+        console.log('SPACES', spaces);
+        console.log('BOOKINGS', bookings);
 
-        this.spaces = this.mapBookingsToSpaces(response.content);
+        this.spaces = this.mapSpaces(
+          spaces,
+          bookings.content
+        );
 
-        this.stats = this.buildStats(response.content);
+        this.stats = this.buildStats(bookings.content);
 
-        this.updateHeader(response.content);
+        this.updateHeader(bookings.content);
 
       },
 
@@ -72,60 +85,35 @@ export class Dashboard implements OnInit {
 
   }
 
-  private mapBookingsToSpaces(bookings: BookingListModel[]): SpaceModel[] {
+  private mapSpaces(
+    spaces: SpaceCardModel[],
+    bookings: BookingListModel[]
+  ): SpaceModel[] {
 
-    const spacesMap = new Map<string, SpaceModel>();
+    return spaces.map(space => {
 
-    let nextSpaceId = 1;
-    let nextSlotId = 1;
+      const slots: SpaceSlotModel[] = bookings
+        .filter(booking => booking.spaceName === space.name)
+        .map(booking => ({
+          id: booking.id,
+          startTime: this.formatTime(booking.startDatetime),
+          endTime: this.formatTime(booking.endDatetime),
+          status: this.mapStatus(booking),
+          clientName: booking.clientName,
+          phone: booking.clientPhone
+        }));
 
-    bookings.forEach(booking => {
-
-      if (!spacesMap.has(booking.spaceName)) {
-
-        spacesMap.set(booking.spaceName, {
-
-          id: nextSpaceId++,
-
-          name: booking.spaceName,
-
-          type: '',
-
-          slotDuration: 60,
-
-          status: 'AVAILABLE',
-
-          nextBookingTime: undefined,
-
-          slots: []
-
-        });
-
-      }
-
-      const space = spacesMap.get(booking.spaceName)!;
-
-      const slot: SpaceSlotModel = {
-
-        id: nextSlotId++,
-
-        startTime: this.formatTime(booking.startDatetime),
-
-        endTime: this.formatTime(booking.endDatetime),
-
-        status: this.mapStatus(booking),
-
-        clientName: booking.clientName,
-
-        phone: booking.clientPhone
-
+      return {
+        id: space.id,
+        name: space.name,
+        type: space.type,
+        slotDuration: space.slotDuration,
+        status: space.isActive ? 'AVAILABLE' : 'MAINTENANCE',
+        nextBookingTime: slots.length > 0 ? slots[0].startTime : undefined,
+        slots
       };
 
-      space.slots.push(slot);
-
     });
-
-    return Array.from(spacesMap.values());
 
   }
 

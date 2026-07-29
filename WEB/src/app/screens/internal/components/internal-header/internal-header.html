@@ -3,11 +3,8 @@
   <div class="brand">
 
     <div class="brand-text">
-
       <h1>{{ title }}</h1>
-
       <span>{{ subtitle }}</span>
-
     </div>
 
   </div>
@@ -20,21 +17,49 @@
         Bienvenido
       </span>
 
-        <span class="name">
-    {{ (currentUser$ | async)?.name }}
-  </span>
+      <span class="name">
+        {{ (currentUser$ | async)?.name }}
+      </span>
 
     </div>
 
-    <button
-      class="profile-button"
-      (click)="toggleMenu()">
+    <div class="profile-wrapper">
 
-      <img
-        src="/assets/emojis/header-profile.svg"
-        alt="Usuario">
+      <button
+        class="profile-button"
+        (click)="toggleMenu()">
 
-    </button>
+        <img
+          src="/assets/emojis/header-profile.svg"
+          alt="Usuario">
+
+      </button>
+
+      @if (menuOpen) {
+
+        <div class="profile-menu">
+
+          <button
+            class="menu-item"
+            (click)="goToProfile()">
+
+            Mi perfil
+
+          </button>
+
+          <button
+            class="menu-item logout"
+            (click)="logout()">
+
+            Cerrar sesión
+
+          </button>
+
+        </div>
+
+      }
+
+    </div>
 
   </div>
 
