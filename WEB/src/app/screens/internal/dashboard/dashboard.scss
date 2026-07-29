@@ -146,12 +146,17 @@
 
   display:grid;
 
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 275px;
 
   gap:28px;
 
   align-items:start;
 
+}
+
+.dashboard-left {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .dashboard-right {
@@ -174,7 +179,7 @@
 
   display: flex;
 
-  gap: 20px;
+  gap: 12px;
 
   align-items: flex-start;
 
