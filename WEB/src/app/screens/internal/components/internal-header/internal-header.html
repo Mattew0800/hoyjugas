@@ -20,9 +20,9 @@
         Bienvenido
       </span>
 
-      <span class="name">
-        {{ userName }}
-      </span>
+        <span class="name">
+    {{ (currentUser$ | async)?.name }}
+  </span>
 
     </div>
 

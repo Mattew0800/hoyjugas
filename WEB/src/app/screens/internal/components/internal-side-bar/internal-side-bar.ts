@@ -19,42 +19,42 @@ export class InternalSideBar {
 
     {
       label: 'Turnos de hoy',
-      icon: '/assets/icons/dashboard.svg',
+      icon: '/assets/emojis/dashboard.svg',
       route: '/internal/dashboard',
       active: true
     },
 
     {
       label: 'Calendario',
-      icon: '/assets/icons/calendar.svg',
+      icon: '/assets/emojis/calendario.svg',
       route: '/internal/calendar',
       active: false
     },
 
     {
       label: 'Canchas',
-      icon: '/assets/icons/field.svg',
+      icon: '/field-icon.svg',
       route: '/internal/fields',
       active: false
     },
 
     {
       label: 'Clientes',
-      icon: '/assets/icons/users.svg',
+      icon: '/assets/emojis/persona.svg',
       route: '/internal/customers',
       active: false
     },
 
     {
       label: 'Reportes',
-      icon: '/assets/icons/report.svg',
+      icon: '/assets/emojis/report.svg',
       route: '/internal/reports',
       active: false
     },
 
     {
       label: 'Ajustes',
-      icon: '/assets/icons/settings.svg',
+      icon: '/assets/emojis/settings.svg',
       route: '/internal/settings',
       active: false
     }

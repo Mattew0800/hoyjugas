@@ -98,6 +98,8 @@
 
   border:none;
 
+  box-sizing: border-box;
+
   border-radius:50%;
 
   background:transparent;
@@ -125,5 +127,8 @@
   color:#111;
 
   font-weight:700;
+
+  border: 2px solid #FFFFFF;
+
 
 }

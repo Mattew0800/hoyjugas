@@ -14,28 +14,28 @@
       <div class="stats-container">
 
         <app-stat-card
-          icon="assets/icons/calendar.svg"
+          icon="assets/emojis/calendario.svg"
           [value]="stats.todayBookings.toString()"
           title="Turnos de hoy"
           subtitle="Hoy">
         </app-stat-card>
 
         <app-stat-card
-          icon="/assets/icons/field.svg"
+          icon="/field-icon.svg"
           [value]="stats.occupiedSpaces.toString()"
           title="Canchas ocupadas"
           subtitle="ahora mismo">
         </app-stat-card>
 
         <app-stat-card
-          icon="/assets/icons/clock.svg"
+          icon="/assets/emojis/clock.svg"
           [value]="stats.nextBookingTime"
           title="Próximo turno"
           [subtitle]="stats.nextBookingSubtitle">
         </app-stat-card>
 
         <app-stat-card
-          icon="/assets/icons/money.svg"
+          icon="/assets/emojis/coin.svg"
           [value]="'$' + stats.estimatedRevenue.toLocaleString('es-AR')"
           title="Ingresos"
           subtitle="estimados del día">

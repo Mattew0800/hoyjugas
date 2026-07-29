@@ -54,13 +54,6 @@ export class Dashboard implements OnInit {
 
         console.log('BOOKINGS', response);
 
-        if (response.content.length === 0) {
-
-          this.spaces = [];
-          return;
-
-        }
-
         this.spaces = this.mapBookingsToSpaces(response.content);
 
         this.stats = this.buildStats(response.content);
@@ -139,11 +132,9 @@ export class Dashboard implements OnInit {
   private formatTime(date: string): string {
 
     return new Date(date).toLocaleTimeString('es-AR', {
-
       hour: '2-digit',
-
-      minute: '2-digit'
-
+      minute: '2-digit',
+      hour12: false
     });
 
   }
@@ -165,6 +156,16 @@ export class Dashboard implements OnInit {
 
   }
   private buildStats(bookings: BookingListModel[]) {
+
+    if (bookings.length === 0) {
+      return {
+        todayBookings: 0,
+        occupiedSpaces: 0,
+        nextBookingTime: '--:--',
+        nextBookingSubtitle: '',
+        estimatedRevenue: 0
+      };
+    }
 
     const isToday =
       this.selectedDate.toDateString() === new Date().toDateString();
@@ -245,12 +246,10 @@ export class Dashboard implements OnInit {
 
   private updateHeader(bookings: BookingListModel[]): void {
 
-    if (bookings.length === 0) {
-      this.headerSubtitle = '';
-      return;
-    }
-
-    const date = new Date(bookings[0].startDatetime);
+    const date =
+      bookings.length > 0
+        ? new Date(bookings[0].startDatetime)
+        : this.selectedDate;
 
     this.headerSubtitle = date.toLocaleDateString('es-AR', {
       weekday: 'long',
@@ -304,7 +303,7 @@ export class Dashboard implements OnInit {
     estimatedRevenue: 0
   };
 
-  headerTitle = 'Turnos de hoy';
+  headerTitle = 'Turnos del dia';
 
   headerSubtitle = '';
 
