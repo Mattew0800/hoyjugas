@@ -71,8 +71,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/login",
-                                "/auth/register",
-                                "/auth/register-admin",
+                                "/auth/register",                                
                                 "/auth/forgot-password",
                                 "/auth/reset-password",
                                 "/bookings/schedule",
