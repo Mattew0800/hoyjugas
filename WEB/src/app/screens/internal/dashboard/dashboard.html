@@ -59,7 +59,8 @@
           @for(space of spaces; track space.id) {
 
             <app-space-column
-              [space]="space">
+              [space]="space"
+              (slotClick)="openBookingModal($event)">
             </app-space-column>
 
           }
@@ -80,5 +81,19 @@
 
 
   </main>
+
+  @if(showBookingModal && selectedBooking){
+
+    <app-booking-detail-modal
+
+      [booking]="selectedBooking"
+
+      (close)="closeBookingModal()"
+
+      (confirmPayment)="confirmPayment($event)">
+
+    </app-booking-detail-modal>
+
+  }
 
 </div>

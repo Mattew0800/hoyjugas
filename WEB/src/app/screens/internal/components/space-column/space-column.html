@@ -25,7 +25,8 @@
     @for(slot of space.slots; track slot.id){
 
       <app-space-slot
-        [slot]="slot">
+        [slot]="slot"
+        (slotClick)="onSlotClick($event)">
       </app-space-slot>
 
     }

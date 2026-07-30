@@ -1,0 +1,508 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, .65);
+
+  z-index: 1000;
+}
+
+.modal-container {
+  width: 1100px;
+  max-width: 92vw;
+  max-height: 90vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #151515;
+
+  border: 1px solid #2B2B2B;
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+}
+
+.modal-header {
+  height: 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 32px;
+
+  border-bottom: 1px solid #2B2B2B;
+
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+
+  color: #FFF;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.close-button {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 24px;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.close-button:hover {
+  background: #2A2A2A;
+}
+
+.modal-body {
+  flex: 1;
+
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+
+  padding: 24px;
+
+  overflow-y: auto;
+}
+
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-card {
+  padding: 22px;
+
+  background: #1C1C1C;
+
+  border: 1px solid #2D2D2D;
+  border-radius: 16px;
+}
+
+.section-header {
+  margin-bottom: 24px;
+
+  padding-bottom: 14px;
+
+  border-bottom: 1px solid #2D2D2D;
+}
+
+.section-header h3 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.section-content {
+  min-height: 70px;
+}
+
+/* ===========================
+   CLIENTE
+=========================== */
+
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.client-avatar {
+  width: 72px;
+  height: 72px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #2B2B2B;
+
+  color: white;
+
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.client-data {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.client-data h4 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.client-data span {
+  color: #A0A0A0;
+
+  font-size: 14px;
+}
+
+.profile-button {
+
+  margin-left: auto;
+
+  align-self: center;
+
+  height: 42px;
+
+  padding: 0 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #C89B3C;
+
+  color: #151515;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.profile-button:hover {
+  background: #D9AB49;
+}
+
+/* ===========================
+   INFORMACIÓN DEL TURNO
+=========================== */
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid #2D2D2D;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: #8E8E8E;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #FFFFFF;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  text-align: right;
+}
+
+/* ===========================
+   ESTADO
+=========================== */
+
+.status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.status-indicator {
+  width: 16px;
+  height: 16px;
+
+  border-radius: 50%;
+
+  margin-top: 5px;
+
+  flex-shrink: 0;
+}
+
+.status-indicator.paid {
+  background: #D4A93A;
+}
+
+.status-indicator.complete {
+  background: #37C978;
+}
+
+.status-indicator.cancelled {
+  background: #E05252;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-title {
+  color: white;
+
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.status-description {
+  color: #9E9E9E;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ===========================
+   COBRO
+=========================== */
+
+.payment-summary{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.payment-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.payment-label{
+  color:#9D9D9D;
+  font-size:14px;
+}
+
+.payment-value{
+  color:white;
+  font-size:16px;
+  font-weight:600;
+}
+
+.remaining .payment-value{
+  color:#D4A93A;
+  font-size:18px;
+}
+
+.remaining{
+
+  margin-top:8px;
+
+  padding-top:14px;
+
+  border-top:1px solid #2D2D2D;
+
+}
+
+.divider{
+  margin:24px 0;
+  height:1px;
+  background:#2D2D2D;
+}
+
+.payment-method,
+.payment-input{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.payment-method label,
+.payment-input label{
+  color:#A0A0A0;
+  font-size:14px;
+}
+
+.payment-method select,
+.payment-input input{
+
+  height:46px;
+
+  padding:0 14px;
+
+  border:1px solid #333;
+
+  border-radius:10px;
+
+  background:#252525;
+
+  color:white;
+
+  font-size:14px;
+
+  outline:none;
+}
+
+.payment-method select:focus,
+.payment-input input::placeholder{
+
+color: #9A9A9A;
+}
+
+/* ===========================
+   OBSERVACIONES
+=========================== */
+
+.observation-label{
+  display:block;
+
+  margin-bottom:10px;
+
+  color:#A0A0A0;
+
+  font-size:14px;
+}
+
+.section-content textarea{
+
+  width:100%;
+  box-sizing: border-box;
+
+  min-height:100px;
+
+  resize:none;
+
+  padding:14px;
+
+  border-radius:10px;
+
+  border:1px solid #333;
+
+  background:#252525;
+
+  color:white;
+
+  font-size:14px;
+
+  font-family:inherit;
+
+  outline:none;
+
+  transition:.2s;
+}
+
+.section-content textarea:focus{
+
+  border-color:#C89B3C;
+
+}
+
+.section-content textarea::placeholder{
+
+  color:#777;
+
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+.modal-footer {
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+
+  padding: 20px 24px;
+
+  border-top: 1px solid #2D2D2D;
+
+  flex-shrink: 0;
+}
+
+.secondary-button {
+
+  height: 46px;
+
+  padding: 0 22px;
+
+  border: 1px solid #3A3A3A;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #FFFFFF;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.secondary-button:hover {
+
+  background: #2A2A2A;
+
+}
+
+.primary-button {
+
+  height: 46px;
+
+  padding: 0 24px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #C89B3C;
+
+  color: #151515;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.primary-button:hover {
+
+  background: #D9AB49;
+
+}

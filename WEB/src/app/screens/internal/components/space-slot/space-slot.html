@@ -1,4 +1,6 @@
-<div class="space-slot">
+<div
+  class="space-slot"
+  (click)="onSlotClick()">
 
   <div class="slot-header">
 
@@ -55,13 +57,13 @@
         [class.partial]="slot.status === 'PARTIAL'"
         [class.paid]="slot.status === 'PAID'">
 
-         @if(slot.status === 'PARTIAL') {
+        @if(slot.status === 'PARTIAL') {
 
-           <img
-             src="/assets/emojis/coin.svg"
-             alt="Seña">
+          <img
+            src="/assets/emojis/coin.svg"
+            alt="Seña">
 
-         }
+        }
 
         @if(slot.status === 'PAID') {
 

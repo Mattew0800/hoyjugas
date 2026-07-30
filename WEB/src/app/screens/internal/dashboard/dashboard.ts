@@ -11,6 +11,7 @@ import { SpaceSlotModel } from '../models/space-slot.model';
 import {SpaceCardModel} from '../models/space-card.model';
 import { forkJoin } from 'rxjs';
 import {SpaceService} from '../../../services/SpaceService/SpaceService';
+import{BookingDetailModal} from '../components/booking-detail-modal/booking-detail-modal';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +21,8 @@ import {SpaceService} from '../../../services/SpaceService/SpaceService';
     InternalSideBar,
     StatCard,
     SpaceColumn,
-    MiniCalendar
+    MiniCalendar,
+    BookingDetailModal
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
@@ -100,7 +102,9 @@ export class Dashboard implements OnInit {
           endTime: this.formatTime(booking.endDatetime),
           status: this.mapStatus(booking),
           clientName: booking.clientName,
-          phone: booking.clientPhone
+          phone: booking.clientPhone,
+
+          booking: booking
         }));
 
       return {
@@ -281,6 +285,36 @@ export class Dashboard implements OnInit {
 
   }
 
+  openBookingModal(slot: SpaceSlotModel): void {
+
+    if (!slot.booking) {
+      return;
+    }
+
+    this.selectedBooking = slot.booking;
+
+    this.showBookingModal = true;
+
+  }
+
+  closeBookingModal(): void {
+
+    this.showBookingModal = false;
+
+    this.selectedBooking = undefined;
+
+  }
+
+  confirmPayment(booking: BookingListModel): void {
+
+    console.log("Pago confirmado");
+
+    console.log(booking);
+
+    this.closeBookingModal();
+
+  }
+
   spaces: SpaceModel[] = [];
 
   stats = {
@@ -296,8 +330,11 @@ export class Dashboard implements OnInit {
   headerSubtitle = '';
 
   selectedDate = new Date();
-}
 
+  showBookingModal = false;
+
+  selectedBooking?: BookingListModel;
+}
 
 
 //   spaces: SpaceModel[] = [

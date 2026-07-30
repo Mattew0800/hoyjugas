@@ -1,3 +1,5 @@
+import {BookingListModel} from './booking-list.model';
+
 export interface SpaceSlotModel {
 
   id: number;
@@ -11,5 +13,7 @@ export interface SpaceSlotModel {
   clientName?: string;
 
   phone?: string;
+
+  booking?: BookingListModel;
 
 }

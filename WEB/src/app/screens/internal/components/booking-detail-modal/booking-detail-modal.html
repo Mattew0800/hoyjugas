@@ -1,0 +1,303 @@
+<div class="modal-overlay" (click)="closeModal()">
+
+  <div
+    class="modal-container"
+    (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <h2>Detalle del turno</h2>
+
+      <button
+        class="close-button"
+        (click)="closeModal()">
+        ✕
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div class="left-column">
+
+        <!-- Cliente -->
+        <section class="section-card">
+
+          <div class="section-header">
+            <h3>Cliente</h3>
+          </div>
+
+          <div class="client-info">
+
+            <div class="client-avatar">
+              {{ booking.clientName.charAt(0) }}
+            </div>
+
+            <div class="client-data">
+
+              <h4>{{ booking.clientName }}</h4>
+
+              <span>{{ booking.clientPhone }}</span>
+
+              <span>Sin email</span>
+
+            </div>
+
+            <button class="profile-button">
+              Ver perfil
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- Información -->
+        <section class="section-card">
+
+          <div class="section-header">
+            <h3>Información del turno</h3>
+          </div>
+
+          <div class="section-content">
+
+            <div class="info-row">
+
+              <span class="info-label">Cancha</span>
+
+              <span class="info-value">
+                {{ booking.spaceName }}
+              </span>
+
+            </div>
+
+            <div class="info-row">
+
+              <span class="info-label">Fecha</span>
+
+              <span class="info-value">
+                {{ booking.startDatetime | date:'dd/MM/yyyy' }}
+              </span>
+
+            </div>
+
+            <div class="info-row">
+
+              <span class="info-label">Horario</span>
+
+              <span class="info-value">
+                {{ booking.startDatetime | date:'HH:mm' }}
+                -
+                {{ booking.endDatetime | date:'HH:mm' }}
+              </span>
+
+            </div>
+
+            <div class="info-row">
+
+              <span class="info-label">Duración</span>
+
+              <span class="info-value">
+                {{ durationMinutes }} minutos
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- Estado -->
+        <section class="section-card">
+
+          <div class="section-header">
+            <h3>Estado</h3>
+          </div>
+
+          <div class="section-content">
+
+            <div class="status-card">
+
+              <div
+                class="status-indicator"
+                [class.paid]="booking.paymentStatus === 'PAGADO'"
+                [class.partial]="booking.paymentStatus !== 'PAGADO'">
+              </div>
+
+              <div class="status-info">
+
+                <span class="status-title">
+
+                  {{
+                    booking.paymentStatus === 'PAGADO'
+                      ? 'Pago completo'
+                      : 'Pago parcial'
+                  }}
+
+                </span>
+
+                <span class="status-description">
+
+                  {{
+                    booking.paymentStatus === 'PAGADO'
+                      ? 'El turno fue abonado en su totalidad.'
+                      : 'El cliente todavía tiene un saldo pendiente.'
+                  }}
+
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+      <div class="right-column">
+
+        <!-- Cobro -->
+        <section class="section-card">
+
+          <div class="section-header">
+            <h3>Cobro</h3>
+          </div>
+
+          <div class="section-content">
+
+            <div class="payment-summary">
+
+              <div class="payment-row">
+
+                <span class="payment-label">
+                  Total del turno
+                </span>
+
+                <span class="payment-value">
+                  ${{ booking.totalAmount | number:'1.0-0' }}
+                </span>
+
+              </div>
+
+              <div class="payment-row">
+
+                <span class="payment-label">
+                  Seña abonada
+                </span>
+
+                <span class="payment-value">
+                  —
+                </span>
+
+              </div>
+
+              <div class="payment-row remaining">
+
+                <span class="payment-label">
+                  Saldo pendiente
+                </span>
+
+                <span class="payment-value">
+                  ${{ booking.remainingAmount ?? 0 | number:'1.0-0' }}
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="payment-method">
+
+              <label>Método de pago</label>
+
+              <select>
+
+                <option>Efectivo</option>
+
+                <option>Transferencia</option>
+
+                <option>Mercado Pago</option>
+
+                <option>Débito</option>
+
+                <option>Crédito</option>
+
+              </select>
+
+            </div>
+
+            <div class="payment-input">
+
+              <label>Importe recibido</label>
+
+              <input
+                type="text"
+                [placeholder]="'$' + (booking.remainingAmount ?? 0)">
+
+            </div>
+
+            <div class="payment-input">
+
+              <label>Vuelto</label>
+
+              <input
+                type="text"
+                value="$0"
+                disabled>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- Observaciones -->
+        <section class="section-card">
+
+          <div class="section-content">
+
+            <label class="observation-label">
+
+              Observaciones internas
+
+            </label>
+
+            <textarea
+              rows="6"
+              placeholder="Agregar una observación...">
+            </textarea>
+
+          </div>
+
+        </section>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+
+          <button
+            class="secondary-button"
+            (click)="closeModal()">
+
+            Cancelar
+
+          </button>
+
+          <button
+            class="primary-button"
+            (click)="onConfirmPayment()">
+
+            Cobrar turno
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
