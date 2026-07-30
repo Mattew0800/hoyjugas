@@ -1,0 +1,53 @@
+<app-internal-header />
+
+<div class="layout">
+
+  <app-internal-side-bar />
+
+  <main class="content">
+
+    <div class="page-header">
+
+      <div>
+
+        <h1>Espacios</h1>
+
+        <p>
+          Administración de canchas y espacios.
+        </p>
+
+      </div>
+
+      <button
+        class="new-space-button"
+        (click)="newSpace()">
+
+        + Nuevo espacio
+
+      </button>
+
+    </div>
+
+    <div class="search-container">
+
+      <input
+        type="text"
+        placeholder="Buscar espacio..."
+        [(ngModel)]="search">
+
+    </div>
+
+
+    <div class="spaces-list">
+
+      @for(space of spaces; track $index){
+
+        <app-space-list-item></app-space-list-item>
+
+      }
+
+    </div>
+
+  </main>
+
+</div>

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InternalHeader } from './internal-header';
+import { SpaceListItem } from './space-list-item';
 
-describe('InternalHeader', () => {
-  let component: InternalHeader;
-  let fixture: ComponentFixture<InternalHeader>;
+describe('SpaceListItem', () => {
+  let component: SpaceListItem;
+  let fixture: ComponentFixture<SpaceListItem>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InternalHeader]
+      imports: [SpaceListItem]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(InternalHeader);
+    fixture = TestBed.createComponent(SpaceListItem);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
