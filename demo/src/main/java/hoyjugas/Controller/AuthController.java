@@ -56,7 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/register-admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
         LoginResponseDTO result = authService.registerAdmin(request);
         authService.setAuthCookie(response, result.getToken());
