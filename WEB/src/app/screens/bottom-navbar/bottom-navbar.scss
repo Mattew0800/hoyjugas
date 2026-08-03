@@ -1,29 +1,20 @@
 .bottom-navbar {
   position: fixed;
-  /* Separamos del borde inferior usando el safe-area para iOS + un margen extra */
   bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
-
-  /* Centrado absoluto */
   left: 50%;
   transform: translateX(-50%);
-
-  /* Tamaño y forma de la burbuja */
   width: 85%;
-  max-width: 360px; /* Evita que sea muy ancha en pantallas grandes */
+  max-width: 360px;
   height: 55px;
-  border-radius: 40px; /* Bordes completamente redondeados */
-
-  /* Estilo visual flotante (Glassmorphism sutil) */
-  background: rgba(25, 25, 25, 0.85); /* Gris muy oscuro, casi negro, con transparencia */
+  border-radius: 40px;
+  background: rgba(25, 25, 25, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08); /* Borde claro muy sutil para dar volumen */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* Sombra para despegarlo del fondo */
-
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-
   z-index: 1000;
 }
 
@@ -32,17 +23,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  gap: 6px; /* Espacio entre el icono y el punto activo */
-
+  gap: 6px;
   text-decoration: none;
-  /* Área táctil generosa */
   padding: 10px 20px;
-
   transition: all 0.2s ease;
 
   .icon {
-    width: 26px; /* Iconos un poco más grandes al no tener texto */
+    width: 26px;
     height: 26px;
     margin-top: 5px;
     display: flex;
@@ -55,10 +42,7 @@
       height: 100%;
       object-fit: contain;
       display: block;
-
-      /* Color inactivo original */
-      filter: brightness(0) saturate(100%) invert(38%) sepia(0%)
-      saturate(0%) hue-rotate(187deg) brightness(92%) contrast(85%);
+      filter: brightness(0) saturate(100%) invert(38%) sepia(0%) saturate(0%) hue-rotate(187deg) brightness(92%) contrast(85%);
     }
   }
 
@@ -70,12 +54,11 @@
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #c9a15c; /* Dorado */
+    background: #c9a15c;
     opacity: 0;
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
-  /* Micro-interacción: se achica un poco al tocarlo */
   &:active .icon {
     transform: scale(0.9);
   }
@@ -85,8 +68,7 @@
   .icon {
 
     img {
-      filter: brightness(0) saturate(100%) invert(73%) sepia(31%)
-      saturate(540%) hue-rotate(358deg) brightness(92%) contrast(88%);
+      filter: brightness(0) saturate(100%) invert(73%) sepia(31%) saturate(540%) hue-rotate(358deg) brightness(92%) contrast(88%);
     }
   }
 
@@ -99,14 +81,10 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-
   background: rgba(0, 0, 0, 0.35);
-
   display: flex;
   align-items: end;
   justify-content: center;
-
-  transform: translateY(-5rem);
 
   z-index: 2000;
 }
@@ -115,16 +93,13 @@
   width: 200px;
   height: 75px;
   padding: 8px;
-
   border-radius: 20px;
-
   background: rgba(25, 25, 25, 0.95);
-
   border: 1px solid rgba(255, 255, 255, 0.08);
-
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-
   text-align: center;
+  transform: translateY(-5rem);
+  outline: none;
 
   p {
     color: white;
@@ -142,14 +117,10 @@
 .actions button {
   width: 32px;
   height: 32px;
-
   border: none;
   border-radius: 50%;
-
   cursor: pointer;
-
   font-size: 18px;
-
   transition: transform .2s ease;
 }
 

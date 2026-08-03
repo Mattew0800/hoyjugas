@@ -80,9 +80,10 @@ export class Booking implements OnInit{
           this.availableFieldTypes = Array.from(new Set(this.spacesCardList.map(s => s.type)));
           this.selectedFieldType = this.availableFieldTypes[0];
         }
-        console.log(r);
+        
       },
       error: (e)=>{
+        this.emptySpacesCard = true;
         console.log(e);
       }
     })

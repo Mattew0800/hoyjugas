@@ -50,22 +50,26 @@
 
           <div class="stat-info">
 
-            <h3>
-              @if(!complexClosed && !noSchedules){
-                {{closingTime}}
-              }@else{
-                Cerrado
-              }
+          <h3 [class.closed]="closedNow">
 
-            </h3>
+            @if(noSchedules){
+              Sin horarios
+            } @else if(closedNow){
+              Cerrado
+            } @else {
+              {{closingTime}}
+            }
+          </h3>
 
-            <span>
-              @if(noSchedules){
-                sin horarios aún
-              }@else{
-                horario de cierre
-              }
-            </span>
+          <span>
+            @if(noSchedules){
+              sin horarios aún
+            } @else if(closedNow){
+              abre {{formatOpeningDay(dayType)}} a las {{openingTime}}
+            } @else {
+              horario de cierre
+            }
+          </span>
 
           </div>
 

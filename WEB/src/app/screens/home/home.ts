@@ -1,11 +1,11 @@
-import {Component, Inject, OnDestroy, OnInit, Renderer2} from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Header } from '../header/header';
-import {Meta} from '@angular/platform-browser';
-import {DOCUMENT} from '@angular/common';
-import {BookingService} from '../../services/BookingService/booking-service';
+import { Meta } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
+import { BookingService } from '../../services/BookingService/booking-service';
 
 @Component({
   selector: 'app-home',
@@ -13,19 +13,20 @@ import {BookingService} from '../../services/BookingService/booking-service';
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })
-export class Home implements OnInit, OnDestroy{
+export class Home implements OnInit, OnDestroy {
 
   availableTurns: number = 3;
 
-  closingHour: string = '23:00';
-
   closingTime: string = "";
+  openingTime: string = "";
 
   noSchedules = false;
 
-  complexClosed: boolean = false;
+  closedNow: boolean = false;
   scheduleError: boolean = false;
   avaliableSlotsToday: number = 0;
+
+  dayType: string = "";
 
   constructor(
     private meta: Meta,
@@ -33,12 +34,12 @@ export class Home implements OnInit, OnDestroy{
     private renderer: Renderer2,
     private router: Router,
     public bService: BookingService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.meta.updateTag({ name: 'theme-color', content: '#181b16' });
     this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
-    this.getAvaliableSlotsToday();
+    this.getAvailableSlotsToday();
     this.getComplexSchedule();
   }
 
@@ -57,39 +58,72 @@ export class Home implements OnInit, OnDestroy{
     });
   }
 
-  getAvaliableSlotsToday(){
-    return this.bService.getAvaliableSlotsToday().subscribe({
-      next: (r)=>{
+  getAvailableSlotsToday() {
+    return this.bService.getAvailableSlotsToday().subscribe({
+      next: (r) => {
         this.avaliableSlotsToday = r["Turnos disponibles totales:"];
         console.log(r);
       },
-      error: (e)=>{
+      error: (e) => {
         console.log(e);
       }
     })
   }
 
-  getComplexSchedule(){
+  getComplexSchedule() {
     return this.bService.getComplexSchedule().subscribe({
-      next: (r)=>{
+      next: (r) => {
+
         console.log(r);
-        const onlyOpen =
+
+        const noScheduleConfigured =
           Object.keys(r).length === 1 && 'open' in r;
 
-        if (onlyOpen) {
+
+        if (noScheduleConfigured) {
           this.noSchedules = true;
           return;
         }
-      },
-      error: (e)=>{
-        if (e.status === 404) {
-          this.complexClosed = true;
-        } else {
-          this.scheduleError = true;
+
+        if (r.dayType) {
+          this.dayType = r.dayType;
         }
+
+
+        if (!r.open) {
+          this.closedNow = true;
+
+          if (r.openingTime) {
+            this.openingTime = r.openingTime.substring(0, 5);
+          }
+
+          return;
+        }
+
+
+        if (r.closingTime) {
+          this.closingTime = r.closingTime.substring(0, 5);
+        }
+
+      },
+      error: (e) => {
+        this.scheduleError = true;
         console.log(e);
       }
     })
+  }
+
+    formatOpeningDay(day: string): string {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const tomorrowName = tomorrow.toLocaleDateString('es-AR', {
+      weekday: 'long'
+    });
+
+    return day.toLowerCase() === tomorrowName
+      ? 'mañana'
+      : `el ${day.toLowerCase()}`;
   }
 
 }

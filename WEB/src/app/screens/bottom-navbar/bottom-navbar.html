@@ -15,7 +15,7 @@
   <button
     type="button"
     class="nav-item phone-button"
-    (click)="showWhatsappModal = true"
+    (click)="openWhatsappModal()"
   >
     <div class="icon phone">
       <img src="assets/icons/bottom-navbar/phone.svg" alt="Contacto">
@@ -39,22 +39,29 @@
 
   <div
     class="modal-backdrop"
-    (click)="showWhatsappModal = false"
+    (click)="closeWhatsappModal()"
   >
 
     <div
       class="whatsapp-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="whatsapp-modal-title"
       (click)="$event.stopPropagation()"
+      (keydown)="onModalKeydown($event)"
+      #whatsappModal
+      tabindex="-1"
     >
 
-      <p>¿Abrir WhatsApp?</p>
+      <p id="whatsapp-modal-title">¿Abrir WhatsApp?</p>
 
       <div class="actions">
 
         <button
           type="button"
           class="cancel"
-          (click)="showWhatsappModal = false"
+          aria-label="Cancelar y cerrar modal"
+          (click)="closeWhatsappModal()"
         >
           ✕
         </button>
@@ -62,6 +69,7 @@
         <button
           type="button"
           class="confirm"
+          aria-label="Confirmar y abrir WhatsApp"
           (click)="openWhatsapp()"
         >
           ✓
