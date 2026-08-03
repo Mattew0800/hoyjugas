@@ -25,7 +25,7 @@ public class SpaceResponseDTO {
         SpaceResponseDTO dto = new SpaceResponseDTO();
         dto.setId(space.getId());
         dto.setName(space.getName());
-        dto.setType(space.getType().name());
+        dto.setType(space.getType());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
         dto.setDepositFactor(space.getFixedDeposit());

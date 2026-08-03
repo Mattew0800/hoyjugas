@@ -1,6 +1,5 @@
 package hoyjugas.DTO.Space;
 
-import hoyjugas.Enum.SpaceType;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -12,8 +11,9 @@ public class SpaceRequestDTO {
     @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
     private String name;
 
-    @NotNull(message = "El tipo de espacio es obligatorio")
-    private SpaceType type;
+    @NotBlank(message = "El tipo de espacio no puede estar vacío")
+    @Size(max = 100, message = "El tipo es demasiado largo")
+    private String type;
 
     @NotNull(message = "La duración del turno es obligatoria")
     @Min(value = 15, message = "La duración mínima es 15 minutos")
