@@ -159,6 +159,10 @@
   h3 {
     font-size: 24px;
     color: #CEA764;
+
+    &.closed {
+      color: #B85C5C;
+    }
   }
 
   span {
@@ -213,3 +217,4 @@
     color: #d1d1d1;
   }
 }
+

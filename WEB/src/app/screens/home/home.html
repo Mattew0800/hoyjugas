@@ -27,7 +27,7 @@
 
           <div class="stat-info">
 
-            <h3>3</h3>
+            <h3>{{avaliableSlotsToday}}</h3>
 
             <span>turnos libres hoy</span>
 
@@ -50,9 +50,26 @@
 
           <div class="stat-info">
 
-            <h3>23:00</h3>
+          <h3 [class.closed]="closedNow">
 
-            <span>horario de cierre</span>
+            @if(noSchedules){
+              Sin horarios
+            } @else if(closedNow){
+              Cerrado
+            } @else {
+              {{closingTime}}
+            }
+          </h3>
+
+          <span>
+            @if(noSchedules){
+              sin horarios aún
+            } @else if(closedNow){
+              abre {{formatOpeningDay(dayType)}} a las {{openingTime}}
+            } @else {
+              horario de cierre
+            }
+          </span>
 
           </div>
 

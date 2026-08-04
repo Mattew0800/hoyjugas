@@ -1,8 +1,11 @@
-import {Component, Inject, Renderer2} from '@angular/core';
+import {Component, Inject, OnInit, Renderer2} from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Router } from '@angular/router';
 import {CommonModule, DOCUMENT} from '@angular/common';
+import {BookingService} from '../../services/BookingService/booking-service';
+import {clearAppScopedEarlyEventContract} from '@angular/core/primitives/event-dispatch';
+import {SpaceCardDTO} from '../../models/SpaceCardDTO';
 
 @Component({
   selector: 'app-booking',
@@ -14,30 +17,44 @@ import {CommonModule, DOCUMENT} from '@angular/common';
   templateUrl: './booking.html',
   styleUrl: './booking.scss',
 })
-export class Booking {
+export class Booking implements OnInit{
 
-  selectedFieldType: 'futbol5' | 'futbol7' = 'futbol5';
+  availableFieldTypes: string[] = [];
+  selectedFieldType: string = '';
 
   selectedDate: Date = new Date();
+
+  closingTime: string = "";
+
+  emptySpacesCard: boolean = false;
+
+  spacesCardList: SpaceCardDTO[];
 
   constructor(
     private router: Router,
     private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    public bService: BookingService
   ) {
-
+    this.spacesCardList = [];
   }
 
   ngOnInit() {
     //this.meta.updateTag({ name: 'theme-color', content: '#CEA764' });
     this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
+    this.getSpacesCard();
+
   }
 
   get activeIndex(): number {
-    return this.selectedFieldType === 'futbol5' ? 0 : 1;
+    return this.availableFieldTypes.indexOf(this.selectedFieldType);
   }
 
-  selectFieldType(type: 'futbol5' | 'futbol7'): void {
+  get filteredSpacesCardList(): SpaceCardDTO[] {
+    return this.spacesCardList.filter(space => space.type === this.selectedFieldType);
+  }
+
+  selectFieldType(type: string): void {
     this.selectedFieldType = type;
   }
 
@@ -52,4 +69,31 @@ export class Booking {
   goToFieldSchedule(): void {
     this.router.navigate(['/field-schedule']);
   }
+
+  getSpacesCard(){
+    return this.bService.getSpacesCard().subscribe({
+      next: (r)=>{
+        this.spacesCardList = r.filter(space => space.isActive);
+        if(this.spacesCardList.length === 0){
+          this.emptySpacesCard = true;
+        } else {
+          this.availableFieldTypes = Array.from(new Set(this.spacesCardList.map(s => s.type)));
+          this.selectedFieldType = this.availableFieldTypes[0];
+        }
+        
+      },
+      error: (e)=>{
+        this.emptySpacesCard = true;
+        console.log(e);
+      }
+    })
+  }
+
+  onImageError(space: SpaceCardDTO): void {
+  space.imageUrl = ""; // Al volverlo null, Angular activará automáticamente el @else de tu HTML
 }
+
+
+
+}
+
