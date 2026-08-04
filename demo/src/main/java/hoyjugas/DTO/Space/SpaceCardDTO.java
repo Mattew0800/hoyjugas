@@ -18,7 +18,7 @@ public class SpaceCardDTO {
         SpaceCardDTO dto = new SpaceCardDTO();
         dto.setId(space.getId());
         dto.setName(space.getName());
-        dto.setType(space.getType().getDisplayName());
+        dto.setType(space.getType());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
         dto.setImageUrl(space.getPhotoUrl());

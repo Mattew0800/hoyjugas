@@ -105,6 +105,7 @@ public class SpaceService {
         pricing.setStartTime(dto.getStartTime());
         pricing.setEndTime(dto.getEndTime());
         pricing.setPrice(dto.getPrice());
+        space.getPricings().add(pricing);
         spacePricingRepository.save(pricing);
         return SpaceResponseDTO.fromEntity(space);
     }

@@ -60,7 +60,7 @@ public class BookingResponseDTO {
 
         dto.setSpaceId(booking.getSpace().getId());
         dto.setSpaceName(booking.getSpace().getName());
-        dto.setSpaceType(booking.getSpace().getType().name());
+        dto.setSpaceType(booking.getSpace().getType());
         dto.setPhotoUrl(booking.getSpace().getPhotoUrl());
 
         dto.setStartDatetime(booking.getStartDatetime());
