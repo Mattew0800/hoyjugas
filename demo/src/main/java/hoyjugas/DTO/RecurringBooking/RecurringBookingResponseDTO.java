@@ -56,7 +56,7 @@ public class RecurringBookingResponseDTO {
         dto.setClientPhone(recurring.getClient().getPhone());
         dto.setSpaceId(recurring.getSpace().getId());
         dto.setSpaceName(recurring.getSpace().getName());
-        dto.setSpaceType(recurring.getSpace().getType().name());
+        dto.setSpaceType(recurring.getSpace().getType());
 
         dto.setDayOfWeek(recurring.getDayOfWeek().name());
         dto.setStartTime(recurring.getStartTime());

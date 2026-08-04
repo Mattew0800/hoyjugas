@@ -85,7 +85,7 @@ public class BookingService extends BaseBookingService {
             SpaceAvailabilityDTO slot = new SpaceAvailabilityDTO();
             slot.setSpaceId(space.getId());
             slot.setSpaceName(space.getName());
-            slot.setSpaceType(space.getType().name());
+            slot.setSpaceType(space.getType());
             slot.setStartDatetime(slotStart);
             slot.setEndDatetime(slotEnd);
             slot.setPrice(price);
