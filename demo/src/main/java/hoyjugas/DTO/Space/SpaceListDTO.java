@@ -19,7 +19,7 @@ public class SpaceListDTO {
         SpaceListDTO dto = new SpaceListDTO();
         dto.setId(space.getId());
         dto.setName(space.getName());
-        dto.setType(space.getType().name());
+        dto.setType(space.getType());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
         dto.setPricingCount(space.getPricings().size());

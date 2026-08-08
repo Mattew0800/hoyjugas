@@ -1,6 +1,5 @@
 package hoyjugas.Model;
 
-import hoyjugas.Enum.SpaceType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +22,8 @@ public class Space {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SpaceType type;
+    @Column(nullable = false,length = 100)
+    private String type;
 
     @Column(nullable = false)
     private Integer slotDuration;//duracion del intervalo del espacio (o sea cuanto dura cada turno)

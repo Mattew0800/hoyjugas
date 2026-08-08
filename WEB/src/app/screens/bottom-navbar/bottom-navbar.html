@@ -7,38 +7,78 @@
     class="nav-item"
   >
     <div class="icon">
-      <img src="assets/emojis/home.svg" alt="Inicio">
+      <img src="assets/icons/bottom-navbar/home.svg" alt="Inicio">
     </div>
-
-    <span>Inicio</span>
-
     <div class="active-dot"></div>
   </a>
 
-  <a
-    href="https://wa.me/5492234566785?text=Hola,%20quiero%20hacer%20una%20consulta"
-    target="_blank"
-    class="nav-item"
+  <button
+    type="button"
+    class="nav-item phone-button"
+    (click)="openWhatsappModal()"
   >
-    <div class="icon">
-      <img src="assets/emojis/whatsapp.svg" alt="Contacto">
+    <div class="icon phone">
+      <img src="assets/icons/bottom-navbar/phone.svg" alt="Contacto">
     </div>
-
-    <span>Contacto</span>
-  </a>
+  </button>
 
   <a
     routerLink="/profile"
     routerLinkActive="active"
     class="nav-item"
   >
-    <div class="icon">
-      <img src="assets/emojis/profile.svg" alt="Perfil">
+    <div class="icon user">
+      <img src="assets/icons/bottom-navbar/user-profile.svg" alt="Perfil">
     </div>
-
-    <span>Perfil</span>
-
     <div class="active-dot"></div>
   </a>
 
 </nav>
+
+@if (showWhatsappModal) {
+
+  <div
+    class="modal-backdrop"
+    (click)="closeWhatsappModal()"
+  >
+
+    <div
+      class="whatsapp-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="whatsapp-modal-title"
+      (click)="$event.stopPropagation()"
+      (keydown)="onModalKeydown($event)"
+      #whatsappModal
+      tabindex="-1"
+    >
+
+      <p id="whatsapp-modal-title">¿Abrir WhatsApp?</p>
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="cancel"
+          aria-label="Cancelar y cerrar modal"
+          (click)="closeWhatsappModal()"
+        >
+          ✕
+        </button>
+
+        <button
+          type="button"
+          class="confirm"
+          aria-label="Confirmar y abrir WhatsApp"
+          (click)="openWhatsapp()"
+        >
+          ✓
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { SpaceCardDTO } from '../../models/SpaceCardDTO';
 import { Observable } from 'rxjs';
 import {BookingFilterModel} from '../../screens/internal/models/booking-filter.model';
 import {PageResponse} from '../../screens/internal/models/page-response.model';
@@ -16,7 +17,8 @@ export class BookingService {
 
   constructor(
     private http: HttpClient
-  ) {}
+  ) {
+  }
 
   getBookings(
     filter: BookingFilterModel
@@ -29,6 +31,7 @@ export class BookingService {
         withCredentials: true
       }
     );
+
 
   }
 
