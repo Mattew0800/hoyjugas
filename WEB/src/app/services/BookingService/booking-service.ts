@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SpaceCardDTO } from '../../models/SpaceCardDTO';
 import { Observable } from 'rxjs';
-import {BookingFilterModel} from '../../screens/internal/models/booking-filter.model';
-import {PageResponse} from '../../screens/internal/models/page-response.model';
-import {BookingListModel} from '../../screens/internal/models/booking-list.model';
-import {getBookingApiUrl} from '../../config/api.config';
 
+import { getBookingApiUrl } from '../../config/api.config';
+
+import { SpaceCardDTO } from '../../models/SpaceCardDTO';
+import { AvailableSlotsResponse } from '../../models/AvailableSlotsResponse';
+
+import { BookingFilterModel } from '../../screens/internal/models/booking-filter.model';
+import { PageResponse } from '../../screens/internal/models/page-response.model';
+import { BookingListModel } from '../../screens/internal/models/booking-list.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +20,7 @@ export class BookingService {
 
   constructor(
     private http: HttpClient
-  ) {
-  }
+  ) {}
 
   getBookings(
     filter: BookingFilterModel
@@ -32,6 +34,43 @@ export class BookingService {
       }
     );
 
+  }
+
+  getAvailableSlotsToday(): Observable<AvailableSlotsResponse> {
+
+    return this.http.get<AvailableSlotsResponse>(
+      `${this.bookingApiUrl}/available-slots-today`,
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
+  getComplexSchedule() {
+
+    return this.http.get<{
+      open?: boolean;
+      openingTime?: string;
+      closingTime?: string;
+      dayType?: string;
+    } & Record<string, any>>(
+      `${this.bookingApiUrl}/schedule`,
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
+  getSpacesCard(): Observable<SpaceCardDTO[]> {
+
+    return this.http.get<SpaceCardDTO[]>(
+      `${this.bookingApiUrl}/spaces-card`,
+      {
+        withCredentials: true
+      }
+    );
 
   }
 

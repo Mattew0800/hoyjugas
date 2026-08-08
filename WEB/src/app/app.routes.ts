@@ -32,7 +32,7 @@ export const routes: Routes = [
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
   {path: 'internal/dashboard', component: Dashboard, canActivate:[authGuard]},
-  {path:'spaces',component: SpacesScreen, canActivate:[authGuard]},
+  {path:'internal/spaces',component: SpacesScreen, canActivate:[authGuard]},
   {path:'**', component:Error}
 
 ];
