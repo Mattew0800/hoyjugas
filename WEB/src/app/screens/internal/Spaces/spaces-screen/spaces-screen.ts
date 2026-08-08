@@ -1,10 +1,13 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {InternalHeader} from '../../components/internal-header/internal-header';
-import {InternalSideBar} from '../../components/internal-side-bar/internal-side-bar';
-import {SpaceListItem} from '../../components/space-list-item/space-list-item';
-import {SpaceListModel} from '../../models/space-list-model';
-import {SpaceService} from '../../../../services/SpaceService/SpaceService';
+
+import { InternalHeader } from '../../components/internal-header/internal-header';
+import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
+import { SpaceListItem } from '../../components/space-list-item/space-list-item';
+import {SpaceModal} from '../space-modal/space-modal';
+import { SpaceListModel } from '../../models/space-list-model';
+
+import { SpaceService } from '../../../../services/SpaceService/SpaceService';
 
 @Component({
   selector: 'app-spaces-screen',
@@ -13,17 +16,22 @@ import {SpaceService} from '../../../../services/SpaceService/SpaceService';
     InternalHeader,
     InternalSideBar,
     FormsModule,
-    SpaceListItem
+    SpaceListItem,
+    SpaceModal
   ],
   templateUrl: './spaces-screen.html',
   styleUrl: './spaces-screen.scss'
 })
 export class SpacesScreen implements OnInit {
 
+  search = '';
+
+  showModal = false;
+
+  spaces: SpaceListModel[] = [];
+
   constructor(
-
     private spaceService: SpaceService
-
   ) {}
 
   ngOnInit(): void {
@@ -34,35 +42,43 @@ export class SpacesScreen implements OnInit {
 
   private loadSpaces(): void {
 
-    this.spaceService.getAllSpaces()
+    this.spaceService.getAllSpaces().subscribe({
 
-      .subscribe({
+      next: spaces => {
 
-        next: spaces => {
+        console.log('SPACES', spaces);
 
-          console.log('SPACES', spaces);
+        this.spaces = spaces;
 
-          this.spaces = spaces;
+      },
 
-        },
+      error: err => {
 
-        error: err => {
+        console.error(err);
 
-          console.error(err);
+      }
 
-        }
-
-      });
+    });
 
   }
 
-  search = '';
-
-  spaces: SpaceListModel[] = [];
-
   newSpace(): void {
 
-    console.log('Nuevo espacio');
+    console.log('Abriendo modal');
+
+    this.showModal = true;
+
+  }
+
+  closeModal(created: boolean): void {
+
+    this.showModal = false;
+
+    if (created) {
+
+      this.loadSpaces();
+
+    }
 
   }
 

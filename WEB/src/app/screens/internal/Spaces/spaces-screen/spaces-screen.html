@@ -51,5 +51,11 @@
     </div>
 
   </main>
+  @if(showModal){
 
+    <app-space-modal
+      (close)="closeModal($event)">
+    </app-space-modal>
+
+  }
 </div>

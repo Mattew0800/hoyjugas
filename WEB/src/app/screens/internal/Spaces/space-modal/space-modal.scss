@@ -1,0 +1,267 @@
+.modal-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, .65);
+
+  backdrop-filter: blur(4px);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  z-index: 9999;
+
+}
+
+.modal {
+
+  width: 700px;
+
+  background: #1A1C1F;
+
+  border: 1px solid #2B2E34;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+
+}
+
+.modal-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 24px 28px;
+
+  border-bottom: 1px solid #2B2E34;
+
+}
+
+.modal-header h2 {
+
+  margin: 0;
+
+  color: white;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+}
+
+.close-button {
+
+  width: 40px;
+
+  height: 40px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #A5A5A5;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.close-button:hover {
+
+  background: #2B2E34;
+
+  color: white;
+
+}
+
+.modal-body {
+
+  padding: 28px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 22px;
+
+}
+
+.form-row {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 18px;
+
+}
+
+.form-group {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+}
+
+.form-group label {
+
+  color: #D7D7D7;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+}
+
+.form-group input,
+.form-group select {
+
+  width: 100%;
+
+  height: 46px;
+
+  border: 1px solid #353941;
+
+  border-radius: 12px;
+
+  background: #111315;
+
+  color: white;
+
+  padding: 0 14px;
+
+  font-size: 15px;
+
+  transition: .2s;
+
+}
+
+.form-group input:focus,
+.form-group select:focus {
+
+  outline: none;
+
+  border-color: #2B7FFF;
+
+}
+
+.form-group input::placeholder {
+
+  color: #707780;
+
+}
+
+.checkbox {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 4px;
+
+}
+
+.checkbox input {
+
+  width: 18px;
+
+  height: 18px;
+
+  accent-color: #2B7FFF;
+
+}
+
+.checkbox label {
+
+  color: #D7D7D7;
+
+  font-size: 15px;
+
+}
+
+.modal-footer {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 14px;
+
+  padding: 22px 28px;
+
+  border-top: 1px solid #2B2E34;
+
+}
+
+.cancel-button {
+
+  border: 1px solid #3B4048;
+
+  background: transparent;
+
+  color: #D0D0D0;
+
+  border-radius: 12px;
+
+  padding: 12px 22px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: .2s;
+
+}
+
+.cancel-button:hover {
+
+  background: #2A2D33;
+
+}
+
+.save-button {
+
+  border: none;
+
+  background: #2B7FFF;
+
+  color: white;
+
+  border-radius: 12px;
+
+  padding: 12px 24px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: .2s;
+
+}
+
+.save-button:hover {
+
+  background: #4A90FF;
+
+}

@@ -1,0 +1,131 @@
+<div class="modal-overlay">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h2>Nuevo espacio</h2>
+
+      <button
+        class="close-button"
+        (click)="closeModal()">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+
+        <label>Nombre</label>
+
+        <input
+          type="text"
+          [(ngModel)]="space.name"
+          placeholder="Ej. Cancha 1">
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label>Tipo</label>
+
+          <select [(ngModel)]="space.type">
+
+            <option value="CANCHA">
+              Cancha
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Duración del turno</label>
+
+          <select [(ngModel)]="space.slotDuration">
+
+            <option [value]="30">30 min</option>
+            <option [value]="60">60 min</option>
+            <option [value]="90">90 min</option>
+            <option [value]="120">120 min</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Seña fija</label>
+
+        <input
+          type="number"
+          [(ngModel)]="space.fixedDeposit"
+          placeholder="$10000">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Porcentaje de seña</label>
+
+        <select [(ngModel)]="space.depositFactor">
+
+          <option [ngValue]="0.10">10%</option>
+          <option [ngValue]="0.20">20%</option>
+          <option [ngValue]="0.30">30%</option>
+          <option [ngValue]="0.50">50%</option>
+          <option [ngValue]="1">100%</option>
+
+        </select>
+
+      </div>
+
+      <div class="checkbox">
+
+        <input
+          id="active"
+          type="checkbox"
+          [(ngModel)]="space.isActive">
+
+        <label for="active">
+
+          Espacio activo
+
+        </label>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        class="cancel-button"
+        (click)="closeModal()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        class="save-button"
+        (click)="save()">
+
+        Guardar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

@@ -9,6 +9,7 @@ import {
 
 import { SpaceCardModel } from '../../screens/internal/models/space-card.model';
 import { SpaceListModel } from '../../screens/internal/models/space-list-model';
+import {SpaceFormModel} from '../../screens/internal/models/space-form.model';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,24 @@ export class SpaceService {
       {
         withCredentials: true
       }
+    );
+
+  }
+
+  createSpace(space: any) {
+
+    return this.http.post(
+
+      `${this.adminSpaceApiUrl}/create`,
+
+      space,
+
+      {
+
+        withCredentials: true
+
+      }
+
     );
 
   }
