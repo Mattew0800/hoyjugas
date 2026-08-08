@@ -40,9 +40,11 @@
 
     <div class="spaces-list">
 
-      @for(space of spaces; track $index){
+      @for(space of spaces; track space.id){
 
-        <app-space-list-item></app-space-list-item>
+        <app-space-list-item
+          [space]="space">
+        </app-space-list-item>
 
       }
 

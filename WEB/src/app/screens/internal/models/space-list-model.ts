@@ -6,16 +6,13 @@ export interface SpaceListModel {
 
   type: string;
 
-  imageUrl: string;
-
   slotDuration: number;
 
-  openingHour: string;
+  isActive: boolean;
 
-  closingHour: string;
+  pricingCount: number;
 
-  minimumPrice: number;
+  fixedDeposit: number;
 
-  active: boolean;
 
 }

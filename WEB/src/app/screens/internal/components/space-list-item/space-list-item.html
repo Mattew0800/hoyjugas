@@ -1,50 +1,79 @@
 <div class="space-item">
 
-  <img
-    class="space-image"
-    src="/cancha1.png"
-    alt="Cancha 1">
-
   <div class="space-content">
 
     <div class="space-info">
 
       <h2 class="space-title">
-        Cancha 1
+        {{ space.name }}
       </h2>
 
       <p class="space-type">
-        Fútbol 5 • Turnos de 60 minutos
+        {{ space.type }}
       </p>
 
-      <p class="space-capacity">
-        Capacidad para 10 jugadores
-      </p>
+      <div class="space-details">
 
-      <p class="space-schedule">
-        08:00 - 00:00
-      </p>
+        <div class="detail-row">
 
-      <p class="space-price">
-        Desde <strong>$12.000</strong>
-      </p>
+          <span class="detail-label">
+            Duración del turno
+          </span>
 
-    </div>
+          <span class="detail-value">
+            {{ space.slotDuration }} minutos
+          </span>
 
-      <div class="space-actions">
+        </div>
 
-    <span class="status-badge active">
-        Activa
-    </span>
+        <div class="detail-row">
 
-        <button class="edit-button">
+          <span class="detail-label">
+            Franjas horarias
+          </span>
 
-          ✏ Editar
+          <span class="detail-value">
+            {{ space.pricingCount }}
+            {{ space.pricingCount === 1 ? 'configuración' : 'configuraciones' }}
+          </span>
 
-        </button>
+        </div>
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Seña fija
+          </span>
+
+          <span class="detail-value">
+                  {{ '$' + space.fixedDeposit }}
+          </span>
+
+        </div>
 
       </div>
 
     </div>
 
+    <div class="space-actions">
+
+      <span
+        class="status-badge"
+        [class.active]="space.isActive"
+        [class.inactive]="!space.isActive">
+
+        {{ space.isActive ? 'Activa' : 'Inactiva' }}
+
+      </span>
+
+      <button class="edit-button">
+
+        Editar
+
+      </button>
+
+    </div>
+
   </div>
+
+</div>

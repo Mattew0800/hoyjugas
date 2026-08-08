@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {InternalHeader} from '../../components/internal-header/internal-header';
 import {InternalSideBar} from '../../components/internal-side-bar/internal-side-bar';
 import {SpaceListItem} from '../../components/space-list-item/space-list-item';
 import {SpaceListModel} from '../../models/space-list-model';
+import {SpaceService} from '../../../../services/SpaceService/SpaceService';
 
 @Component({
   selector: 'app-spaces-screen',
@@ -17,23 +18,47 @@ import {SpaceListModel} from '../../models/space-list-model';
   templateUrl: './spaces-screen.html',
   styleUrl: './spaces-screen.scss'
 })
-export class SpacesScreen {
+export class SpacesScreen implements OnInit {
+
+  constructor(
+
+    private spaceService: SpaceService
+
+  ) {}
+
+  ngOnInit(): void {
+
+    this.loadSpaces();
+
+  }
+
+  private loadSpaces(): void {
+
+    this.spaceService.getAllSpaces()
+
+      .subscribe({
+
+        next: spaces => {
+
+          console.log('SPACES', spaces);
+
+          this.spaces = spaces;
+
+        },
+
+        error: err => {
+
+          console.error(err);
+
+        }
+
+      });
+
+  }
 
   search = '';
 
-  spaces: SpaceListModel[] = [
-    {
-      id: 1,
-      name: 'Cancha 1',
-      type: 'Fútbol 5',
-      imageUrl: '/cancha1.png',
-      slotDuration: 60,
-      openingHour: '08:00',
-      closingHour: '00:00',
-      minimumPrice: 12000,
-      active: true
-    }
-  ];
+  spaces: SpaceListModel[] = [];
 
   newSpace(): void {
 

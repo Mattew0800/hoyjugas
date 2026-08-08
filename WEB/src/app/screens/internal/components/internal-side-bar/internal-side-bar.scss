@@ -4,6 +4,11 @@
 
 .internal-sidebar {
 
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
   width: 105px;
 
   height: 100vh;
@@ -20,8 +25,9 @@
 
   padding: 18px 10px;
 
-}
+  z-index: 1000;
 
+}
 .logo-container {
 
   display: flex;

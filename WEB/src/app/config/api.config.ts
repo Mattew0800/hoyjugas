@@ -15,5 +15,13 @@ export function getBookingApiUrl(): string {
 
 export function getSpaceApiUrl(): string {
   const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/spaces`;
+  return `http://${host}:8080/hoyjugas/internal/spaces`;
+}
+
+export function getAdminSpaceApiUrl(): string {
+
+  const host = window.location.hostname;
+
+  return `http://${host}:8080/hoyjugas/admin/spaces`;
+
 }
