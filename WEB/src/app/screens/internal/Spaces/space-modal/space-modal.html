@@ -4,8 +4,9 @@
 
     <div class="modal-header">
 
-      <h2>Nuevo espacio</h2>
-
+      <h2>
+        {{ spaceId === null ? 'Nuevo espacio' : 'Editar espacio' }}
+      </h2>
       <button
         class="close-button"
         (click)="closeModal()">
@@ -120,7 +121,7 @@
         class="save-button"
         (click)="save()">
 
-        Guardar
+        {{ spaceId === null ? 'Crear espacio' : 'Guardar cambios' }}
 
       </button>
 

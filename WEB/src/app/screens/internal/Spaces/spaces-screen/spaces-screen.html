@@ -43,7 +43,8 @@
       @for(space of spaces; track space.id){
 
         <app-space-list-item
-          [space]="space">
+          [space]="space"
+          (edit)="editSpace($event)">
         </app-space-list-item>
 
       }
@@ -54,6 +55,7 @@
   @if(showModal){
 
     <app-space-modal
+      [spaceId]="selectedSpaceId"
       (close)="closeModal($event)">
     </app-space-modal>
 

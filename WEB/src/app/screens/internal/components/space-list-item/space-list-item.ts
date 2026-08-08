@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import { SpaceListModel} from '../../models/space-list-model';
 import {CommonModule} from '@angular/common';
 
@@ -16,4 +16,12 @@ export class SpaceListItem {
   @Input({ required: true })
   space!: SpaceListModel;
 
+  @Output()
+  edit = new EventEmitter<number>();
+
+  editSpace(): void {
+
+    this.edit.emit(this.space.id);
+
+  }
 }

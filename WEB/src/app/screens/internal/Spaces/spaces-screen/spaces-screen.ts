@@ -40,6 +40,9 @@ export class SpacesScreen implements OnInit {
 
   }
 
+  selectedSpaceId: number | null = null;
+
+
   private loadSpaces(): void {
 
     this.spaceService.getAllSpaces().subscribe({
@@ -64,7 +67,7 @@ export class SpacesScreen implements OnInit {
 
   newSpace(): void {
 
-    console.log('Abriendo modal');
+    this.selectedSpaceId = null;
 
     this.showModal = true;
 
@@ -79,6 +82,14 @@ export class SpacesScreen implements OnInit {
       this.loadSpaces();
 
     }
+
+  }
+
+  editSpace(spaceId: number): void {
+
+    this.selectedSpaceId = spaceId;
+
+    this.showModal = true;
 
   }
 

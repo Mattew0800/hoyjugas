@@ -69,4 +69,38 @@ export class SpaceService {
 
   }
 
+  getSpaceDetail(spaceId: number): Observable<any> {
+
+    return this.http.post(
+
+      `${this.adminSpaceApiUrl}/detail`,
+
+      {
+        spaceId: spaceId
+      },
+
+      {
+        withCredentials: true
+      }
+
+    );
+
+  }
+
+  updateSpace(space: any): Observable<any> {
+
+    return this.http.put(
+
+      `${this.adminSpaceApiUrl}/update`,
+
+      space,
+
+      {
+        withCredentials: true
+      }
+
+    );
+
+  }
+
 }
