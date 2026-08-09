@@ -14,8 +14,10 @@ import {ChangePassword} from './screens/password/password';
 import {HistoryBookings} from './screens/history-bookings/history-bookings';
 import {Dashboard} from './screens/internal/dashboard/dashboard';
 import {SpacesScreen} from './screens/internal/Spaces/spaces-screen/spaces-screen';
+import {InternalLogin} from './screens/internal/internal-login/internal-login';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
+import {internalAuthGuard} from './auth/InternalAuthGuard';
 
 
 export const routes: Routes = [
@@ -31,8 +33,9 @@ export const routes: Routes = [
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
-  {path: 'internal/dashboard', component: Dashboard, canActivate:[authGuard]},
-  {path:'internal/spaces',component: SpacesScreen, canActivate:[authGuard]},
+  {path:'internal/login', component:InternalLogin},
+  {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
+  {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
   {path:'**', component:Error}
 
 ];

@@ -1,0 +1,93 @@
+@if (!continueBoolean) {
+
+  <div class="title-section">
+
+    <h1>Acceso interno</h1>
+
+  </div>
+
+  <form
+    [formGroup]="form"
+    (submit)="continue()">
+
+    <div class="form-section">
+
+      <div>
+
+        <label for="email">
+          Ingresa tu email
+        </label>
+
+        <input
+          id="email"
+          type="text"
+          placeholder="ejemplo@gmail.com"
+          formControlName="email"
+        />
+
+      </div>
+
+      <button type="submit">
+        Continuar
+      </button>
+
+    </div>
+
+  </form>
+
+} @else {
+
+  <div class="title-section">
+
+    <h1>Acceso interno</h1>
+
+  </div>
+
+  <form
+    [formGroup]="form"
+    (submit)="login()">
+
+    <div class="form-section">
+
+      <div class="password-input-wrapper">
+
+        <label for="password">
+          Ingresa tu contraseña
+        </label>
+
+        <div class="input-container">
+
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Contraseña"
+            formControlName="password"
+          />
+
+          <fa-icon
+            [icon]="showPassword ? faEye : faEyeSlash"
+            class="eye-icon"
+            (click)="togglePasswordVisibility()">
+          </fa-icon>
+
+        </div>
+
+      </div>
+
+      <button type="submit">
+        Continuar
+      </button>
+
+      @if (formErrorMsg !== '') {
+
+        <p class="error-message">
+          {{ formErrorMsg }}
+        </p>
+
+      }
+
+    </div>
+
+  </form>
+
+}
