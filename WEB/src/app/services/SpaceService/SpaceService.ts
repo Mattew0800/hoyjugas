@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 
 import {
   getSpaceApiUrl,
-  getAdminSpaceApiUrl
+  getAdminSpaceApiUrl,
+  getBookingApiUrl
 } from '../../config/api.config';
 
 import { SpaceCardModel } from '../../screens/internal/models/space-card.model';
@@ -22,6 +23,9 @@ export class SpaceService {
   private readonly adminSpaceApiUrl =
     getAdminSpaceApiUrl();
 
+  private readonly bookingApiUrl =
+    getBookingApiUrl();
+
   constructor(
     private http: HttpClient
   ) {}
@@ -30,7 +34,7 @@ export class SpaceService {
   getSpaceCards(): Observable<SpaceCardModel[]> {
 
     return this.http.get<SpaceCardModel[]>(
-      `${this.spaceApiUrl}/spaces-card`,
+      `${this.bookingApiUrl}/spaces-card`,
       {
         withCredentials: true
       }
