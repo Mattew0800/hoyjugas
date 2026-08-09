@@ -4,13 +4,14 @@
 
 .internal-sidebar {
 
+  box-sizing: border-box;
+
   position: fixed;
 
   top: 0;
   left: 0;
 
   width: 105px;
-
   height: 100vh;
 
   background: #050505;

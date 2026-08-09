@@ -13,15 +13,13 @@
 }
 
 .dashboard-container {
-
   flex: 1;
+  min-width: 0;
+  margin-left: 105px;
 
   display: flex;
-
   flex-direction: column;
-
   overflow: hidden;
-
 }
 
 .dashboard-content {
