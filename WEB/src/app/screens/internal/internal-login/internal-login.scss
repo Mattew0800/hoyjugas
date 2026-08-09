@@ -1,49 +1,68 @@
-body,
-html {
-  padding: 0;
-  margin: 0;
+:host {
+  display: block;
   width: 100%;
   height: 100%;
 }
 
-.internal-login-page {
-
+.login-page {
   height: 100dvh;
+  min-height: 100vh;
 
   background-color: #1c1c1c;
-
   color: white;
 
   display: flex;
-
   flex-direction: column;
 
   overflow-y: auto;
-
   overflow-x: hidden;
+}
 
+.top-bar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 56px;
+
+  background-color: #CEA764;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 20px;
+
+  z-index: 1000;
+
+  box-sizing: border-box;
+}
+
+.back-arrow {
+  font-size: 24px;
+  color: #1C1C1C;
+
+  cursor: pointer;
+
+  line-height: 1;
 }
 
 .content {
-
   flex: 1;
 
   padding: 24px 18px;
 
+  margin-top: 56px;
+
   display: flex;
-
   flex-direction: column;
-
-  justify-content: center;
-
 }
 
 .title-section {
-
   margin-bottom: 30px;
 
   h1 {
-
     font-family: Roboto, sans-serif;
 
     color: #CEA764;
@@ -53,13 +72,10 @@ html {
     font-weight: 600;
 
     margin: 0 0 10px 0;
-
   }
-
 }
 
 .form-section {
-
   display: flex;
 
   flex-direction: column;
@@ -67,7 +83,6 @@ html {
   gap: 18px;
 
   label {
-
     color: #9b9b9b;
 
     font-size: 16px;
@@ -79,11 +94,9 @@ html {
     width: 100%;
 
     margin-bottom: 1rem;
-
   }
 
   input {
-
     height: 54px;
 
     border-radius: 12px;
@@ -105,15 +118,11 @@ html {
     box-sizing: border-box;
 
     &::placeholder {
-
       color: #5f5f5f;
-
     }
-
   }
 
   button {
-
     height: 54px;
 
     border: none;
@@ -129,21 +138,15 @@ html {
     font-weight: 600;
 
     cursor: pointer;
-
   }
-
 }
 
 .password-input-wrapper {
-
   display: flex;
-
   flex-direction: column;
-
 }
 
 .input-container {
-
   position: relative;
 
   display: flex;
@@ -151,13 +154,10 @@ html {
   align-items: center;
 
   input {
-
     padding-right: 45px;
-
   }
 
   .eye-icon {
-
     position: absolute;
 
     right: 16px;
@@ -167,31 +167,26 @@ html {
     color: #888;
 
     font-size: 20px;
-
   }
-
 }
 
 .error-message {
-
   margin: 0;
+
+  text-align: center;
 
   color: #ff7373;
 
   font-size: 14px;
-
-  text-align: center;
-
 }
 
 @media (min-width: 768px) {
 
   .content {
-
     width: 390px;
 
-    margin: 0 auto;
-
+    margin-left: auto;
+    margin-right: auto;
   }
 
 }
