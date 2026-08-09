@@ -54,20 +54,20 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     @Transactional
     @Retryable(value = CannotAcquireLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 100))
     public void confirmMpPaymentFromPaymentId(Long paymentId, String rawPayload) {
-        Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
+        Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());//obtenemos desde la api de mp el objeto que coincide con el id de pago que nos llegó
         if (mpPayment == null) return;
-        String externalRef = mpPayment.getExternalReference();
+        String externalRef = mpPayment.getExternalReference();//llamamos a la api de mp, esta referencia es el id de la reserva con la que originalmente se creó la preferencia
         if (externalRef == null) return;
         mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
-            audit.setRawWebhookPayload(rawPayload);
+            audit.setRawWebhookPayload(rawPayload);//guardamos el json como está, por si hay algun problema con el pago
             mpPaymentAuditRepository.save(audit);
         });
         if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
             updateAuditStatus(mpPayment);
             return;
         }
-        processApprovedPayment(mpPayment);
-        updateAuditOnApproval(mpPayment);
+        processApprovedPayment(mpPayment);//primero procesa el pago
+        updateAuditOnApproval(mpPayment);//una vez aprobado, empieza a guardar todos los datos consultando por el id del pago
     }
 
     private String getExternalReference(Payment mpPayment) {
@@ -80,13 +80,13 @@ public class MpPaymentConfirmationService extends BaseBookingService {
             return;
         }
         Long bookingId = Long.parseLong(externalRef);
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findById(bookingId)//ya que la preferencia se guarda linkeada al id de la reserva, se empieza buscando por ahi
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Turno no encontrado con id: " + bookingId
                 ));
         String transactionId = String.valueOf(mpPayment.getId());
-        if (paymentRepository.findByTransactionId(transactionId).isPresent()) {
+        if (paymentRepository.findByTransactionId(transactionId).isPresent()) {//este if evita duplicados por si llega el mismo id dos veces
             return;
         }
         BigDecimal transactionAmount = mpPayment.getTransactionAmount();
@@ -161,10 +161,12 @@ public class MpPaymentConfirmationService extends BaseBookingService {
                 audit.setPayerName((firstName + " " + lastName).trim());
                 audit.setPayerEmail(mpPayment.getPayer().getEmail());
             }
-            if (mpPayment.getCard() != null) {
-                audit.setCardLastFourDigits(mpPayment.getCard().getLastFourDigits());
+            if (mpPayment.getCard() != null && mpPayment.getCard().getCardholder() != null) {
+                audit.setCardholderName(mpPayment.getCard().getCardholder().getName());
             }
             audit.setPaymentMethodId(mpPayment.getPaymentMethodId());
+            audit.setPaymentTypeId(mpPayment.getPaymentTypeId());
+            audit.setInstallments(mpPayment.getInstallments());
             mpPaymentAuditRepository.save(audit);
             MpPaymentStatusHistory history = buildHistory(
                     audit,

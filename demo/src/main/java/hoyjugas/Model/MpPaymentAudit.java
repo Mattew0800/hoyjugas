@@ -63,10 +63,19 @@ public class MpPaymentAudit {
     private String payerEmail;
 
     @Column(length = 50)
-    private String paymentMethodId;
+    private String paymentMethodId;//TIPO DE PAGO (dinero en cuenta, en tarjetas pone la empresa primero como visa mastercard etc)
+
+    @Column
+    private Integer installments;//cantidad de cuotas
+
+    @Column(length = 50)
+    private String paymentTypeId;//aca si sale si es tipo credito o debito, para dinero en cuenta es el mismo nombre que en paymentmethodId
 
     @Column(length = 10)
-    private String cardLastFourDigits;
+    private String cardLastFourDigits;//ultimos 4
+
+    @Column(length = 100)
+    private String cardholderName;//por las dudas
 
     @Column(columnDefinition = "TEXT")
     private String rawWebhookPayload;

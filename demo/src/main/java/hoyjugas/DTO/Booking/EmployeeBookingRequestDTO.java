@@ -3,7 +3,6 @@ package hoyjugas.DTO.Booking;
 import hoyjugas.Enum.PaymentMethod;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
