@@ -1,93 +1,111 @@
-@if (!continueBoolean) {
+<div class="login-page">
 
-  <div class="title-section">
+  <div class="top-bar">
 
-    <h1>Acceso interno</h1>
+    <span
+      class="back-arrow"
+      (click)="goBack()">
+      ←
+    </span>
 
   </div>
 
-  <form
-    [formGroup]="form"
-    (submit)="continue()">
+  <div class="content">
 
-    <div class="form-section">
+    @if (!continueBoolean) {
 
-      <div>
+      <div class="title-section">
 
-        <label for="email">
-          Ingresa tu email
-        </label>
-
-        <input
-          id="email"
-          type="text"
-          placeholder="ejemplo@gmail.com"
-          formControlName="email"
-        />
+        <h1>Acceso interno</h1>
 
       </div>
 
-      <button type="submit">
-        Continuar
-      </button>
+      <form
+        [formGroup]="form"
+        (ngSubmit)="continue()">
 
-    </div>
+        <div class="form-section">
 
-  </form>
+          <div>
 
-} @else {
+            <label for="email">
+              Ingresa tu email
+            </label>
 
-  <div class="title-section">
+            <input
+              id="email"
+              type="text"
+              placeholder="ejemplo@gmail.com"
+              formControlName="email"
+            />
 
-    <h1>Acceso interno</h1>
+          </div>
 
-  </div>
-
-  <form
-    [formGroup]="form"
-    (submit)="login()">
-
-    <div class="form-section">
-
-      <div class="password-input-wrapper">
-
-        <label for="password">
-          Ingresa tu contraseña
-        </label>
-
-        <div class="input-container">
-
-          <input
-            id="password"
-            [type]="showPassword ? 'text' : 'password'"
-            placeholder="Contraseña"
-            formControlName="password"
-          />
-
-          <fa-icon
-            [icon]="showPassword ? faEye : faEyeSlash"
-            class="eye-icon"
-            (click)="togglePasswordVisibility()">
-          </fa-icon>
+          <button type="submit">
+            Continuar
+          </button>
 
         </div>
 
+      </form>
+
+    } @else {
+
+      <div class="title-section">
+
+        <h1>Acceso interno</h1>
+
       </div>
 
-      <button type="submit">
-        Continuar
-      </button>
+      <form
+        [formGroup]="form"
+        (ngSubmit)="login()">
 
-      @if (formErrorMsg !== '') {
+        <div class="form-section">
 
-        <p class="error-message">
-          {{ formErrorMsg }}
-        </p>
+          <div class="password-input-wrapper">
 
-      }
+            <label for="password">
+              Ingresa tu contraseña
+            </label>
 
-    </div>
+            <div class="input-container">
 
-  </form>
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Contraseña"
+                formControlName="password"
+              />
 
-}
+              <fa-icon
+                [icon]="showPassword ? eyeIcon : eyeIconSlash"
+                class="eye-icon"
+                (click)="togglePasswordVisibility()">
+              </fa-icon>
+
+            </div>
+
+          </div>
+
+          <button type="submit">
+            Continuar
+          </button>
+
+          @if (formErrorMsg !== '') {
+
+            <p class="error-message">
+              {{ formErrorMsg }}
+            </p>
+
+          }
+
+        </div>
+
+      </form>
+
+    }
+
+  </div>
+
+</div>
