@@ -7,10 +7,8 @@ import hoyjugas.DTO.Space.SpaceRequestDTO;
 import hoyjugas.DTO.Space.SpaceResponseDTO;
 import hoyjugas.Model.Space;
 import hoyjugas.Model.SpacePricing;
-import hoyjugas.Repository.HolidayRepository;
 import hoyjugas.Repository.SpacePricingRepository;
 import hoyjugas.Repository.SpaceRepository;
-import hoyjugas.Repository.SpaceScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,18 +23,17 @@ public class SpaceService {
 
     private final SpacePricingRepository spacePricingRepository;
     private final SpaceRepository spaceRepository;
-    private final HolidayRepository holidayRepository;
-    private final PricingService pricingService;
-    private final SpaceScheduleRepository spaceScheduleRepository;
 
     @Transactional
     public SpaceResponseDTO createSpace(SpaceRequestDTO dto) {
+        if (spaceRepository.existsByName(dto.getName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El nombre del espacio ya existe");
+        }
         Space space = new Space();
         space.setName(dto.getName());
         space.setType(dto.getType());
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
-        space.setFixedDeposit(dto.getDepositFactor());
         space.setDepositValue(dto.getFixedDeposit());
         space.setPhotoUrl(dto.getPhotoUrl());
         Space saved = spaceRepository.save(space);
@@ -47,11 +44,13 @@ public class SpaceService {
     public SpaceResponseDTO updateSpace(Long spaceId, SpaceRequestDTO dto) {
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+        if (spaceRepository.existsByNameAndIdNot(dto.getName(), spaceId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El nombre del espacio ya existe");
+        }
         space.setName(dto.getName());
         space.setType(dto.getType());
         space.setSlotDuration(dto.getSlotDuration());
         space.setIsActive(dto.getIsActive());
-        space.setFixedDeposit(dto.getDepositFactor());
         space.setDepositValue(dto.getFixedDeposit());
         space.setPhotoUrl(dto.getPhotoUrl());
         Space saved = spaceRepository.save(space);
