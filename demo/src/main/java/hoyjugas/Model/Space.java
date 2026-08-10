@@ -33,10 +33,7 @@ public class Space {
 
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SpacePricing> pricings = new ArrayList<>();
-
-    @Column(precision = 5, scale = 2)
-    private BigDecimal fixedDeposit;//% del valor total del turno, tbh no lo uso pero queda dsps lo saco
-
+    
     @Column(precision = 10, scale = 2,nullable = false)
     private BigDecimal depositValue;//monto de seña
 
