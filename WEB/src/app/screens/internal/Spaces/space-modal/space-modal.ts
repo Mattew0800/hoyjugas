@@ -37,8 +37,6 @@ export class SpaceModal implements OnInit {
 
     isActive: true,
 
-    depositFactor: 1,
-
     fixedDeposit: 10000,
 
     photoUrl: ''
@@ -76,8 +74,6 @@ export class SpaceModal implements OnInit {
           slotDuration: space.slotDuration,
 
           isActive: space.isActive,
-
-          depositFactor: space.depositFactor,
 
           fixedDeposit: space.fixedDeposit,
 

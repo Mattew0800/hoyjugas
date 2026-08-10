@@ -6,7 +6,7 @@ export interface SpaceFormModel {
 
   slotDuration: number;
 
-  depositValue: number;
+  fixedDeposit: number;
 
   isActive: boolean;
 
