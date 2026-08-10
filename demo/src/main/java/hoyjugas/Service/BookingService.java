@@ -517,7 +517,7 @@ public class BookingService extends BaseBookingService {
                 );
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No hay horarios configurados.");
+        return new ComplexScheduleResponseDTO();
     }
 
     private String formatDayType(DayType dayType) {
