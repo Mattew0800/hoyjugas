@@ -1,5 +1,6 @@
 package hoyjugas.Controller;
 
+import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -57,11 +59,22 @@ public class AuthController {
 
     @PostMapping("/register-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
-        LoginResponseDTO result = authService.registerAdmin(request);
-        authService.setAuthCookie(response, result.getToken());
-        result.setToken(null);
+    public ResponseEntity<EmployeeCreatedDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request) {
+        EmployeeCreatedDTO result = authService.registerAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PutMapping("/update-pin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmployeeCreatedDTO>updatePin(@Valid @RequestBody UpdatePinRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl me){
+        return ResponseEntity.ok(authService.updatePin(dto.getId(), dto.getPin(),me.getId()));
+    }
+
+    @PutMapping("/dismiss-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>dismiss(@Valid @RequestBody ClientIdRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl me){
+        authService.dismissEmployee(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Empleado dado de baja correctamente"));
     }
 
     @PostMapping("/login")
