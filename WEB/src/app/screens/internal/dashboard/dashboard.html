@@ -9,44 +9,46 @@
 
   <main class="dashboard-content">
 
-    <div class="dashboard-header">
+    <div class="stats-container">
 
-      <div class="stats-container">
+      <!-- ADMIN + EMPLOYEE -->
+      <app-stat-card
+        icon="assets/emojis/calendario.svg"
+        [value]="stats.todayBookings.toString()"
+        title="Turnos de hoy"
+        subtitle="Hoy">
+      </app-stat-card>
 
-        <app-stat-card
-          icon="assets/emojis/calendario.svg"
-          [value]="stats.todayBookings.toString()"
-          title="Turnos de hoy"
-          subtitle="Hoy">
-        </app-stat-card>
+      <!-- ADMIN + EMPLOYEE -->
+      <app-stat-card
+        icon="/field-icon.svg"
+        [value]="stats.occupiedSpaces.toString()"
+        title="Canchas ocupadas"
+        subtitle="ahora mismo">
+      </app-stat-card>
 
-        <app-stat-card
-          icon="/field-icon.svg"
-          [value]="stats.occupiedSpaces.toString()"
-          title="Canchas ocupadas"
-          subtitle="ahora mismo">
-        </app-stat-card>
+      <!-- ADMIN + EMPLOYEE -->
+      <app-stat-card
+        icon="/assets/emojis/clock.svg"
+        [value]="stats.nextBookingTime"
+        title="Próximo turno"
+        [subtitle]="stats.nextBookingSubtitle">
+      </app-stat-card>
 
-        <app-stat-card
-          icon="/assets/emojis/clock.svg"
-          [value]="stats.nextBookingTime"
-          title="Próximo turno"
-          [subtitle]="stats.nextBookingSubtitle">
-        </app-stat-card>
-
+      <!-- SOLO ADMIN -->
+      @if (roleService.isAdmin()) {
         <app-stat-card
           icon="/assets/emojis/coin.svg"
           [value]="'$' + stats.estimatedRevenue.toLocaleString('es-AR')"
           title="Ingresos"
           subtitle="estimados del día">
         </app-stat-card>
-      </div>
+      }
 
-      <button class="change-date-btn">
-
-        Cambiar fecha
-
+      <button class="change-date-btn" (click)="openInternalBookingModal()">
+        Cargar turno
       </button>
+
 
     </div>
 
@@ -94,6 +96,13 @@
 
     </app-booking-detail-modal>
 
+  }
+
+  @if (showInternalBookingModal) {
+    <app-internal-booking-modal
+      [selectedDate]="selectedDate"
+      (close)="closeInternalBookingModal()">
+    </app-internal-booking-modal>
   }
 
 </div>

@@ -75,35 +75,26 @@
 }
 
 .stats-container {
-
   display: flex;
-
+  align-items: center;
   gap: 18px;
-
   margin-bottom: 28px;
-
   margin-right: 28px;
-
 }
 
 .change-date-btn {
-
+  flex-shrink: 0;
   height: 42px;
-
   padding: 0 18px;
+  min-width: 120px;
+  margin-left: auto;
 
   border-radius: 10px;
-
   border: 1px solid rgba(206,167,100,.4);
-
   background: transparent;
-
   color: #CEA764;
-
   cursor: pointer;
-
   transition: .2s;
-
 }
 
 .change-date-btn:hover {

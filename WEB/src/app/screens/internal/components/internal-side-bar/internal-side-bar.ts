@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { Router } from '@angular/router';
+import {RoleService} from '../../../../services/RoleService/role-service';
 
 @Component({
   selector: 'app-internal-side-bar',
@@ -9,11 +10,14 @@ import { Router } from '@angular/router';
   templateUrl: './internal-side-bar.html',
   styleUrl: './internal-side-bar.scss'
 })
-export class InternalSideBar {
+export class InternalSideBar implements OnInit{
 
   constructor(
-    private router: Router
+    private router: Router,
+    public roleService: RoleService
   ) {}
+
+  showManagementMenu = false;
 
   menuItems = [
 
@@ -32,10 +36,12 @@ export class InternalSideBar {
     },
 
     {
-      label: 'Canchas',
+      label: 'Gestión',
       icon: '/field-icon.svg',
-      route: '/internal/fields',
-      active: false
+      route: '',
+      active: false,
+      adminOnly: true,
+      hasSubmenu: true
     },
 
     {
@@ -61,10 +67,35 @@ export class InternalSideBar {
 
   ];
 
-  navigate(route: string): void {
 
-    this.router.navigate([route]);
+  ngOnInit(): void {
 
+    if (!this.roleService.isAdmin()) {
+      this.menuItems = this.menuItems.filter(
+        item => !item.adminOnly
+      );
+    }
+
+  }
+
+  navigate(item: any): void {
+
+    if (item.hasSubmenu) {
+      this.showManagementMenu = !this.showManagementMenu;
+      return;
+    }
+
+    this.router.navigate([item.route]);
+  }
+
+  goToSpaces(): void {
+    this.router.navigate(['/internal/spaces']);
+    this.showManagementMenu = false;
+  }
+
+  goToEmployees(): void {
+    this.router.navigate(['/internal/employees']);
+    this.showManagementMenu = false;
   }
 
   logout(): void {

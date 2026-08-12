@@ -3,7 +3,6 @@
 }
 
 .internal-sidebar {
-
   box-sizing: border-box;
 
   position: fixed;
@@ -16,7 +15,7 @@
 
   background: #050505;
 
-  border-right: 1px solid rgba(255,255,255,.06);
+  border-right: 1px solid rgba(255, 255, 255, .06);
 
   display: flex;
 
@@ -27,36 +26,34 @@
   padding: 18px 10px;
 
   z-index: 1000;
-
 }
-.logo-container {
 
+.logo-container {
   display: flex;
 
   justify-content: center;
 
   margin-bottom: 28px;
-
 }
 
 .logo {
-
   width: 62px;
-
 }
 
 .menu {
-
   display: flex;
 
   flex-direction: column;
 
   gap: 8px;
+}
 
+/* Contenedor de cada opción del menú */
+.menu-item-wrapper {
+  position: relative;
 }
 
 .menu-item {
-
   width: 100%;
 
   border: none;
@@ -82,47 +79,104 @@
   gap: 6px;
 
   transition: .2s;
-
 }
 
 .menu-item img {
-
   width: 18px;
-
   height: 18px;
-
 }
 
 .menu-item span {
-
   font-size: 11px;
 
   text-align: center;
 
   line-height: 1.2;
-
 }
 
 .menu-item:hover {
-
-  background: rgba(206,167,100,.08);
+  background: rgba(206, 167, 100, .08);
 
   color: #CEA764;
-
 }
 
 .menu-item.active {
-
-  background: rgba(206,167,100,.15);
+  background: rgba(206, 167, 100, .15);
 
   color: #CEA764;
 
-  border: 1px solid rgba(206,167,100,.25);
-
+  border: 1px solid rgba(206, 167, 100, .25);
 }
 
-.logout-button {
+/* =========================
+   SUBMENÚ DE GESTIÓN
+   ========================= */
 
+.management-submenu {
+  position: absolute;
+
+  left: calc(100% + 8px);
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 180px;
+
+  padding: 8px;
+
+  background: #111111;
+
+  border: 1px solid rgba(255, 255, 255, .06);
+
+  border-radius: 10px;
+
+  box-shadow: 8px 0 25px rgba(0, 0, 0, .3);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  z-index: 1100;
+}
+
+.submenu-item {
+  width: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: #B6B6B6;
+
+  border-radius: 8px;
+
+  padding: 12px 14px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  font-family: Roboto, sans-serif;
+
+  font-size: 13px;
+
+  transition: .2s;
+}
+
+.submenu-item:hover {
+  background: rgba(206, 167, 100, .08);
+
+  color: #CEA764;
+}
+
+/* =========================
+   LOGOUT
+   ========================= */
+
+.logout-button {
   border: none;
 
   background: transparent;
@@ -144,25 +198,18 @@
   border-radius: 10px;
 
   transition: .2s;
-
 }
 
 .logout-button img {
-
   width: 18px;
-
 }
 
 .logout-button span {
-
   font-size: 11px;
-
 }
 
 .logout-button:hover {
-
-  background: rgba(255,80,80,.08);
+  background: rgba(255, 80, 80, .08);
 
   color: #ff7373;
-
 }

@@ -1,0 +1,183 @@
+<div class="modal-overlay" (click)="closeModal()">
+
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <h2>Cargar turno</h2>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeModal()">
+        ×
+      </button>
+
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <div class="form-group">
+
+        <label for="clientId">
+          Cliente
+        </label>
+
+        <input
+          id="clientId"
+          type="number"
+          placeholder="ID del cliente"
+          formControlName="clientId">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="spaceId">
+          Cancha
+        </label>
+
+        <input
+          id="spaceId"
+          type="number"
+          placeholder="ID de la cancha"
+          formControlName="spaceId">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="startDatetime">
+          Fecha y hora
+        </label>
+
+        <input
+          id="startDatetime"
+          type="datetime-local"
+          formControlName="startDatetime">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="paymentMethod">
+          Método de pago
+        </label>
+
+        <select
+          id="paymentMethod"
+          formControlName="paymentMethod">
+
+          <option value="">
+            Seleccionar
+          </option>
+
+          <option value="EFECTIVO">
+            Efectivo
+          </option>
+
+          <option value="TRANSFERENCIA">
+            Transferencia
+          </option>
+
+          <option value="MERCADOPAGO">
+            Mercado Pago
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="depositAmount">
+          Seña
+        </label>
+
+        <input
+          id="depositAmount"
+          type="number"
+          min="0"
+          placeholder="Dejar vacío para usar la seña mínima"
+          formControlName="depositAmount">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="transactionId">
+          ID de transacción
+        </label>
+
+        <input
+          id="transactionId"
+          type="text"
+          placeholder="Opcional"
+          formControlName="transactionId">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="employeePin">
+          PIN del empleado
+        </label>
+
+        <input
+          id="employeePin"
+          type="password"
+          placeholder="PIN"
+          formControlName="employeePin">
+
+      </div>
+
+
+      <label class="terms">
+
+        <input
+          type="checkbox"
+          formControlName="termsAccepted">
+
+        El cliente acepta los términos y condiciones
+
+      </label>
+
+
+      @if (errorMessage) {
+
+        <p class="error-message">
+          {{ errorMessage }}
+        </p>
+
+      }
+
+
+      <div class="actions">
+
+        <button
+          type="button"
+          (click)="closeModal()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="loading">
+
+          {{ loading ? 'Cargando...' : 'Cargar turno' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

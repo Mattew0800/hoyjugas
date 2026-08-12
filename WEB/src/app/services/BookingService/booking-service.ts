@@ -74,4 +74,12 @@ export class BookingService {
 
   }
 
+  createBookingByEmployee(request: any) {
+    return this.http.post(
+      `${this.bookingApiUrl}/create`,
+      request,
+      { withCredentials: true }
+    );
+  }
+
 }

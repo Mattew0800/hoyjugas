@@ -1,17 +1,23 @@
 import { Component, OnInit } from '@angular/core';
+
 import { InternalHeader } from '../components/internal-header/internal-header';
 import { InternalSideBar } from '../components/internal-side-bar/internal-side-bar';
-import {StatCard} from '../components/stat-card/stat-card';
+import { StatCard } from '../components/stat-card/stat-card';
 import { SpaceColumn } from '../components/space-column/space-column';
-import {SpaceModel} from '../models/space-column.model';
 import { MiniCalendar } from '../components/mini-calendar/mini-calendar';
-import {BookingService} from '../../../services/BookingService/booking-service';
+
+import { SpaceModel } from '../models/space-column.model';
 import { BookingListModel } from '../models/booking-list.model';
 import { SpaceSlotModel } from '../models/space-slot.model';
-import {SpaceCardModel} from '../models/space-card.model';
+import { SpaceCardModel } from '../models/space-card.model';
+
+import { BookingService } from '../../../services/BookingService/booking-service';
+import { SpaceService } from '../../../services/SpaceService/SpaceService';
+
+import { BookingDetailModal } from '../components/booking-detail-modal/booking-detail-modal';
+import { InternalBookingModal } from '../components/internal-booking-modal/internal-booking-modal';
+import {RoleService} from '../../../services/RoleService/role-service';
 import { forkJoin } from 'rxjs';
-import {SpaceService} from '../../../services/SpaceService/SpaceService';
-import{BookingDetailModal} from '../components/booking-detail-modal/booking-detail-modal';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,7 +28,8 @@ import{BookingDetailModal} from '../components/booking-detail-modal/booking-deta
     StatCard,
     SpaceColumn,
     MiniCalendar,
-    BookingDetailModal
+    BookingDetailModal,
+    InternalBookingModal
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
@@ -31,14 +38,12 @@ export class Dashboard implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private spaceService: SpaceService
-  ) {
-  }
+    private spaceService: SpaceService,
+    public roleService: RoleService
+  ) {}
 
   ngOnInit(): void {
-
     this.loadBookings();
-
   }
 
   private loadBookings(): void {
@@ -97,24 +102,48 @@ export class Dashboard implements OnInit {
       const slots: SpaceSlotModel[] = bookings
         .filter(booking => booking.spaceName === space.name)
         .map(booking => ({
+
           id: booking.id,
-          startTime: this.formatTime(booking.startDatetime),
-          endTime: this.formatTime(booking.endDatetime),
+
+          startTime: this.formatTime(
+            booking.startDatetime
+          ),
+
+          endTime: this.formatTime(
+            booking.endDatetime
+          ),
+
           status: this.mapStatus(booking),
+
           clientName: booking.clientName,
+
           phone: booking.clientPhone,
 
           booking: booking
+
         }));
 
       return {
+
         id: space.id,
+
         name: space.name,
+
         type: space.type,
+
         slotDuration: space.slotDuration,
-        status: space.isActive ? 'AVAILABLE' : 'MAINTENANCE',
-        nextBookingTime: slots.length > 0 ? slots[0].startTime : undefined,
+
+        status: space.isActive
+          ? 'AVAILABLE'
+          : 'MAINTENANCE',
+
+        nextBookingTime:
+          slots.length > 0
+            ? slots[0].startTime
+            : undefined,
+
         slots
+
       };
 
     });
@@ -123,17 +152,23 @@ export class Dashboard implements OnInit {
 
   private formatTime(date: string): string {
 
-    return new Date(date).toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
+    return new Date(date).toLocaleTimeString(
+      'es-AR',
+      {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }
+    );
 
   }
 
-  private mapStatus(booking: BookingListModel): 'FREE' | 'PARTIAL' | 'PAID' {
+  private mapStatus(
+    booking: BookingListModel
+  ): 'FREE' | 'PARTIAL' | 'PAID' {
 
-    // Si la reserva fue cancelada, el horario vuelve a estar libre
+    // Si la reserva fue cancelada,
+    // el horario vuelve a estar libre
     if (booking.status === 'CANCELADO') {
       return 'FREE';
     }
@@ -147,22 +182,35 @@ export class Dashboard implements OnInit {
     return 'PARTIAL';
 
   }
-  private buildStats(bookings: BookingListModel[]) {
+
+  private buildStats(
+    bookings: BookingListModel[]
+  ) {
 
     if (bookings.length === 0) {
+
       return {
+
         todayBookings: 0,
+
         occupiedSpaces: 0,
+
         nextBookingTime: '--:--',
+
         nextBookingSubtitle: '',
+
         estimatedRevenue: 0
+
       };
+
     }
 
     const isToday =
-      this.selectedDate.toDateString() === new Date().toDateString();
+      this.selectedDate.toDateString() ===
+      new Date().toDateString();
 
     let nextBooking: BookingListModel | undefined;
+
     let nextBookingSubtitle = '';
 
     if (isToday) {
@@ -170,7 +218,10 @@ export class Dashboard implements OnInit {
       const now = new Date();
 
       nextBooking = bookings
-        .filter(booking => new Date(booking.startDatetime) > now)
+        .filter(
+          booking =>
+            new Date(booking.startDatetime) > now
+        )
         .sort(
           (a, b) =>
             new Date(a.startDatetime).getTime() -
@@ -180,19 +231,26 @@ export class Dashboard implements OnInit {
       if (nextBooking) {
 
         const diffMs =
-          new Date(nextBooking.startDatetime).getTime() - now.getTime();
+          new Date(
+            nextBooking.startDatetime
+          ).getTime() -
+          now.getTime();
 
-        const diffMinutes = Math.ceil(diffMs / 60000);
+        const diffMinutes =
+          Math.ceil(diffMs / 60000);
 
         if (diffMinutes < 60) {
 
-          nextBookingSubtitle = `En ${diffMinutes} minutos`;
+          nextBookingSubtitle =
+            `En ${diffMinutes} minutos`;
 
         } else {
 
-          const hours = Math.floor(diffMinutes / 60);
+          const hours =
+            Math.floor(diffMinutes / 60);
 
-          nextBookingSubtitle = `En ${hours} hora${hours > 1 ? 's' : ''}`;
+          nextBookingSubtitle =
+            `En ${hours} hora${hours > 1 ? 's' : ''}`;
 
         }
 
@@ -208,7 +266,10 @@ export class Dashboard implements OnInit {
         )[0];
 
       if (nextBooking) {
-        nextBookingSubtitle = 'Primer turno del día';
+
+        nextBookingSubtitle =
+          'Primer turno del día';
+
       }
 
     }
@@ -218,17 +279,22 @@ export class Dashboard implements OnInit {
       todayBookings: bookings.length,
 
       occupiedSpaces: new Set(
-        bookings.map(booking => booking.spaceName)
+        bookings.map(
+          booking => booking.spaceName
+        )
       ).size,
 
       nextBookingTime: nextBooking
-        ? this.formatTime(nextBooking.startDatetime)
+        ? this.formatTime(
+          nextBooking.startDatetime
+        )
         : '--:--',
 
       nextBookingSubtitle,
 
       estimatedRevenue: bookings.reduce(
-        (total, booking) => total + booking.totalAmount,
+        (total, booking) =>
+          total + booking.totalAmount,
         0
       )
 
@@ -236,18 +302,26 @@ export class Dashboard implements OnInit {
 
   }
 
-  private updateHeader(bookings: BookingListModel[]): void {
+  private updateHeader(
+    bookings: BookingListModel[]
+  ): void {
 
     const date =
       bookings.length > 0
-        ? new Date(bookings[0].startDatetime)
+        ? new Date(
+          bookings[0].startDatetime
+        )
         : this.selectedDate;
 
-    this.headerSubtitle = date.toLocaleDateString('es-AR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
+    this.headerSubtitle =
+      date.toLocaleDateString(
+        'es-AR',
+        {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        }
+      );
 
     this.headerSubtitle =
       this.headerSubtitle.charAt(0).toUpperCase() +
@@ -259,39 +333,71 @@ export class Dashboard implements OnInit {
 
     this.selectedDate = date;
 
-    console.log('Nueva fecha:', this.selectedDate);
+    console.log(
+      'Nueva fecha:',
+      this.selectedDate
+    );
 
     this.loadBookings();
 
   }
 
-  private formatDateStart(date: Date): string {
+  private formatDateStart(
+    date: Date
+  ): string {
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, '0');
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, '0');
 
     return `${year}-${month}-${day}T00:00:00`;
 
   }
 
-  private formatDateEnd(date: Date): string {
+  private formatDateEnd(
+    date: Date
+  ): string {
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, '0');
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, '0');
 
     return `${year}-${month}-${day}T23:59:59`;
 
   }
 
-  openBookingModal(slot: SpaceSlotModel): void {
+  // =========================
+  // MODAL DETALLE DE TURNO
+  // =========================
+
+  openBookingModal(
+    slot: SpaceSlotModel
+  ): void {
 
     if (!slot.booking) {
       return;
     }
 
-    this.selectedBooking = slot.booking;
+    this.selectedBooking =
+      slot.booking;
 
     this.showBookingModal = true;
 
@@ -301,13 +407,38 @@ export class Dashboard implements OnInit {
 
     this.showBookingModal = false;
 
-    this.selectedBooking = undefined;
+    this.selectedBooking =
+      undefined;
 
   }
 
-  confirmPayment(booking: BookingListModel): void {
+  // =========================
+  // MODAL CARGAR TURNO
+  // =========================
 
-    console.log("Pago confirmado");
+  openInternalBookingModal(): void {
+
+    this.showInternalBookingModal = true;
+
+  }
+
+  closeInternalBookingModal(): void {
+
+    this.showInternalBookingModal = false;
+
+  }
+
+  // =========================
+  // PAGO
+  // =========================
+
+  confirmPayment(
+    booking: BookingListModel
+  ): void {
+
+    console.log(
+      'Pago confirmado'
+    );
 
     console.log(booking);
 
@@ -315,107 +446,41 @@ export class Dashboard implements OnInit {
 
   }
 
+  // =========================
+  // PROPIEDADES
+  // =========================
+
   spaces: SpaceModel[] = [];
 
   stats = {
+
     todayBookings: 0,
+
     occupiedSpaces: 0,
+
     nextBookingTime: '--:--',
+
     nextBookingSubtitle: '',
+
     estimatedRevenue: 0
+
   };
 
-  headerTitle = 'Turnos del dia';
+  headerTitle =
+    'Turnos del dia';
 
   headerSubtitle = '';
 
-  selectedDate = new Date();
+  selectedDate =
+    new Date();
 
-  showBookingModal = false;
+  showBookingModal =
+    false;
 
-  selectedBooking?: BookingListModel;
+  showInternalBookingModal =
+    false;
+
+  selectedBooking?:
+    BookingListModel;
+
 }
-
-
-//   spaces: SpaceModel[] = [
-//
-//     {
-//       id: 1,
-//
-//       name: 'Cancha 1',
-//
-//       type: 'Fútbol 5',
-//
-//       slotDuration: 60,
-//       status:'AVAILABLE',
-//
-//       nextBookingTime:'09:00',
-//
-//       slots: [
-//
-//         {
-//           id: 1,
-//           startTime: '08:00',
-//           endTime: '09:00',
-//           status: 'PARTIAL',
-//           clientName: 'Lucas Fernández',
-//           phone: '2235123456'
-//         },
-//
-//         {
-//           id: 2,
-//           startTime: '09:00',
-//           endTime: '10:00',
-//           status: 'FREE'
-//         },
-//
-//         {
-//           id: 3,
-//           startTime: '10:00',
-//           endTime: '11:00',
-//           status: 'PAID',
-//           clientName: 'Martín López',
-//           phone: '2234987654'
-//         }
-//
-//       ]
-//
-//     },
-//
-//     {
-//       id: 2,
-//
-//       name: 'Cancha 2',
-//
-//       type: 'Fútbol 8',
-//
-//       slotDuration: 60,
-//       status:'AVAILABLE',
-//
-//       nextBookingTime:'09:00',
-//
-//       slots: [
-//
-//         {
-//           id: 4,
-//           startTime: '08:00',
-//           endTime: '09:00',
-//           status: 'FREE'
-//         },
-//
-//         {
-//           id: 5,
-//           startTime: '09:00',
-//           endTime: '10:00',
-//           status: 'PARTIAL',
-//           clientName: 'Juan Pérez',
-//           phone: '2234001122'
-//         }
-//
-//       ]
-//
-//     }
-//
-//   ];
-//
-// }

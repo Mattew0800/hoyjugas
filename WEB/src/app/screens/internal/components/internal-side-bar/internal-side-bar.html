@@ -13,21 +13,46 @@
 
     <nav class="menu">
 
-      <button
+      <div
         *ngFor="let item of menuItems"
-        class="menu-item"
-        [class.active]="item.active"
-        (click)="navigate(item.route)">
+        class="menu-item-wrapper">
 
-        <img
-          [src]="item.icon"
-          [alt]="item.label">
+        <button
+          class="menu-item"
+          [class.active]="item.active"
+          (click)="navigate(item)">
 
-        <span>
-          {{ item.label }}
-        </span>
+          <img
+            [src]="item.icon"
+            [alt]="item.label">
 
-      </button>
+          <span>
+        {{ item.label }}
+      </span>
+
+        </button>
+
+        @if (item.hasSubmenu && showManagementMenu) {
+
+          <div class="management-submenu">
+
+            <button
+              class="submenu-item"
+              (click)="goToSpaces()">
+              Espacios
+            </button>
+
+            <button
+              class="submenu-item"
+              (click)="goToEmployees()">
+              Empleados
+            </button>
+
+          </div>
+
+        }
+
+      </div>
 
     </nav>
 
