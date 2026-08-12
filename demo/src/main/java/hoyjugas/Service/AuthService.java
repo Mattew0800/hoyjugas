@@ -18,9 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class AuthService {
@@ -85,9 +86,36 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponseDTO registerAdmin(RegisterRequestDTO request) {
-        User user = createUser(request, Role.ADMIN, false, null);
-        return new LoginResponseDTO(null, user.getEmail(), user.getName(),user.getRole().name());
+    public EmployeeCreatedDTO updatePin(Long id, String pin, Long requesterId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        boolean isEmployee = user.getRole() == Role.EMPLOYEE;
+        boolean isAdminUpdatingSelf = user.getRole() == Role.ADMIN && requesterId.equals(user.getId());
+        if (!isEmployee && !isAdminUpdatingSelf) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede modificar el PIN de otro admin o de un usuario sin PIN");
+        }
+        user.setPin(passwordEncoder.encode(pin));
+        User savedUser = userRepository.save(user);
+        return new EmployeeCreatedDTO(savedUser, pin);
+    }
+
+    @Transactional
+    public void dismissEmployee(Long id, Long requesterId) {
+        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE) {
+            employee.setEnabled(false);
+            userRepository.save(employee);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede despedir a este usuario");
+        }
+    }
+
+    @Transactional
+    public EmployeeCreatedDTO registerAdmin(RegisterRequestDTO request) {
+        String rawPin = generateRawPin();
+        User user = createUser(request, Role.ADMIN, true, rawPin);
+        return new EmployeeCreatedDTO(user,rawPin);
     }
 
     private User createUser(RegisterRequestDTO request, Role role, boolean hasPin, String rawPin) {
@@ -109,8 +137,19 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private String generateRawPin() {
-        return String.format("%04d", new Random().nextInt(10000));
+        List<String> existingPins = userRepository.findAllPinHashes();
+        String rawPin;
+        boolean isUnique;
+        do {
+            int number = RANDOM.nextInt(10000);
+            rawPin = String.format("%04d", number);
+            final String candidate = rawPin;
+            isUnique = existingPins.stream().noneMatch(hash -> passwordEncoder.matches(candidate, hash));
+        } while (!isUnique);
+        return rawPin;
     }
 
     public String generateToken(User user) {
