@@ -8,6 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class EmployeeCardDTO {
 
+    private Long id;
     private String name;
     private String email;
     private String phone;
