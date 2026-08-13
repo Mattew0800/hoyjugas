@@ -18,5 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByDni(String dni);
     boolean existsByEmail(String dni);
     @Query("SELECT u.pin FROM User u WHERE u.pin IS NOT NULL")
-    List<String> findAllPinHashes();;
+    List<String> findAllPinHashes();
+    List<User>findAllByPinIsNotNull();
+    List<User> findByRoleIn(List<Role> roles);
+    List<User> findByRoleInAndEnabledTrue(List<Role> roles);
 }

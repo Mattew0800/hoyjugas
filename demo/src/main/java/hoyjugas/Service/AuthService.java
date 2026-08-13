@@ -1,9 +1,6 @@
 package hoyjugas.Service;
 
-import hoyjugas.DTO.User.EmployeeCreatedDTO;
-import hoyjugas.DTO.User.LoginRequestDTO;
-import hoyjugas.DTO.User.LoginResponseDTO;
-import hoyjugas.DTO.User.RegisterRequestDTO;
+import hoyjugas.DTO.User.*;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Repository.UserRepository;
@@ -22,6 +19,7 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -45,6 +43,9 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Correo o contraseña incorrectos"));
+        if (!user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tu cuenta ha sido dada de baja, si piensas que es un error, comunicate con el complejo");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Correo o contraseña incorrectos");
@@ -93,22 +94,44 @@ public class AuthService {
         boolean isAdminUpdatingSelf = user.getRole() == Role.ADMIN && requesterId.equals(user.getId());
         if (!isEmployee && !isAdminUpdatingSelf) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede modificar el PIN de otro admin o de un usuario sin PIN");
+        }if (isPinAlreadyInUse(pin, user.getId())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese PIN ya está en uso por otro usuario");
         }
         user.setPin(passwordEncoder.encode(pin));
         User savedUser = userRepository.save(user);
         return new EmployeeCreatedDTO(savedUser, pin);
     }
 
+    private boolean isPinAlreadyInUse(String rawPin, Long excludeUserId) {
+        List<User> usersWithPin = userRepository.findAllByPinIsNotNull();
+        return usersWithPin.stream()
+                .filter(u -> !u.getId().equals(excludeUserId))
+                .anyMatch(u -> passwordEncoder.matches(rawPin, u.getPin()));
+    }
+
     @Transactional
     public void dismissEmployee(Long id, Long requesterId) {
         User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
         User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
-        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE) {
+        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE&&employee.isEnabled()) {
             employee.setEnabled(false);
             userRepository.save(employee);
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede despedir a este usuario");
+        } else if(!employee.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de baja");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este usuario");
+    }
+
+    @Transactional
+    public void deactivateUser(Long id, Long requesterId) {
+        User user=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        if(admin.getRole() == Role.ADMIN&&user.getRole() == Role.USER&&user.isEnabled()) {
+            user.setEnabled(false);
+            userRepository.save(user);
+        }else if(!user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de baja");
         }
+        else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este usuario");
     }
 
     @Transactional
@@ -167,10 +190,29 @@ public class AuthService {
 
     public void setAuthCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie("authToken", token);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setSecure(cookieSecure);//cambiar en prod
         cookie.setPath("/");
         cookie.setMaxAge(86400);
         response.addCookie(cookie);
     }
+
+    public List<EmployeeCardDTO> viewStaff() {
+        return userRepository.findByRoleIn(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
+                .map(u -> new EmployeeCardDTO(u.getName(),u.getEmail(), u.getPhone(),u.getRole(),u.isEnabled()))
+                .collect(Collectors.toList());
+    }
+
+    public List<EmployeeCardDTO> viewActiveStaff() {
+        return userRepository.findByRoleInAndEnabledTrue(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
+                .map(u -> new EmployeeCardDTO(
+                        u.getName(),
+                        u.getEmail(),
+                        u.getPhone(),
+                        u.getRole(),
+                        u.isEnabled()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }
