@@ -50,6 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     userService.findByEmail(email).ifPresent(user -> {
+                        if (!user.isEnabled())return;
                         var userDetails = new UserDetailsImpl(
                                 user.getId(),
                                 user.getEmail(),
