@@ -5,14 +5,14 @@ import {RegisterRequestDTO} from '../../models/RegisterRequestDTO';
 import {LoginRequestDTO} from '../../models/LoginRequestDTO';
 import {BehaviorSubject, catchError, Observable, of, tap} from 'rxjs';
 import {LoginResponseDTO} from '../../models/LoginResponseDTO';
-import {getApiUrl, getUserApiUrl} from '../../config/api.config';
+import {getAuthApiUrl, getUserApiUrl} from '../../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
 
-  API_URL = getApiUrl();
+  API_URL = getAuthApiUrl();
   USER_API_URL=getUserApiUrl();
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);

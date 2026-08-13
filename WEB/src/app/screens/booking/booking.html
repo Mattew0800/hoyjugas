@@ -5,79 +5,79 @@
 
 
   <div class="fields-list">
-    <div class="filters">
-      <div class="slider" [style.transform]="'translateX(' + (activeIndex * 100) + '%)'"></div>
+    @if (availableFieldTypes.length > 0) {
+      <div class="filters">
+        <div class="slider"
+             [style.width]="'calc((100% - 6px) / ' + availableFieldTypes.length + ')'"
+             [style.transform]="'translateX(' + (activeIndex * 100) + '%)'"></div>
 
-      <button
-        class="filter-button"
-        [class.active]="selectedFieldType === 'futbol5'"
-        (click)="selectFieldType('futbol5')">
-
-        Fútbol 5
-
-      </button>
-
-      <button
-        class="filter-button"
-        [class.active]="selectedFieldType === 'futbol7'"
-        (click)="selectFieldType('futbol7')">
-
-        Fútbol 7
-
-      </button>
-
-    </div>
-
-    <div class="field-card" (click)="goToFieldSchedule()">
-
-      <img
-        src="/cancha1.png"
-        alt="Cancha"
-        class="field-image"
-      />
-
-
-      <div class="field-content">
-
-        <div class="field-info">
-
-          <h2>
-            {{
-              selectedFieldType === 'futbol5'
-                ? 'Cancha 1 - Fútbol 5'
-                : 'Cancha 2 - Fútbol 7'
-            }}
-          </h2>
-
-          <p>Techada · Cesped sintético</p>
-
-        </div>
-
-        <div class="field-footer">
-
-          <span>08:00 - 23:00</span>
-
-          <span class="price">
-            {{
-              selectedFieldType === 'futbol5'
-                ? '$8.000/h'
-                : '$12.000/h'
-            }}
-          </span>
-
-        </div>
-
-        <button
-          class="view-button"
-          (click)="goToFieldSchedule()">
-
-          Ver turnos
-
-        </button>
-
+        @for (type of availableFieldTypes; track type) {
+          <button
+            class="filter-button"
+            [class.active]="selectedFieldType === type"
+            (click)="selectFieldType(type)">
+            {{ type }}
+          </button>
+        }
       </div>
+    }
 
-    </div>
+        @if(!emptySpacesCard){
+          @for (space of filteredSpacesCardList; track space.id) {
+
+            <div class="field-card" (click)="goToFieldSchedule()">
+
+              @if (space.imageUrl) {
+                <img
+                  [src]="space.imageUrl"
+                  [alt]="space.name"
+                  class="field-image"
+                  (error)="onImageError(space)"
+                />
+              } @else {
+                <div class="field-image no-image-placeholder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                  </svg>
+                </div>
+              }
+
+
+              <div class="field-content">
+
+                <div class="field-info">
+
+                  <h2>
+                    {{space.name}} - {{space.type}}
+                  </h2>
+
+                  <p>Duración: {{space.slotDuration}} min</p>
+
+                </div>
+
+                <button
+                  class="view-button"
+                  (click)="goToFieldSchedule()">
+
+                  Ver turnos
+
+                </button>
+              </div>
+            </div>
+          }
+        }@else{
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+            </svg>
+            <h3>No hay canchas disponibles</h3>
+            <p>Por el momento no tenemos canchas activas en el sistema.</p>
+          </div>
+        }
+
+
+
+
 
   </div>
 

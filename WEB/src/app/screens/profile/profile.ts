@@ -1,10 +1,11 @@
-import {Component, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, Inject, OnInit, Renderer2} from '@angular/core';
+import {CommonModule, DOCUMENT} from '@angular/common';
 import { Router } from '@angular/router';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { UserService } from '../../services/UserService/user-service';
 import { FormsModule } from '@angular/forms';
+import {Meta} from '@angular/platform-browser';
 
 
 @Component({
@@ -31,11 +32,19 @@ export class Profile implements OnInit{
   errorMessage = '';
 
   constructor(
+    private meta: Meta,
+    @Inject(DOCUMENT) private document: Document,
+    private renderer: Renderer2,
     private router: Router,
     private userService: UserService
   ) {}
 
+
+
   ngOnInit(): void {
+
+    this.meta.updateTag({ name: 'theme-color', content: '#181b16' });
+    this.renderer.setStyle(this.document.body, 'background-color', '#CEA764');
 
     if (history.state.passwordUpdated) {
 
