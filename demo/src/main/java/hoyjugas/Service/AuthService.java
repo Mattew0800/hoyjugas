@@ -199,13 +199,14 @@ public class AuthService {
 
     public List<EmployeeCardDTO> viewStaff() {
         return userRepository.findByRoleIn(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
-                .map(u -> new EmployeeCardDTO(u.getName(),u.getEmail(), u.getPhone(),u.getRole(),u.isEnabled()))
+                .map(u -> new EmployeeCardDTO(u.getId(),u.getName(),u.getEmail(), u.getPhone(),u.getRole(),u.isEnabled()))
                 .collect(Collectors.toList());
     }
 
     public List<EmployeeCardDTO> viewActiveStaff() {
         return userRepository.findByRoleInAndEnabledTrue(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
                 .map(u -> new EmployeeCardDTO(
+                        u.getId(),
                         u.getName(),
                         u.getEmail(),
                         u.getPhone(),
