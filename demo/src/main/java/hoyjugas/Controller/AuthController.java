@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -77,6 +79,25 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Empleado dado de baja correctamente"));
     }
 
+    @GetMapping("/view-current-staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmployeeCardDTO>> viewActiveStaff(){
+        return ResponseEntity.ok(authService.viewActiveStaff());
+    }
+
+    @GetMapping("/view-history-staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmployeeCardDTO>> viewHistoryStaff(){
+        return ResponseEntity.ok(authService.viewStaff());
+    }
+
+    @PutMapping("/deactivate-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>deactivateUser(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.deactivateUser(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Usuario dado de baja correctamente"));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request,HttpServletResponse response) {
         LoginResponseDTO result = authService.login(request);
@@ -89,7 +110,7 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("authToken", null);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
