@@ -1,0 +1,233 @@
+<app-internal-header
+  [title]="'Empleados'"
+  [subtitle]="'Administrá los empleados del complejo'">
+</app-internal-header>
+
+
+<main class="employees-page">
+
+
+  <!-- =========================
+       HEADER DE LA SCREEN
+       ========================= -->
+
+  <div class="employees-toolbar">
+
+    <div class="search-container">
+
+      <span class="search-icon">
+        ⌕
+      </span>
+
+      <input
+        type="text"
+        placeholder="Buscar empleado..."
+        [(ngModel)]="searchTerm">
+
+    </div>
+
+
+    <button
+      type="button"
+      class="create-button"
+      (click)="openNewEmployee()">
+
+      <span class="plus-icon">
+        +
+      </span>
+
+      Nuevo empleado
+
+    </button>
+
+  </div>
+
+
+  <!-- =========================
+       TABLA DE EMPLEADOS
+       ========================= -->
+
+  <div class="employees-card">
+
+
+    <!-- HEADER -->
+
+    <div class="table-header">
+
+      <span>
+        EMPLEADO
+      </span>
+
+      <span>
+        EMAIL
+      </span>
+
+      <span>
+        TELÉFONO
+      </span>
+
+      <span>
+        DNI
+      </span>
+
+      <span>
+        ESTADO
+      </span>
+
+      <span>
+        ACCIONES
+      </span>
+
+    </div>
+
+
+    <!-- EMPLEADOS -->
+
+    @for (employee of filteredEmployees; track employee.id) {
+
+      <div class="employee-row">
+
+
+        <!-- NOMBRE -->
+
+        <div class="employee-name">
+
+          <div class="employee-avatar">
+
+            {{ employee.name.charAt(0) }}
+
+          </div>
+
+          <span>
+            {{ employee.name }}
+          </span>
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <span class="employee-email">
+
+          {{ employee.email }}
+
+        </span>
+
+
+        <!-- TELÉFONO -->
+
+        <span>
+
+          {{ employee.phone }}
+
+        </span>
+
+
+        <!-- DNI -->
+
+        <span>
+
+          {{ employee.dni }}
+
+        </span>
+
+
+        <!-- ESTADO -->
+
+        <span>
+
+          <span
+            class="status"
+            [class.status-active]="employee.enabled"
+            [class.status-inactive]="!employee.enabled">
+
+            {{ employee.enabled ? 'Activo' : 'Inactivo' }}
+
+          </span>
+
+        </span>
+
+
+        <!-- ACCIONES -->
+
+        <div class="actions">
+
+
+          <!-- EDITAR -->
+
+          <button
+            type="button"
+            class="action-button"
+            title="Editar"
+            (click)="editEmployee(employee)">
+
+            ✎
+
+          </button>
+
+
+          <!-- RESET PIN -->
+
+          <button
+            type="button"
+            class="action-button"
+            title="Resetear PIN"
+            (click)="resetPin(employee)">
+
+            🔑
+
+          </button>
+
+
+          <!-- CAMBIAR ESTADO -->
+
+          <button
+            type="button"
+            class="action-button"
+            title="Cambiar estado"
+            (click)="toggleEmployeeStatus(employee)">
+
+            ⋮
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+    }
+
+
+    <!-- SIN RESULTADOS -->
+
+    @if (filteredEmployees.length === 0) {
+
+      <div class="empty-state">
+
+        No se encontraron empleados.
+
+      </div>
+
+    }
+
+
+  </div>
+
+
+</main>
+
+
+<!-- =========================
+     MODAL DE EMPLEADO
+     ========================= -->
+
+@if (showEmployeeModal) {
+
+  <app-employee-modal
+    [employee]="selectedEmployee"
+    (close)="closeEmployeeModal()"
+    (saveEmployee)="saveEmployee($event)">
+  </app-employee-modal>
+
+}

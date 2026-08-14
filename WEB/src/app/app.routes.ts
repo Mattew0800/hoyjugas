@@ -15,6 +15,7 @@ import {HistoryBookings} from './screens/history-bookings/history-bookings';
 import {Dashboard} from './screens/internal/dashboard/dashboard';
 import {SpacesScreen} from './screens/internal/Spaces/spaces-screen/spaces-screen';
 import {InternalLogin} from './screens/internal/internal-login/internal-login';
+import {EmployeesScreen} from './screens/internal/Employees/employees-screen/employees-screen';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 import {internalAuthGuard} from './auth/InternalAuthGuard';
@@ -36,6 +37,7 @@ export const routes: Routes = [
   {path:'internal/login', component:InternalLogin},
   {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
   {path:'**', component:Error}
 
 ];

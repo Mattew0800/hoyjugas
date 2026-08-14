@@ -1,0 +1,300 @@
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+.modal-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, .72);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 2000;
+
+  padding: 20px;
+
+}
+
+.employee-modal {
+
+  width: 100%;
+
+  max-width: 560px;
+
+  background: #111111;
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  border-radius: 16px;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+
+  overflow: hidden;
+
+}
+
+.modal-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  padding: 24px 26px 20px;
+
+  border-bottom: 1px solid rgba(255,255,255,.07);
+
+}
+
+.modal-header h2 {
+
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+}
+
+.modal-header p {
+
+  margin: 7px 0 0;
+
+  color: #858585;
+
+  font-size: 14px;
+
+}
+
+.close-button {
+
+  border: none;
+
+  background: transparent;
+
+  color: #8c8c8c;
+
+  font-size: 25px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  padding: 0 2px;
+
+  transition: .2s;
+
+}
+
+.close-button:hover {
+
+  color: #ffffff;
+
+}
+
+.employee-form {
+
+  padding: 24px 26px 26px;
+
+}
+
+.form-row {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 16px;
+
+}
+
+.form-group {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  margin-bottom: 18px;
+
+}
+
+.form-group label {
+
+  color: #c4c4c4;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+}
+
+.form-group input,
+.form-group select {
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border-radius: 9px;
+
+  border: 1px solid rgba(255,255,255,.10);
+
+  background: #090909;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition: .2s;
+
+}
+
+.form-group input::placeholder {
+
+  color: #555555;
+
+}
+
+.form-group input:focus,
+.form-group select:focus {
+
+  border-color: rgba(206,167,100,.55);
+
+  box-shadow: 0 0 0 2px rgba(206,167,100,.07);
+
+}
+
+.form-group select {
+
+  cursor: pointer;
+
+}
+
+.form-group select option {
+
+  background: #111111;
+
+  color: #ffffff;
+
+}
+
+.modal-footer {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  padding-top: 8px;
+
+}
+
+.cancel-button,
+.save-button {
+
+  height: 42px;
+
+  padding: 0 18px;
+
+  border-radius: 9px;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.cancel-button {
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  background: #1a1a1a;
+
+  color: #b7b7b7;
+
+}
+
+.cancel-button:hover {
+
+  background: #222222;
+
+  color: #ffffff;
+
+}
+
+.save-button {
+
+  border: 1px solid rgba(206,167,100,.45);
+
+  background: #CEA764;
+
+  color: #0b0b0b;
+
+  font-weight: 600;
+
+}
+
+.save-button:hover {
+
+  background: #d9b875;
+
+}
+
+@media (max-width: 600px) {
+
+  .employee-modal {
+
+    max-width: 100%;
+
+  }
+
+  .form-row {
+
+    grid-template-columns: 1fr;
+
+    gap: 0;
+
+  }
+
+  .modal-header,
+  .employee-form {
+
+    padding-left: 20px;
+
+    padding-right: 20px;
+
+  }
+
+}
+
+.password-error {
+  margin-top: -8px;
+  margin-bottom: 16px;
+
+  color: #d98b8b;
+
+  font-size: 12px;
+}

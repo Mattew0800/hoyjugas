@@ -1,0 +1,308 @@
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #050505;
+}
+
+.employees-page {
+  padding: 28px 32px 32px 32px;
+}
+
+.employees-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 24px;
+}
+
+.search-container {
+  width: 360px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 14px;
+
+  background: #0c0c0c;
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  border-radius: 10px;
+}
+
+.search-icon {
+  margin-right: 10px;
+
+  color: #777;
+
+  font-size: 20px;
+}
+
+.search-container input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 14px;
+}
+
+.search-container input::placeholder {
+  color: #686868;
+}
+
+.create-button {
+  height: 42px;
+
+  padding: 0 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(206,167,100,.4);
+
+  background: transparent;
+
+  color: #CEA764;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.create-button:hover {
+  background: rgba(206,167,100,.08);
+}
+
+.plus-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+
+/* =========================
+   TABLA
+   ========================= */
+
+.employees-card {
+  width: 100%;
+
+  background: #0a0a0a;
+
+  border: 1px solid rgba(255,255,255,.06);
+
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+.table-header,
+.employee-row {
+  display: grid;
+
+  grid-template-columns:
+    1.5fr
+    1.7fr
+    1.1fr
+    .9fr
+    .9fr
+    .8fr;
+
+  align-items: center;
+}
+
+.table-header {
+  min-height: 52px;
+
+  padding: 0 20px;
+
+  background: #0d0d0d;
+
+  border-bottom: 1px solid rgba(255,255,255,.06);
+
+  color: #777;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  letter-spacing: .5px;
+}
+
+.employee-row {
+  min-height: 72px;
+
+  padding: 0 20px;
+
+  color: #c4c4c4;
+
+  font-size: 13px;
+
+  border-bottom: 1px solid rgba(255,255,255,.05);
+
+  transition: .2s;
+}
+
+.employee-row:last-child {
+  border-bottom: none;
+}
+
+.employee-row:hover {
+  background: rgba(255,255,255,.02);
+}
+
+
+/* =========================
+   EMPLEADO
+   ========================= */
+
+.employee-name {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: white;
+
+  font-weight: 500;
+}
+
+.employee-avatar {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(206,167,100,.12);
+
+  border: 1px solid rgba(206,167,100,.25);
+
+  color: #CEA764;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.employee-email {
+  color: #9a9a9a;
+}
+
+
+/* =========================
+   ESTADO
+   ========================= */
+
+.status {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 68px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+}
+
+.status-active {
+  color: #CEA764;
+
+  background: rgba(206,167,100,.08);
+
+  border: 1px solid rgba(206,167,100,.2);
+}
+
+.status-inactive {
+  color: #777;
+
+  background: rgba(255,255,255,.04);
+
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+
+/* =========================
+   ACCIONES
+   ========================= */
+
+.actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+.action-button {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #888;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  transition: .2s;
+}
+
+.action-button:hover {
+  background: rgba(206,167,100,.08);
+
+  color: #CEA764;
+}
+
+
+/* =========================
+   VACÍO
+   ========================= */
+
+.empty-state {
+  min-height: 180px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #666;
+
+  font-size: 14px;
+}
