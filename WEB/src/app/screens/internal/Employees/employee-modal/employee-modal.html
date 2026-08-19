@@ -1,234 +1,225 @@
-<div
-  class="modal-overlay"
-  (click)="closeModal()">
+<!-- HEADER -->
 
-  <div
-    class="employee-modal"
-    (click)="$event.stopPropagation()">
+<div class="modal-header">
 
+  <div>
 
-    <!-- HEADER -->
+    <h2>
+      {{ title }}
+    </h2>
 
-    <div class="modal-header">
+    <p>
+      {{
+        isEditing
+          ? 'Modificá los datos del empleado'
+          : 'Completá los datos del nuevo empleado'
+      }}
+    </p>
 
-      <div>
-
-        <h2>
-          {{ title }}
-        </h2>
-
-        <p>
-          {{
-            isEditing
-              ? 'Modificá los datos del empleado'
-              : 'Completá los datos del nuevo empleado'
-          }}
-        </p>
-
-      </div>
+  </div>
 
 
-      <button
-        type="button"
-        class="close-button"
-        (click)="closeModal()">
+  <button
+    type="button"
+    class="close-button"
+    (click)="closeModal()">
 
-        ×
+    ×
 
-      </button>
+  </button>
+
+</div>
+
+
+<!-- FORM -->
+
+<form
+  class="employee-form"
+  (ngSubmit)="save()">
+
+
+  <!-- NOMBRE + DNI -->
+
+  <div class="form-row">
+
+    <div class="form-group">
+
+      <label>
+        Nombre y apellido
+      </label>
+
+      <input
+        type="text"
+        name="name"
+        [(ngModel)]="name"
+        placeholder="Juan Pérez"
+        required>
 
     </div>
 
 
-    <!-- FORM -->
-
-    <form
-      class="employee-form"
-      (ngSubmit)="save()">
-
-
-      <!-- NOMBRE + DNI -->
-
-      <div class="form-row">
-
-        <div class="form-group">
-
-          <label>
-            Nombre y apellido
-          </label>
-
-          <input
-            type="text"
-            name="name"
-            [(ngModel)]="name"
-            placeholder="Juan Pérez"
-            required>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            DNI
-          </label>
-
-          <input
-            type="text"
-            name="dni"
-            [(ngModel)]="dni"
-            placeholder="40123456"
-            required>
-
-        </div>
-
-      </div>
-
-
-      <!-- EMAIL -->
+    @if (!isEditing) {
 
       <div class="form-group">
 
         <label>
-          Email
-        </label>
-
-        <input
-          type="email"
-          name="email"
-          [(ngModel)]="email"
-          placeholder="empleado@email.com"
-          required>
-
-      </div>
-
-
-      <!-- TELEFONO -->
-
-      <div class="form-group">
-
-        <label>
-          Teléfono
+          DNI
         </label>
 
         <input
           type="text"
-          name="phone"
-          [(ngModel)]="phone"
-          placeholder="2235123456"
+          name="dni"
+          [(ngModel)]="dni"
+          placeholder="40123456"
+          required>
+
+      </div>
+
+    }
+
+  </div>
+
+
+  <!-- EMAIL -->
+
+  <div class="form-group">
+
+    <label>
+      Email
+    </label>
+
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="email"
+      placeholder="empleado@email.com"
+      required>
+
+  </div>
+
+
+  <!-- TELEFONO -->
+
+  <div class="form-group">
+
+    <label>
+      Teléfono
+    </label>
+
+    <input
+      type="text"
+      name="phone"
+      [(ngModel)]="phone"
+      placeholder="2235123456"
+      required>
+
+  </div>
+
+
+  <!-- CONTRASEÑA -->
+
+  @if (!isEditing) {
+
+    <div class="form-row">
+
+      <div class="form-group">
+
+        <label>
+          Contraseña
+        </label>
+
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Mínimo 6 caracteres"
           required>
 
       </div>
 
 
-      <!-- CONTRASEÑA -->
+      <div class="form-group">
 
-      @if (!isEditing) {
+        <label>
+          Confirmar contraseña
+        </label>
 
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label>
-              Contraseña
-            </label>
-
-            <input
-              type="password"
-              name="password"
-              [(ngModel)]="password"
-              placeholder="Mínimo 6 caracteres"
-              required>
-
-          </div>
-
-
-          <div class="form-group">
-
-            <label>
-              Confirmar contraseña
-            </label>
-
-            <input
-              type="password"
-              name="confirmPassword"
-              [(ngModel)]="confirmPassword"
-              placeholder="Repetí la contraseña"
-              required>
-
-          </div>
-
-        </div>
-
-
-        @if (passwordError) {
-
-          <div class="password-error">
-
-            {{ passwordError }}
-
-          </div>
-
-        }
-
-      }
-
-
-      <!-- ESTADO -->
-
-      @if (isEditing) {
-
-        <div class="form-group">
-
-          <label>
-            Estado
-          </label>
-
-          <select
-            name="enabled"
-            [(ngModel)]="enabled">
-
-            <option [ngValue]="true">
-              Activo
-            </option>
-
-            <option [ngValue]="false">
-              Inactivo
-            </option>
-
-          </select>
-
-        </div>
-
-      }
-
-
-      <!-- FOOTER -->
-
-      <div class="modal-footer">
-
-        <button
-          type="button"
-          class="cancel-button"
-          (click)="closeModal()">
-
-          Cancelar
-
-        </button>
-
-
-        <button
-          type="submit"
-          class="save-button">
-
-          {{ buttonText }}
-
-        </button>
+        <input
+          type="password"
+          name="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          placeholder="Repetí la contraseña"
+          required>
 
       </div>
 
-    </form>
+    </div>
+
+
+    @if (passwordError) {
+
+      <div class="password-error">
+
+        {{ passwordError }}
+
+      </div>
+
+    }
+
+  }
+
+
+  <!-- ESTADO -->
+
+  @if (isEditing) {
+
+    <div class="form-group">
+
+      <label>
+        Estado
+      </label>
+
+      <select
+        name="active"
+        [(ngModel)]="active">
+
+        <option [ngValue]="true">
+          Activo
+        </option>
+
+        <option [ngValue]="false">
+          Inactivo
+        </option>
+
+      </select>
+
+    </div>
+
+  }
+
+
+  <!-- FOOTER -->
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="cancel-button"
+      (click)="closeModal()">
+
+      Cancelar
+
+    </button>
+
+
+    <button
+      type="submit"
+      class="save-button">
+
+      {{ buttonText }}
+
+    </button>
 
   </div>
 
-</div>
+</form>

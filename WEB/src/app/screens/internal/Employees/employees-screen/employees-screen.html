@@ -7,10 +7,6 @@
 <main class="employees-page">
 
 
-  <!-- =========================
-       HEADER DE LA SCREEN
-       ========================= -->
-
   <div class="employees-toolbar">
 
     <div class="search-container">
@@ -43,14 +39,8 @@
   </div>
 
 
-  <!-- =========================
-       TABLA DE EMPLEADOS
-       ========================= -->
-
   <div class="employees-card">
 
-
-    <!-- HEADER -->
 
     <div class="table-header">
 
@@ -67,10 +57,6 @@
       </span>
 
       <span>
-        DNI
-      </span>
-
-      <span>
         ESTADO
       </span>
 
@@ -81,14 +67,10 @@
     </div>
 
 
-    <!-- EMPLEADOS -->
-
     @for (employee of filteredEmployees; track employee.id) {
 
       <div class="employee-row">
 
-
-        <!-- NOMBRE -->
 
         <div class="employee-name">
 
@@ -105,16 +87,12 @@
         </div>
 
 
-        <!-- EMAIL -->
-
         <span class="employee-email">
 
           {{ employee.email }}
 
         </span>
 
-
-        <!-- TELÉFONO -->
 
         <span>
 
@@ -123,37 +101,21 @@
         </span>
 
 
-        <!-- DNI -->
-
-        <span>
-
-          {{ employee.dni }}
-
-        </span>
-
-
-        <!-- ESTADO -->
-
         <span>
 
           <span
             class="status"
-            [class.status-active]="employee.enabled"
-            [class.status-inactive]="!employee.enabled">
+            [class.status-active]="employee.active"
+            [class.status-inactive]="!employee.active">
 
-            {{ employee.enabled ? 'Activo' : 'Inactivo' }}
+            {{ employee.active ? 'Activo' : 'Inactivo' }}
 
           </span>
 
         </span>
 
 
-        <!-- ACCIONES -->
-
         <div class="actions">
-
-
-          <!-- EDITAR -->
 
           <button
             type="button"
@@ -166,20 +128,16 @@
           </button>
 
 
-          <!-- RESET PIN -->
-
           <button
             type="button"
             class="action-button"
-            title="Resetear PIN"
+            title="Cambiar PIN"
             (click)="resetPin(employee)">
 
             🔑
 
           </button>
 
-
-          <!-- CAMBIAR ESTADO -->
 
           <button
             type="button"
@@ -191,15 +149,12 @@
 
           </button>
 
-
         </div>
 
       </div>
 
     }
 
-
-    <!-- SIN RESULTADOS -->
 
     @if (filteredEmployees.length === 0) {
 
@@ -218,10 +173,6 @@
 </main>
 
 
-<!-- =========================
-     MODAL DE EMPLEADO
-     ========================= -->
-
 @if (showEmployeeModal) {
 
   <app-employee-modal
@@ -229,5 +180,16 @@
     (close)="closeEmployeeModal()"
     (saveEmployee)="saveEmployee($event)">
   </app-employee-modal>
+
+}
+
+
+@if (showPinModal && selectedEmployeeForPin) {
+
+  <app-pin-modal
+    [employeeName]="selectedEmployeeForPin.name"
+    (close)="closePinModal()"
+    (confirm)="confirmResetPin($event)">
+  </app-pin-modal>
 
 }
