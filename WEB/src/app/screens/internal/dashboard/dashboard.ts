@@ -167,18 +167,14 @@ export class Dashboard implements OnInit {
     booking: BookingListModel
   ): 'FREE' | 'PARTIAL' | 'PAID' {
 
-    // Si la reserva fue cancelada,
-    // el horario vuelve a estar libre
     if (booking.status === 'CANCELADO') {
       return 'FREE';
     }
 
-    // Reserva confirmada y totalmente paga
     if (booking.paymentStatus === 'PAGADO') {
       return 'PAID';
     }
 
-    // Reserva existente con pago pendiente o parcial
     return 'PARTIAL';
 
   }
@@ -384,9 +380,6 @@ export class Dashboard implements OnInit {
 
   }
 
-  // =========================
-  // MODAL DETALLE DE TURNO
-  // =========================
 
   openBookingModal(
     slot: SpaceSlotModel
@@ -412,9 +405,6 @@ export class Dashboard implements OnInit {
 
   }
 
-  // =========================
-  // MODAL CARGAR TURNO
-  // =========================
 
   openInternalBookingModal(): void {
 
@@ -428,9 +418,9 @@ export class Dashboard implements OnInit {
 
   }
 
-  // =========================
-  // PAGO
-  // =========================
+  onBookingCreated(): void {
+    this.loadBookings();
+  }
 
   confirmPayment(
     booking: BookingListModel
@@ -446,9 +436,6 @@ export class Dashboard implements OnInit {
 
   }
 
-  // =========================
-  // PROPIEDADES
-  // =========================
 
   spaces: SpaceModel[] = [];
 

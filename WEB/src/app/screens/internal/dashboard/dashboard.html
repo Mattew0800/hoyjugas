@@ -101,7 +101,8 @@
   @if (showInternalBookingModal) {
     <app-internal-booking-modal
       [selectedDate]="selectedDate"
-      (close)="closeInternalBookingModal()">
+      (close)="closeInternalBookingModal()"
+      (bookingCreated)="onBookingCreated()">
     </app-internal-booking-modal>
   }
 
