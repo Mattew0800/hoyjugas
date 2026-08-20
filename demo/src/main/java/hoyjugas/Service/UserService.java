@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -107,8 +109,8 @@ public class UserService {
         }
     }
 
-    public User validateEmployeePin(String rawPin) {
-        return userRepository.findByRole(Role.EMPLOYEE).stream()
+    public User validateStaffPin(String rawPin) {
+        return userRepository.findByRoleIn(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
                 .filter(e -> e.getPin() != null && passwordEncoder.matches(rawPin, e.getPin()))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "PIN incorrecto"));
