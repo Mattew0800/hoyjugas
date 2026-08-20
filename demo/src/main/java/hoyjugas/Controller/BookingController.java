@@ -13,7 +13,6 @@ import hoyjugas.Service.SpaceService;
 import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -38,7 +37,7 @@ public class BookingController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> createBookingByEmployee(@Valid @RequestBody EmployeeBookingRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByEmployee(dto, userService.validateEmployeePin(dto.getEmployeePin())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByEmployee(dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/public/create")
@@ -57,7 +56,7 @@ public class BookingController {
     @PostMapping("/complete")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> completeBooking(@Valid @RequestBody CompleteBookingPaymentDTO dto) {
-        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateEmployeePin(dto.getEmployeePin())));
+        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/cancel")
@@ -65,7 +64,7 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> cancelBooking(@Valid @RequestBody CancelBookingRequestDTO dto){
         User employee = null;
         if (dto.getEmployeePin() != null) {
-            employee=userService.validateEmployeePin(dto.getEmployeePin());
+            employee=userService.validateStaffPin(dto.getEmployeePin());
         }
         return ResponseEntity.ok(bookingService.cancelBooking(dto,employee));
     }
@@ -120,7 +119,7 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> rescheduleBooking(@Valid @RequestBody RescheduleBookingRequestDTO dto) {
         User employee = null;
         if (dto.getEmployeePin() != null) {
-            employee = userService.validateEmployeePin(dto.getEmployeePin());
+            employee = userService.validateStaffPin(dto.getEmployeePin());
         }
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }

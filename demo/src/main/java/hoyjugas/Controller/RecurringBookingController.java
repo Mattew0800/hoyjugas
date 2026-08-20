@@ -37,7 +37,7 @@ public class RecurringBookingController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<RecurringBookingResponseDTO> createRecurringBooking(@Valid @RequestBody RecurringBookingRequestDTO dto) {
-        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+        User employee = userService.validateStaffPin(dto.getEmployeePin());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(recurringBookingService.createRecurringBooking(dto, employee));
     }
@@ -45,14 +45,14 @@ public class RecurringBookingController {
     @PostMapping("/cancel-one")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<RecurringCancelResponseDTO> cancelOneBooking(@Valid @RequestBody CancelBookingRequestDTO dto) {
-           User employee = userService.validateEmployeePin(dto.getEmployeePin());
+           User employee = userService.validateStaffPin(dto.getEmployeePin());
         return ResponseEntity.ok(recurringBookingService.cancelOneBooking(dto.getBookingId(), dto, employee));
     }
 
     @PostMapping("/cancel-cycle")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<?> cancelRecurringCycle(@Valid @RequestBody CancelRecurringCycleRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
-        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+        User employee = userService.validateStaffPin(dto.getEmployeePin());
         recurringBookingService.cancelRecurringCycle(dto.getRecurringId(), dto.getCancellationReason(),me.getId(), employee);
         return ResponseEntity.ok(Map.of("message", "Ciclo cancelado correctamente"));
     }
