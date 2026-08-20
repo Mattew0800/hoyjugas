@@ -38,6 +38,10 @@
 
   border-bottom: 1px solid rgba(255,255,255,.05);
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
 }
 
 .slot-body {
@@ -211,4 +215,19 @@
 
   object-fit: contain;
 
+}
+
+.expand-icon {
+  font-size: 16px;
+  opacity: 0.4;
+  transition: all 0.2s ease;
+}
+
+.space-slot {
+  cursor: pointer;
+}
+
+.space-slot:hover .expand-icon {
+  opacity: 0.9;
+  transform: scale(1.1);
 }

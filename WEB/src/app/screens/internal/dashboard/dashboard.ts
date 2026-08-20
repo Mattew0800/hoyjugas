@@ -60,7 +60,7 @@ export class Dashboard implements OnInit {
         page: 0,
         size: 20,
         sortBy: 'startDatetime',
-        sortDirection: 'desc'
+        sortDirection: 'asc'
 
       })
 
@@ -100,7 +100,15 @@ export class Dashboard implements OnInit {
     return spaces.map(space => {
 
       const slots: SpaceSlotModel[] = bookings
-        .filter(booking => booking.spaceName === space.name)
+        .filter(
+          booking =>
+            booking.spaceName === space.name
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.startDatetime).getTime() -
+            new Date(b.startDatetime).getTime()
+        )
         .map(booking => ({
 
           id: booking.id,
