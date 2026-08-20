@@ -15,6 +15,4 @@ public class CancelBookingRequestDTO {
     private Long bookingId;
 
     private String employeePin;
-
-    private Long requesterId;
 }
