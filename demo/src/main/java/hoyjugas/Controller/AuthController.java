@@ -98,6 +98,20 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Usuario dado de baja correctamente"));
     }
 
+    @PutMapping("/activate-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>activateUser(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.activateUser(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Usuario dado de alta correctamente"));
+    }
+
+    @PutMapping("rehire-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>rehireEmployee(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.rehireEmployee(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Empleado dado de alta correctamente"));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request,HttpServletResponse response) {
         LoginResponseDTO result = authService.login(request);

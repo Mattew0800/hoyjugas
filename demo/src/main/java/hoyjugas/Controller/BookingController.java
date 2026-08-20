@@ -7,6 +7,7 @@ import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
 import hoyjugas.DTO.Space.SpaceCardDTO;
 import hoyjugas.DTO.Space.SpaceIdRequestDTO;
+import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
 import hoyjugas.Service.SpaceService;
@@ -22,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -61,12 +64,14 @@ public class BookingController {
 
     @PostMapping("/cancel")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> cancelBooking(@Valid @RequestBody CancelBookingRequestDTO dto){
-        User employee = null;
-        if (dto.getEmployeePin() != null) {
-            employee=userService.validateStaffPin(dto.getEmployeePin());
+    public ResponseEntity<BookingResponseDTO> cancelBooking(@Valid @RequestBody CancelBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+        User cancelledBy;
+        if (me.getRole() == Role.EMPLOYEE || me.getRole() == Role.ADMIN) {
+            cancelledBy = userService.validateStaffPin(dto.getEmployeePin());
+        } else {
+            cancelledBy = userService.findById(me.getId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Usuario no encontrado"));
         }
-        return ResponseEntity.ok(bookingService.cancelBooking(dto,employee));
+        return ResponseEntity.ok(bookingService.cancelBooking(dto, cancelledBy));
     }
 
     @PostMapping("/list")
