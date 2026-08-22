@@ -82,4 +82,19 @@ export class BookingService {
     );
   }
 
+  cancelBooking(request: {
+    bookingId: number;
+    cancellationReason: string;
+    employeePin?: string;
+    requesterId?: number;
+  }) {
+    return this.http.post(
+      `${this.bookingApiUrl}/cancel`,
+      request,
+      {
+        withCredentials: true
+      }
+    );
+  }
+
 }

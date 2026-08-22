@@ -9,9 +9,12 @@
       <h2>Detalle del turno</h2>
 
       <button
+        type="button"
         class="close-button"
         (click)="closeModal()">
+
         ✕
+
       </button>
 
     </div>
@@ -20,7 +23,6 @@
 
       <div class="left-column">
 
-        <!-- Cliente -->
         <section class="section-card">
 
           <div class="section-header">
@@ -35,23 +37,32 @@
 
             <div class="client-data">
 
-              <h4>{{ booking.clientName }}</h4>
+              <h4>
+                {{ booking.clientName }}
+              </h4>
 
-              <span>{{ booking.clientPhone }}</span>
+              <span>
+                {{ booking.clientPhone }}
+              </span>
 
-              <span>Sin email</span>
+              <span>
+                Sin email
+              </span>
 
             </div>
 
-            <button class="profile-button">
+            <button
+              type="button"
+              class="profile-button">
+
               Ver perfil
+
             </button>
 
           </div>
 
         </section>
 
-        <!-- Información -->
         <section class="section-card">
 
           <div class="section-header">
@@ -62,7 +73,9 @@
 
             <div class="info-row">
 
-              <span class="info-label">Cancha</span>
+              <span class="info-label">
+                Cancha
+              </span>
 
               <span class="info-value">
                 {{ booking.spaceName }}
@@ -72,7 +85,9 @@
 
             <div class="info-row">
 
-              <span class="info-label">Fecha</span>
+              <span class="info-label">
+                Fecha
+              </span>
 
               <span class="info-value">
                 {{ booking.startDatetime | date:'dd/MM/yyyy' }}
@@ -82,19 +97,27 @@
 
             <div class="info-row">
 
-              <span class="info-label">Horario</span>
+              <span class="info-label">
+                Horario
+              </span>
 
               <span class="info-value">
+
                 {{ booking.startDatetime | date:'HH:mm' }}
+
                 -
+
                 {{ booking.endDatetime | date:'HH:mm' }}
+
               </span>
 
             </div>
 
             <div class="info-row">
 
-              <span class="info-label">Duración</span>
+              <span class="info-label">
+                Duración
+              </span>
 
               <span class="info-value">
                 {{ durationMinutes }} minutos
@@ -106,7 +129,6 @@
 
         </section>
 
-        <!-- Estado -->
         <section class="section-card">
 
           <div class="section-header">
@@ -157,7 +179,6 @@
 
       <div class="right-column">
 
-        <!-- Cobro -->
         <section class="section-card">
 
           <div class="section-header">
@@ -175,7 +196,9 @@
                 </span>
 
                 <span class="payment-value">
+
                   ${{ booking.totalAmount | number:'1.0-0' }}
+
                 </span>
 
               </div>
@@ -199,7 +222,9 @@
                 </span>
 
                 <span class="payment-value">
-                  ${{ booking.remainingAmount ?? 0 | number:'1.0-0' }}
+
+                  ${{ (booking.remainingAmount ?? 0) | number:'1.0-0' }}
+
                 </span>
 
               </div>
@@ -210,19 +235,31 @@
 
             <div class="payment-method">
 
-              <label>Método de pago</label>
+              <label>
+                Método de pago
+              </label>
 
               <select>
 
-                <option>Efectivo</option>
+                <option>
+                  Efectivo
+                </option>
 
-                <option>Transferencia</option>
+                <option>
+                  Transferencia
+                </option>
 
-                <option>Mercado Pago</option>
+                <option>
+                  Mercado Pago
+                </option>
 
-                <option>Débito</option>
+                <option>
+                  Débito
+                </option>
 
-                <option>Crédito</option>
+                <option>
+                  Crédito
+                </option>
 
               </select>
 
@@ -230,7 +267,9 @@
 
             <div class="payment-input">
 
-              <label>Importe recibido</label>
+              <label>
+                Importe recibido
+              </label>
 
               <input
                 type="text"
@@ -240,7 +279,9 @@
 
             <div class="payment-input">
 
-              <label>Vuelto</label>
+              <label>
+                Vuelto
+              </label>
 
               <input
                 type="text"
@@ -253,15 +294,12 @@
 
         </section>
 
-        <!-- Observaciones -->
         <section class="section-card">
 
           <div class="section-content">
 
             <label class="observation-label">
-
               Observaciones internas
-
             </label>
 
             <textarea
@@ -273,24 +311,38 @@
 
         </section>
 
-        <!-- Footer -->
         <div class="modal-footer">
 
           <button
-            class="secondary-button"
-            (click)="closeModal()">
+            type="button"
+            class="cancel-booking-button"
+            (click)="openCancelForm()">
 
-            Cancelar
-
-          </button>
-
-          <button
-            class="primary-button"
-            (click)="onConfirmPayment()">
-
-            Cobrar turno
+            Cancelar turno
 
           </button>
+
+          <div class="footer-actions">
+
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="closeModal()">
+
+              Cerrar
+
+            </button>
+
+            <button
+              type="button"
+              class="primary-button"
+              (click)="onConfirmPayment()">
+
+              Cobrar turno
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -301,3 +353,119 @@
   </div>
 
 </div>
+
+
+@if (showCancelForm) {
+
+  <div
+    class="cancel-overlay"
+    (click)="closeCancelForm()">
+
+    <div
+      class="cancel-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="cancel-modal-header">
+
+        <div>
+
+          <h3>
+            Cancelar turno
+          </h3>
+
+          <p>
+            Para cancelar este turno ingresá el motivo y el PIN del empleado.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="cancel-close-button"
+          (click)="closeCancelForm()">
+
+          ✕
+
+        </button>
+
+      </div>
+
+      <div class="cancel-modal-body">
+
+        <div class="cancel-input">
+
+          <label>
+            Motivo de cancelación
+          </label>
+
+          <textarea
+            [(ngModel)]="cancellationReason"
+            rows="4"
+            placeholder="Ingresá el motivo...">
+          </textarea>
+
+        </div>
+
+        <div class="cancel-input">
+
+          <label>
+            PIN del empleado
+          </label>
+
+          <input
+            type="password"
+            maxlength="4"
+            inputmode="numeric"
+            [(ngModel)]="employeePin"
+            placeholder="••••">
+
+        </div>
+
+        @if (cancellationError) {
+
+          <div class="cancel-error">
+
+            {{ cancellationError }}
+
+          </div>
+
+        }
+
+      </div>
+
+      <div class="cancel-modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeCancelForm()">
+
+          Volver
+
+        </button>
+
+        <button
+          type="button"
+          class="danger-button"
+          [disabled]="cancellationLoading"
+          (click)="cancelBooking()">
+
+          @if (cancellationLoading) {
+
+            Cancelando...
+
+          } @else {
+
+            Confirmar cancelación
+
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}

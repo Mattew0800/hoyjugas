@@ -430,6 +430,11 @@ export class Dashboard implements OnInit {
     this.loadBookings();
   }
 
+  onBookingCancelled(): void {
+    this.closeBookingModal();
+    this.loadBookings();
+  }
+
   confirmPayment(
     booking: BookingListModel
   ): void {
