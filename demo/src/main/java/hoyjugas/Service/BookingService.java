@@ -133,17 +133,12 @@ public class BookingService extends BaseBookingService {
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
-
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal price =
                 pricingService.getPriceForSlot(space, dto.getStartDatetime());
-
         BigDecimal minimumDeposit =
                 calculateDeposit(space, price);
-
         BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, price);
-
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
@@ -153,10 +148,8 @@ public class BookingService extends BaseBookingService {
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
                 dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
         paymentRepository.save(deposit);
-
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
         bookingRepository.save(saved);
-
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
     }

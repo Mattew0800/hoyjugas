@@ -111,14 +111,26 @@ public class AuthService {
 
     @Transactional
     public void dismissEmployee(Long id, Long requesterId) {
-        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
-        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
         if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE&&employee.isEnabled()) {
             employee.setEnabled(false);
             userRepository.save(employee);
         } else if(!employee.isEnabled()){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de baja");
-        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este usuario");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este empleado ya ha sido dado de baja");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este empleado");
+    }
+
+    @Transactional
+    public void rehireEmployee(Long id, Long requesterId) {
+        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE&&!employee.isEnabled()) {
+            employee.setEnabled(true);
+            userRepository.save(employee);
+        } else if(employee.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este empleado ya ha sido dado de alta");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de alta a este Empleado");
     }
 
     @Transactional
@@ -132,6 +144,19 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de baja");
         }
         else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este usuario");
+    }
+
+    @Transactional
+    public void activateUser(Long id, Long requesterId) {
+        User user=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        if(admin.getRole() == Role.ADMIN&&user.getRole() == Role.USER&&!user.isEnabled()) {
+            user.setEnabled(true);
+            userRepository.save(user);
+        }else if(user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de alta");
+        }
+        else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de alta a este usuario");
     }
 
     @Transactional

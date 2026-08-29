@@ -7,13 +7,13 @@ import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
 import hoyjugas.DTO.Space.SpaceCardDTO;
 import hoyjugas.DTO.Space.SpaceIdRequestDTO;
+import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
 import hoyjugas.Service.SpaceService;
 import hoyjugas.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class BookingController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> createBookingByEmployee(@Valid @RequestBody EmployeeBookingRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByEmployee(dto, userService.validateEmployeePin(dto.getEmployeePin())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByEmployee(dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/public/create")
@@ -57,17 +59,19 @@ public class BookingController {
     @PostMapping("/complete")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> completeBooking(@Valid @RequestBody CompleteBookingPaymentDTO dto) {
-        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateEmployeePin(dto.getEmployeePin())));
+        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/cancel")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> cancelBooking(@Valid @RequestBody CancelBookingRequestDTO dto){
-        User employee = null;
-        if (dto.getEmployeePin() != null) {
-            employee=userService.validateEmployeePin(dto.getEmployeePin());
+    public ResponseEntity<BookingResponseDTO> cancelBooking(@Valid @RequestBody CancelBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+        User cancelledBy;
+        if (me.getRole() == Role.EMPLOYEE || me.getRole() == Role.ADMIN) {
+            cancelledBy = userService.validateStaffPin(dto.getEmployeePin());
+        } else {
+            cancelledBy = userService.findById(me.getId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Usuario no encontrado"));
         }
-        return ResponseEntity.ok(bookingService.cancelBooking(dto,employee));
+        return ResponseEntity.ok(bookingService.cancelBooking(dto, cancelledBy));
     }
 
     @PostMapping("/list")
@@ -120,7 +124,7 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> rescheduleBooking(@Valid @RequestBody RescheduleBookingRequestDTO dto) {
         User employee = null;
         if (dto.getEmployeePin() != null) {
-            employee = userService.validateEmployeePin(dto.getEmployeePin());
+            employee = userService.validateStaffPin(dto.getEmployeePin());
         }
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
