@@ -1,267 +1,768 @@
-.modal-overlay {
+/* =========================================================
+   OVERLAY
+========================================================= */
 
+.space-modal-overlay {
   position: fixed;
-
   inset: 0;
 
-  background: rgba(0, 0, 0, .65);
-
-  backdrop-filter: blur(4px);
+  z-index: 1000;
 
   display: flex;
-
+  align-items: center;
   justify-content: center;
 
-  align-items: center;
+  padding: 20px;
 
-  z-index: 9999;
+  background: rgba(0, 0, 0, 0.72);
 
+  box-sizing: border-box;
 }
 
-.modal {
 
-  width: 700px;
+/* =========================================================
+   MODAL
+========================================================= */
 
-  background: #1A1C1F;
+.space-modal {
+  width: 100%;
+  max-width: 1025px;
 
-  border: 1px solid #2B2E34;
+  max-height: calc(100vh - 40px);
 
-  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
 
   overflow: hidden;
 
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  background: #101214;
 
+  border: 1px solid #30343a;
+  border-radius: 18px;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.55);
+
+  color: #f1f1f1;
+
+  box-sizing: border-box;
 }
 
-.modal-header {
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.space-modal-header {
+  flex: 0 0 auto;
 
   display: flex;
-
+  align-items: center;
   justify-content: space-between;
 
-  align-items: center;
+  padding: 32px 38px;
 
-  padding: 24px 28px;
-
-  border-bottom: 1px solid #2B2E34;
-
+  border-bottom: 1px solid #292d32;
 }
 
-.modal-header h2 {
 
+.space-modal-header h2 {
   margin: 0;
 
-  color: white;
+  font-family: Georgia, 'Times New Roman', serif;
 
-  font-size: 28px;
-
+  font-size: 32px;
   font-weight: 700;
 
+  color: #f4f4f4;
 }
 
-.close-button {
 
-  width: 40px;
+.space-modal-close {
+  width: 42px;
+  height: 42px;
 
-  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
 
   border: none;
-
-  border-radius: 10px;
-
   background: transparent;
 
-  color: #A5A5A5;
+  color: #aeb3ba;
 
-  font-size: 18px;
+  font-size: 31px;
+  font-weight: 300;
+
+  line-height: 1;
 
   cursor: pointer;
 
-  transition: .2s;
-
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.close-button:hover {
 
-  background: #2B2E34;
+.space-modal-close:hover:not(:disabled) {
+  color: #ffffff;
 
-  color: white;
-
+  transform: scale(1.08);
 }
 
-.modal-body {
 
-  padding: 28px;
+.space-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
+
+/* =========================================================
+   BODY
+========================================================= */
+
+.space-modal-body {
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding: 34px 38px 38px;
+
+  box-sizing: border-box;
+}
+
+
+/* scrollbar */
+
+.space-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.space-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.space-modal-body::-webkit-scrollbar-thumb {
+  background: #3a3e44;
+
+  border-radius: 10px;
+}
+
+.space-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #4b5057;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.space-form-group {
   display: flex;
-
   flex-direction: column;
 
-  gap: 22px;
+  gap: 9px;
 
+  min-width: 0;
 }
 
-.form-row {
 
+.space-form-group label {
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #d8d8d8;
+}
+
+
+.space-form-group input,
+.space-form-group select {
+  width: 100%;
+
+  height: 59px;
+
+  padding: 0 17px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #373c43;
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #1b1e22;
+
+  color: #f1f1f1;
+
+  font-family: inherit;
+  font-size: 17px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.space-form-group input::placeholder {
+  color: #727881;
+}
+
+
+.space-form-group input:focus,
+.space-form-group select:focus {
+  border-color: #3d86ff;
+
+  box-shadow:
+    0 0 0 2px rgba(61, 134, 255, 0.12);
+}
+
+
+.space-form-group input:disabled,
+.space-form-group select:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* SELECT */
+
+.space-form-group select {
+  cursor: pointer;
+}
+
+
+.space-form-group select:disabled {
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   FORM ROW
+========================================================= */
+
+.space-form-row {
   display: grid;
 
   grid-template-columns: 1fr 1fr;
 
-  gap: 18px;
+  gap: 25px;
 
+  margin-top: 25px;
 }
 
-.form-group {
 
+/* =========================================================
+   SEÑA
+========================================================= */
+
+.space-form-row + .space-form-group {
+  margin-top: 25px;
+}
+
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.space-checkbox {
   display: flex;
-
-  flex-direction: column;
-
-  gap: 8px;
-
-}
-
-.form-group label {
-
-  color: #D7D7D7;
-
-  font-size: 14px;
-
-  font-weight: 600;
-
-}
-
-.form-group input,
-.form-group select {
-
-  width: 100%;
-
-  height: 46px;
-
-  border: 1px solid #353941;
-
-  border-radius: 12px;
-
-  background: #111315;
-
-  color: white;
-
-  padding: 0 14px;
-
-  font-size: 15px;
-
-  transition: .2s;
-
-}
-
-.form-group input:focus,
-.form-group select:focus {
-
-  outline: none;
-
-  border-color: #2B7FFF;
-
-}
-
-.form-group input::placeholder {
-
-  color: #707780;
-
-}
-
-.checkbox {
-
-  display: flex;
-
   align-items: center;
 
   gap: 12px;
 
-  margin-top: 4px;
-
+  margin-top: 23px;
 }
 
-.checkbox input {
 
-  width: 18px;
+.space-checkbox input {
+  width: 22px;
+  height: 22px;
 
-  height: 18px;
+  margin: 0;
 
-  accent-color: #2B7FFF;
-
-}
-
-.checkbox label {
-
-  color: #D7D7D7;
-
-  font-size: 15px;
-
-}
-
-.modal-footer {
-
-  display: flex;
-
-  justify-content: flex-end;
-
-  gap: 14px;
-
-  padding: 22px 28px;
-
-  border-top: 1px solid #2B2E34;
-
-}
-
-.cancel-button {
-
-  border: 1px solid #3B4048;
-
-  background: transparent;
-
-  color: #D0D0D0;
-
-  border-radius: 12px;
-
-  padding: 12px 22px;
+  accent-color: #3d86ff;
 
   cursor: pointer;
+}
 
+
+.space-checkbox input:disabled {
+  cursor: not-allowed;
+}
+
+
+.space-checkbox label {
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 16px;
   font-weight: 600;
 
-  transition: .2s;
+  color: #d8d8d8;
 
+  cursor: pointer;
 }
 
-.cancel-button:hover {
 
-  background: #2A2D33;
+/* =========================================================
+   DIVIDER
+========================================================= */
 
+.space-divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 34px 0;
+
+  background: #292d32;
 }
 
-.save-button {
+
+/* =========================================================
+   CONFIGURACIONES
+========================================================= */
+
+.space-config-section {
+  width: 100%;
+}
+
+
+.space-config-section h3 {
+  margin: 0 0 10px;
+
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  color: #f1f1f1;
+}
+
+
+.space-config-description {
+  max-width: 850px;
+
+  margin: 0 0 27px;
+
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 16px;
+  line-height: 1.45;
+
+  color: #8d939b;
+}
+
+
+/* =========================================================
+   CONFIGURACIÓN INDIVIDUAL
+========================================================= */
+
+.space-configuration {
+  width: 100%;
+
+  margin-bottom: 16px;
+
+  padding: 23px 24px 25px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #373c43;
+  border-radius: 13px;
+
+  background: #15181b;
+}
+
+
+.space-configuration-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+
+.space-configuration-header span {
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  color: #ededed;
+}
+
+
+/* =========================================================
+   CAMPOS DE CONFIGURACIÓN
+========================================================= */
+
+.space-configuration-fields {
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 1.3fr)
+    minmax(130px, 1fr)
+    minmax(130px, 1fr)
+    minmax(140px, 1fr);
+
+  gap: 17px;
+
+  align-items: end;
+}
+
+
+.space-configuration-fields
+.space-form-group label {
+  font-size: 15px;
+}
+
+
+.space-configuration-fields
+.space-form-group input,
+.space-configuration-fields
+.space-form-group select {
+  height: 53px;
+
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   ELIMINAR CONFIGURACIÓN
+========================================================= */
+
+.space-delete-button {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
 
   border: none;
 
-  background: #2B7FFF;
+  background: transparent;
 
-  color: white;
+  color: #858b93;
 
-  border-radius: 12px;
-
-  padding: 12px 24px;
+  font-size: 15px;
 
   cursor: pointer;
 
-  font-weight: 600;
+  border-radius: 7px;
 
-  transition: .2s;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.space-delete-button:hover:not(:disabled) {
+  color: #ff6262;
+
+  background: rgba(255, 80, 80, 0.08);
+}
+
+
+.space-delete-button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   AGREGAR CONFIGURACIÓN
+========================================================= */
+
+.space-add-configuration-button {
+  width: 100%;
+
+  min-height: 52px;
+
+  margin-top: 5px;
+
+  border: 1px dashed #50555d;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #aeb3ba;
+
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.space-add-configuration-button span {
+  margin-right: 5px;
+
+  font-size: 20px;
+}
+
+
+.space-add-configuration-button:hover:not(:disabled) {
+  border-color: #3d86ff;
+
+  background: rgba(61, 134, 255, 0.06);
+
+  color: #ffffff;
+}
+
+
+.space-add-configuration-button:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.space-error-message {
+  margin-top: 18px;
+
+  padding: 13px 16px;
+
+  border: 1px solid rgba(255, 76, 76, 0.35);
+  border-radius: 9px;
+
+  background: rgba(255, 76, 76, 0.08);
+
+  color: #ff8585;
+
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.space-modal-footer {
+  flex: 0 0 auto;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 24px 38px;
+
+  border-top: 1px solid #292d32;
+
+  background: #101214;
+}
+
+
+/* =========================================================
+   BOTÓN CANCELAR
+========================================================= */
+
+.space-cancel-button {
+  min-width: 142px;
+  height: 58px;
+
+  padding: 0 25px;
+
+  border: 1px solid #3a3f46;
+  border-radius: 10px;
+
+  background: #1b1e22;
+
+  color: #d8d8d8;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.space-cancel-button:hover:not(:disabled) {
+  background: #24282d;
+
+  border-color: #50555d;
+}
+
+
+.space-cancel-button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   BOTÓN GUARDAR
+========================================================= */
+
+.space-save-button {
+  min-width: 184px;
+  height: 58px;
+
+  padding: 0 28px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #347ff0;
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+
+.space-save-button:hover:not(:disabled) {
+  background: #2874e8;
+
+  transform: translateY(-1px);
+}
+
+
+.space-save-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+
+.space-save-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .space-modal-overlay {
+    padding: 12px;
+  }
+
+
+  .space-modal {
+    max-height: calc(100vh - 24px);
+
+    border-radius: 14px;
+  }
+
+
+  .space-modal-header {
+    padding: 24px;
+  }
+
+
+  .space-modal-header h2 {
+    font-size: 27px;
+  }
+
+
+  .space-modal-body {
+    padding: 26px 24px 30px;
+  }
+
+
+  .space-configuration-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+
+  .space-modal-footer {
+    padding: 20px 24px;
+  }
 
 }
 
-.save-button:hover {
 
-  background: #4A90FF;
+@media (max-width: 600px) {
+
+  .space-modal-header {
+    padding: 20px;
+  }
+
+
+  .space-modal-header h2 {
+    font-size: 24px;
+  }
+
+
+  .space-modal-body {
+    padding: 22px 20px 26px;
+  }
+
+
+  .space-form-row {
+    grid-template-columns: 1fr;
+
+    gap: 20px;
+
+    margin-top: 20px;
+  }
+
+
+  .space-configuration {
+    padding: 18px;
+  }
+
+
+  .space-configuration-fields {
+    grid-template-columns: 1fr;
+
+    gap: 17px;
+  }
+
+
+  .space-modal-footer {
+    padding: 17px 20px;
+
+    gap: 10px;
+  }
+
+
+  .space-cancel-button,
+  .space-save-button {
+    min-width: 0;
+
+    flex: 1;
+
+    padding: 0 15px;
+  }
 
 }

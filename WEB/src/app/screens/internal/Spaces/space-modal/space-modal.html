@@ -1,111 +1,275 @@
-<div class="modal-overlay">
+<div class="space-modal-overlay">
 
-  <div class="modal">
+  <div class="space-modal">
 
-    <div class="modal-header">
-
+    <div class="space-modal-header">
       <h2>
         {{ spaceId === null ? 'Nuevo espacio' : 'Editar espacio' }}
       </h2>
+
       <button
-        class="close-button"
-        (click)="closeModal()">
-
+        type="button"
+        class="space-modal-close"
+        (click)="closeModal()"
+        [disabled]="saving">
         ✕
-
       </button>
-
     </div>
 
-    <div class="modal-body">
+    <div class="space-modal-body">
 
-      <div class="form-group">
-
-        <label>Nombre</label>
+      <div class="space-form-group">
+        <label for="space-name">Nombre</label>
 
         <input
+          id="space-name"
           type="text"
           [(ngModel)]="space.name"
-          placeholder="Ej. Cancha 1">
+          placeholder="Ej. Cancha 1"
+          [disabled]="saving">
+      </div>
+
+      <div class="space-form-row">
+
+        <div class="space-form-group">
+          <label for="space-type">Tipo</label>
+
+          <select
+            id="space-type"
+            [(ngModel)]="space.type"
+            [disabled]="saving">
+
+            <option value="CANCHA">Cancha</option>
+
+          </select>
+        </div>
+
+        <div class="space-form-group">
+          <label for="slot-duration">Duración del turno</label>
+
+          <select
+            id="slot-duration"
+            [(ngModel)]="space.slotDuration"
+            [disabled]="saving">
+
+            <option [ngValue]="30">30 minutos</option>
+            <option [ngValue]="60">60 minutos</option>
+            <option [ngValue]="90">90 minutos</option>
+            <option [ngValue]="120">120 minutos</option>
+
+          </select>
+        </div>
 
       </div>
 
-      <div class="form-row">
-
-        <div class="form-group">
-
-          <label>Tipo</label>
-
-          <select [(ngModel)]="space.type">
-
-            <option value="CANCHA">
-              Cancha
-            </option>
-
-          </select>
-
-        </div>
-
-        <div class="form-group">
-
-          <label>Duración del turno</label>
-
-          <select [(ngModel)]="space.slotDuration">
-
-            <option [value]="30">30 min</option>
-            <option [value]="60">60 min</option>
-            <option [value]="90">90 min</option>
-            <option [value]="120">120 min</option>
-
-          </select>
-
-        </div>
-
-      </div>
-
-      <div class="form-group">
-
-        <label>Seña fija</label>
+      <div class="space-form-group">
+        <label for="fixed-deposit">Seña fija</label>
 
         <input
+          id="fixed-deposit"
           type="number"
+          min="0"
           [(ngModel)]="space.fixedDeposit"
-          placeholder="$10000">
-
+          placeholder="$10000"
+          [disabled]="saving">
       </div>
 
-      <div class="checkbox">
+      <div class="space-checkbox">
 
         <input
-          id="active"
+          id="space-active"
           type="checkbox"
-          [(ngModel)]="space.isActive">
+          [(ngModel)]="space.isActive"
+          [disabled]="saving">
 
-        <label for="active">
-
+        <label for="space-active">
           Espacio activo
-
         </label>
 
       </div>
 
+      <div class="space-divider"></div>
+
+      <section class="space-config-section">
+
+        <div class="space-config-header">
+
+          <div>
+            <h3>
+              Configuraciones de disponibilidad y precio
+            </h3>
+
+            <p class="space-config-description">
+              Agregá todas las franjas horarias que el espacio tendrá
+              disponibles. Podés tener varias configuraciones para el mismo día.
+            </p>
+          </div>
+
+        </div>
+
+        @if (days.length === 0) {
+
+          <div class="space-empty-configurations">
+            <p>
+              No hay configuraciones cargadas.
+            </p>
+
+            <p>
+              Agregá una configuración para definir los horarios y precios del espacio.
+            </p>
+          </div>
+
+        }
+
+        @for (config of days; track $index) {
+
+          <div class="space-configuration">
+
+            <div class="space-configuration-header">
+
+              <span>
+                Configuración {{ $index + 1 }}
+              </span>
+
+              <button
+                type="button"
+                class="space-delete-button"
+                (click)="removeConfiguration($index)"
+                [disabled]="saving"
+                title="Eliminar configuración">
+
+                🗑
+
+              </button>
+
+            </div>
+
+            <div class="space-configuration-fields">
+
+              <div class="space-form-group">
+
+                <label for="config-day-{{ $index }}">
+                  Día
+                </label>
+
+                <select
+                  id="config-day-{{ $index }}"
+                  [(ngModel)]="config.dayType"
+                  [disabled]="saving">
+
+                  <option value="DIA_DE_SEMANA">
+                    Lunes a viernes
+                  </option>
+
+                  <option value="SABADO">
+                    Sábado
+                  </option>
+
+                  <option value="DOMINGO">
+                    Domingo
+                  </option>
+
+                </select>
+
+              </div>
+
+              <div class="space-form-group">
+
+                <label for="config-start-{{ $index }}">
+                  Desde
+                </label>
+
+                <input
+                  id="config-start-{{ $index }}"
+                  type="time"
+                  [(ngModel)]="config.openingTime"
+                  [disabled]="saving">
+
+              </div>
+
+              <div class="space-form-group">
+
+                <label for="config-end-{{ $index }}">
+                  Hasta
+                </label>
+
+                <input
+                  id="config-end-{{ $index }}"
+                  type="time"
+                  [(ngModel)]="config.closingTime"
+                  [disabled]="saving">
+
+              </div>
+
+              <div class="space-form-group">
+
+                <label for="config-price-{{ $index }}">
+                  Precio
+                </label>
+
+                <input
+                  id="config-price-{{ $index }}"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="config.price"
+                  placeholder="$"
+                  [disabled]="saving">
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+        <button
+          type="button"
+          class="space-add-configuration-button"
+          (click)="addConfiguration()"
+          [disabled]="saving">
+
+          <span>+</span>
+
+          Agregar configuración
+
+        </button>
+
+        @if (errorMessage) {
+
+          <div class="space-error-message">
+            {{ errorMessage }}
+          </div>
+
+        }
+
+      </section>
+
     </div>
 
-    <div class="modal-footer">
+    <div class="space-modal-footer">
 
       <button
-        class="cancel-button"
-        (click)="closeModal()">
+        type="button"
+        class="space-cancel-button"
+        (click)="closeModal()"
+        [disabled]="saving">
 
         Cancelar
 
       </button>
 
       <button
-        class="save-button"
-        (click)="save()">
+        type="button"
+        class="space-save-button"
+        (click)="save()"
+        [disabled]="saving">
 
-        {{ spaceId === null ? 'Crear espacio' : 'Guardar cambios' }}
+        @if (saving) {
+          Guardando...
+        } @else {
+          {{ spaceId === null ? 'Crear espacio' : 'Guardar cambios' }}
+        }
 
       </button>
 
