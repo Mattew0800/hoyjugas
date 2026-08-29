@@ -47,56 +47,56 @@ public class RecurringBookingService extends BaseBookingService{
     }
 
     @Transactional
-    public RecurringBookingResponseDTO createRecurringBooking(RecurringBookingRequestDTO dto,User employee) {
+    public RecurringBookingResponseDTO createRecurringBooking(RecurringBookingRequestDTO dto, User employee) {
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         SystemConfig config = getSystemConfig();
+
         LocalDate endDate = dto.getEndDate() != null
                 ? dto.getEndDate()
                 : LocalDate.of(LocalDate.now().getYear(), 12, 31);
+
+        // 👇 Usar día específico para el turno recurrente
+        DayType specificDay = pricingService.resolveSpecificDayType(dto.getStartDate().getDayOfWeek());
+
         boolean alreadyExists = recurringBookingRepository.existsActiveRecurring(
                 client.getId(),
                 space.getId(),
-                pricingService.resolveDayType(dto.getStartDate().getDayOfWeek()),
+                specificDay,
                 dto.getStartTime(),
                 RecurringStatus.ACTIVO
         );
+
         if (alreadyExists) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un turno fijo activo para ese cliente, espacio y horario");
         }
+
         RecurringBooking recurring = new RecurringBooking();
         recurring.setClient(client);
         recurring.setSpace(space);
-        recurring.setDayOfWeek(pricingService.resolveDayType(dto.getStartDate().getDayOfWeek()));
+        recurring.setDayOfWeek(specificDay); // 👈 MARTES, no DIA_DE_SEMANA
         recurring.setStartTime(dto.getStartTime());
         recurring.setStartDate(dto.getStartDate());
         recurring.setEndDate(endDate);
-        recurring.setIntervalWeeks(
-                dto.getIntervalWeeks() != null ? dto.getIntervalWeeks() : 1
-        );
+        recurring.setIntervalWeeks(dto.getIntervalWeeks() != null ? dto.getIntervalWeeks() : 1);
         recurring.setStatus(RecurringStatus.ACTIVO);
         RecurringBooking saved = recurringBookingRepository.save(recurring);
         List<Booking> bookingsGenerated = generateBookings(saved, space);
         bookingRepository.saveAll(bookingsGenerated);
         assignBookingNumbers(bookingsGenerated);
-
         if (!bookingsGenerated.isEmpty()) {
             Booking firstBooking = bookingsGenerated.get(0);
-
             BigDecimal depositAmount = calculateRecurringDeposit(
                     1, firstBooking.getTotalAmount(), space, config);
-
             if (dto.getDepositAmount().compareTo(depositAmount) != 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El monto del deposito debe ser igual al necesario");
             }
-
             Payment deposit = buildPayment(
                     firstBooking, dto.getPaymentMethod(), depositAmount,
                     dto.getTransactionId(), employee, PaymentType.DEPOSITO);
             paymentRepository.save(deposit);
-
             firstBooking.setPaymentStatus(
                     calculatePaymentStatus(firstBooking.getId(), firstBooking.getTotalAmount()));
             bookingRepository.save(firstBooking);
@@ -107,8 +107,7 @@ public class RecurringBookingService extends BaseBookingService{
                 "Las primeras %d veces la seña es el doble del valor normal",
                 config.getRecurringInitialDepositTurns()
         ));
-        response.setSlots(
-                buildSlots(bookingsGenerated, config.getRecurringInitialDepositTurns())
+        response.setSlots(buildSlots(bookingsGenerated, config.getRecurringInitialDepositTurns())
         );
         return response;
     }
@@ -143,7 +142,6 @@ public class RecurringBookingService extends BaseBookingService{
                     endDatetime,
                     BookingStatus.CANCELADO
             );
-
             if (!ocupado) {
                 BigDecimal price = pricingService.getPriceForSlot(space, startDatetime);
                 Booking booking = new Booking();
@@ -232,10 +230,6 @@ public class RecurringBookingService extends BaseBookingService{
 
         if (booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno ya está cancelado");
-        }
-        if (!booking.getClient().getId().equals(dto.getRequesterId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "El cliente no pertenece a ese turno");
         }
         RecurringBooking recurring = booking.getRecurringBooking();
         SystemConfig config = getSystemConfig();
