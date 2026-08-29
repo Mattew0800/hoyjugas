@@ -31,11 +31,19 @@ public class SpaceScheduleService {
     public SpaceScheduleResponseDTO addSchedule(Long spaceId, SpaceScheduleRequestDTO dto) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
-        if (spaceScheduleRepository.existsBySpaceIdAndDayType(spaceId, dto.getDayType())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un horario para ese día en este espacio");
-        }
         validateSchedule(dto.getOpeningTime(), dto.getClosingTime(), dto.getDayType());
+        List<SpaceSchedule> existingSchedules = spaceScheduleRepository
+                .findAllBySpaceIdAndDayType(spaceId, dto.getDayType());
+        for (SpaceSchedule existing : existingSchedules) {
+            if (schedulesOverlap(
+                    dto.getOpeningTime(), dto.getClosingTime(),
+                    existing.getOpeningTime(), existing.getClosingTime())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        String.format("El horario %s - %s se superpone con el existente %s - %s",
+                                dto.getOpeningTime(), dto.getClosingTime(),
+                                existing.getOpeningTime(), existing.getClosingTime()));
+            }
+        }
         SpaceSchedule schedule = new SpaceSchedule();
         schedule.setSpace(space);
         schedule.setDayType(dto.getDayType());
@@ -102,5 +110,20 @@ public class SpaceScheduleService {
                                 complexSchedule.getClosingTime()));
             }
         });
+    }
+
+    private boolean schedulesOverlap(LocalTime newOpen, LocalTime newClose, LocalTime existOpen, LocalTime existClose) {
+        boolean newCrosses = !newClose.isAfter(newOpen);
+        boolean existCrosses = !existClose.isAfter(existOpen);
+        if (!newCrosses && !existCrosses) {
+            return newOpen.isBefore(existClose) && existOpen.isBefore(newClose);
+        }
+        if (newCrosses && existCrosses) {
+            return true;
+        }
+        if (newCrosses) {
+            return existOpen.isBefore(newClose) || existClose.isAfter(newOpen);
+        }
+        return newOpen.isBefore(existClose) || newClose.isAfter(existOpen);
     }
 }
