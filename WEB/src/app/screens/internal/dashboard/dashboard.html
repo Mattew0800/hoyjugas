@@ -83,15 +83,13 @@
   @if(showBookingModal && selectedBooking){
 
     <app-booking-detail-modal
-
       [booking]="selectedBooking"
 
       (close)="closeBookingModal()"
 
       (confirmPayment)="confirmPayment($event)"
 
-      (bookingCancelled)="onBookingCancelled()">
-
+      (bookingCancelled)="onBookingCanceled()">
     </app-booking-detail-modal>
 
   }

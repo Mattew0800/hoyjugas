@@ -10,6 +10,7 @@ import { AvailableSlotsResponse } from '../../models/AvailableSlotsResponse';
 import { BookingFilterModel } from '../../screens/internal/models/booking-filter.model';
 import { PageResponse } from '../../screens/internal/models/page-response.model';
 import { BookingListModel } from '../../screens/internal/models/booking-list.model';
+import {SpaceAvailabilityModel} from '../../screens/internal/models/space-availability.model';
 
 @Injectable({
   providedIn: 'root'
@@ -95,6 +96,40 @@ export class BookingService {
         withCredentials: true
       }
     );
+  }
+
+  getAvailability(
+    spaceId: number,
+    date: string
+  ): Observable<SpaceAvailabilityModel[]> {
+
+    return this.http.post<SpaceAvailabilityModel[]>(
+      `${this.bookingApiUrl}/availability`,
+      {
+        spaceId: spaceId,
+        date: date
+      },
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
+  private formatDateForApi(date: Date): string {
+
+    const year = date.getFullYear();
+
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, '0');
+
+    const day = String(
+      date.getDate()
+    ).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+
   }
 
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 
 import { InternalHeader } from '../components/internal-header/internal-header';
 import { InternalSideBar } from '../components/internal-side-bar/internal-side-bar';
@@ -13,11 +14,9 @@ import { SpaceCardModel } from '../models/space-card.model';
 
 import { BookingService } from '../../../services/BookingService/booking-service';
 import { SpaceService } from '../../../services/SpaceService/SpaceService';
-
 import { BookingDetailModal } from '../components/booking-detail-modal/booking-detail-modal';
 import { InternalBookingModal } from '../components/internal-booking-modal/internal-booking-modal';
-import {RoleService} from '../../../services/RoleService/role-service';
-import { forkJoin } from 'rxjs';
+import { RoleService } from '../../../services/RoleService/role-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,6 +35,28 @@ import { forkJoin } from 'rxjs';
 })
 export class Dashboard implements OnInit {
 
+  spaces: SpaceModel[] = [];
+
+  stats = {
+    todayBookings: 0,
+    occupiedSpaces: 0,
+    nextBookingTime: '--:--',
+    nextBookingSubtitle: '',
+    estimatedRevenue: 0
+  };
+
+  headerTitle = 'Turnos del día';
+
+  headerSubtitle = '';
+
+  selectedDate = new Date();
+
+  showBookingModal = false;
+
+  showInternalBookingModal = false;
+
+  selectedBooking?: BookingListModel;
+
   constructor(
     private bookingService: BookingService,
     private spaceService: SpaceService,
@@ -48,22 +69,19 @@ export class Dashboard implements OnInit {
 
   private loadBookings(): void {
 
-    forkJoin({
+    const date = this.formatLocalDate(this.selectedDate);
 
+    forkJoin({
       spaces: this.spaceService.getSpaceCards(),
 
       bookings: this.bookingService.getBookings({
-
-        dateFrom: this.formatDateStart(this.selectedDate),
-        dateTo: this.formatDateEnd(this.selectedDate),
-
+        dateFrom: `${date}T00:00:00`,
+        dateTo: `${date}T23:59:59`,
         page: 0,
-        size: 20,
+        size: 100,
         sortBy: 'startDatetime',
         sortDirection: 'asc'
-
       })
-
     }).subscribe({
 
       next: ({ spaces, bookings }) => {
@@ -71,20 +89,69 @@ export class Dashboard implements OnInit {
         console.log('SPACES', spaces);
         console.log('BOOKINGS', bookings);
 
-        this.spaces = this.mapSpaces(
-          spaces,
-          bookings.content
+        const availabilityRequests = spaces.map(space =>
+          this.bookingService.getAvailability(
+            space.id,
+            date
+          )
         );
 
-        this.stats = this.buildStats(bookings.content);
+        if (availabilityRequests.length === 0) {
 
-        this.updateHeader(bookings.content);
+          this.spaces = [];
+
+          this.stats = this.buildStats(bookings.content);
+
+          this.updateHeader(bookings.content);
+
+          return;
+        }
+
+        forkJoin(availabilityRequests).subscribe({
+
+          next: availabilityResponses => {
+
+            this.spaces = this.mapSpaces(
+              spaces,
+              bookings.content,
+              availabilityResponses
+            );
+
+            this.stats = this.buildStats(bookings.content);
+
+            this.updateHeader(bookings.content);
+
+          },
+
+          error: error => {
+
+            console.error(
+              'ERROR AL CARGAR DISPONIBILIDAD:',
+              error
+            );
+
+            this.spaces = this.mapSpaces(
+              spaces,
+              bookings.content,
+              []
+            );
+
+            this.stats = this.buildStats(bookings.content);
+
+            this.updateHeader(bookings.content);
+
+          }
+
+        });
 
       },
 
       error: error => {
 
-        console.error(error);
+        console.error(
+          'ERROR AL CARGAR DASHBOARD:',
+          error
+        );
 
       }
 
@@ -94,12 +161,13 @@ export class Dashboard implements OnInit {
 
   private mapSpaces(
     spaces: SpaceCardModel[],
-    bookings: BookingListModel[]
+    bookings: BookingListModel[],
+    availabilityResponses: any[]
   ): SpaceModel[] {
 
-    return spaces.map(space => {
+    return spaces.map((space, index) => {
 
-      const slots: SpaceSlotModel[] = bookings
+      const spaceBookings = bookings
         .filter(
           booking =>
             booking.spaceName === space.name
@@ -108,37 +176,81 @@ export class Dashboard implements OnInit {
           (a, b) =>
             new Date(a.startDatetime).getTime() -
             new Date(b.startDatetime).getTime()
-        )
-        .map(booking => ({
+        );
 
-          id: booking.id,
+      const availability =
+        availabilityResponses[index] ?? [];
 
-          startTime: this.formatTime(
-            booking.startDatetime
-          ),
+      const availabilityList =
+        Array.isArray(availability)
+          ? availability
+          : availability?.slots ?? [];
 
-          endTime: this.formatTime(
-            booking.endDatetime
-          ),
+      const slots: SpaceSlotModel[] =
+        availabilityList.map(
+          (availableSlot: any) => {
 
-          status: this.mapStatus(booking),
+            const startDatetime =
+              availableSlot.startDatetime ??
+              availableSlot.startTime;
 
-          clientName: booking.clientName,
+            const endDatetime =
+              availableSlot.endDatetime ??
+              availableSlot.endTime;
 
-          phone: booking.clientPhone,
+            const booking =
+              spaceBookings.find(
+                existingBooking =>
+                  this.sameTime(
+                    existingBooking.startDatetime,
+                    startDatetime
+                  ) &&
+                  this.sameTime(
+                    existingBooking.endDatetime,
+                    endDatetime
+                  )
+              );
 
-          booking: booking
+            if (booking) {
 
-        }));
+              return {
+                id: booking.id,
+                startTime: this.formatTime(
+                  booking.startDatetime
+                ),
+                endTime: this.formatTime(
+                  booking.endDatetime
+                ),
+                status: this.mapStatus(booking),
+                clientName: booking.clientName,
+                phone: booking.clientPhone,
+                booking
+              };
+
+            }
+
+            return {
+              id: this.createSlotId(
+                space.id,
+                startDatetime
+              ),
+              startTime: this.formatAvailabilityTime(
+                startDatetime
+              ),
+              endTime: this.formatAvailabilityTime(
+                endDatetime
+              ),
+              status: 'FREE',
+              booking: undefined
+            };
+
+          }
+        );
 
       return {
-
         id: space.id,
-
         name: space.name,
-
         type: space.type,
-
         slotDuration: space.slotDuration,
 
         status: space.isActive
@@ -147,18 +259,69 @@ export class Dashboard implements OnInit {
 
         nextBookingTime:
           slots.length > 0
-            ? slots[0].startTime
+            ? slots.find(
+              slot =>
+                slot.status !== 'FREE'
+            )?.startTime
             : undefined,
 
         slots
-
       };
 
     });
 
   }
 
-  private formatTime(date: string): string {
+  private sameTime(
+    first: string,
+    second: string
+  ): boolean {
+
+    const firstDate = new Date(first);
+    const secondDate = new Date(second);
+
+    return (
+      firstDate.getTime() ===
+      secondDate.getTime()
+    );
+
+  }
+
+  private createSlotId(
+    spaceId: number,
+    start: string
+  ): number {
+
+    const timestamp =
+      new Date(start).getTime();
+
+    return Math.abs(
+      spaceId * 1000000000 + timestamp
+    );
+
+  }
+
+  private formatAvailabilityTime(
+    value: string
+  ): string {
+
+    if (!value) {
+      return '--:--';
+    }
+
+    if (
+      /^\d{2}:\d{2}/.test(value)
+    ) {
+      return value.substring(0, 5);
+    }
+
+    return this.formatTime(value);
+
+  }
+
+  private formatTime(
+    date: string
+  ): string {
 
     return new Date(date).toLocaleTimeString(
       'es-AR',
@@ -175,11 +338,15 @@ export class Dashboard implements OnInit {
     booking: BookingListModel
   ): 'FREE' | 'PARTIAL' | 'PAID' {
 
-    if (booking.status === 'CANCELADO') {
+    if (
+      booking.status === 'CANCELADO'
+    ) {
       return 'FREE';
     }
 
-    if (booking.paymentStatus === 'PAGADO') {
+    if (
+      booking.paymentStatus === 'PAGADO'
+    ) {
       return 'PAID';
     }
 
@@ -194,26 +361,25 @@ export class Dashboard implements OnInit {
     if (bookings.length === 0) {
 
       return {
-
         todayBookings: 0,
-
         occupiedSpaces: 0,
-
         nextBookingTime: '--:--',
-
         nextBookingSubtitle: '',
-
         estimatedRevenue: 0
-
       };
 
     }
 
     const isToday =
-      this.selectedDate.toDateString() ===
-      new Date().toDateString();
+      this.formatLocalDate(
+        this.selectedDate
+      ) ===
+      this.formatLocalDate(
+        new Date()
+      );
 
-    let nextBooking: BookingListModel | undefined;
+    let nextBooking:
+      BookingListModel | undefined;
 
     let nextBookingSubtitle = '';
 
@@ -224,7 +390,10 @@ export class Dashboard implements OnInit {
       nextBooking = bookings
         .filter(
           booking =>
-            new Date(booking.startDatetime) > now
+            new Date(
+              booking.startDatetime
+            ) > now &&
+            booking.status !== 'CANCELADO'
         )
         .sort(
           (a, b) =>
@@ -241,7 +410,9 @@ export class Dashboard implements OnInit {
           now.getTime();
 
         const diffMinutes =
-          Math.ceil(diffMs / 60000);
+          Math.ceil(
+            diffMs / 60000
+          );
 
         if (diffMinutes < 60) {
 
@@ -251,7 +422,9 @@ export class Dashboard implements OnInit {
         } else {
 
           const hours =
-            Math.floor(diffMinutes / 60);
+            Math.floor(
+              diffMinutes / 60
+            );
 
           nextBookingSubtitle =
             `En ${hours} hora${hours > 1 ? 's' : ''}`;
@@ -263,6 +436,10 @@ export class Dashboard implements OnInit {
     } else {
 
       nextBooking = bookings
+        .filter(
+          booking =>
+            booking.status !== 'CANCELADO'
+        )
         .sort(
           (a, b) =>
             new Date(a.startDatetime).getTime() -
@@ -280,12 +457,21 @@ export class Dashboard implements OnInit {
 
     return {
 
-      todayBookings: bookings.length,
+      todayBookings: bookings.filter(
+        booking =>
+          booking.status !== 'CANCELADO'
+      ).length,
 
       occupiedSpaces: new Set(
-        bookings.map(
-          booking => booking.spaceName
-        )
+        bookings
+          .filter(
+            booking =>
+              booking.status !== 'CANCELADO'
+          )
+          .map(
+            booking =>
+              booking.spaceName
+          )
       ).size,
 
       nextBookingTime: nextBooking
@@ -296,11 +482,18 @@ export class Dashboard implements OnInit {
 
       nextBookingSubtitle,
 
-      estimatedRevenue: bookings.reduce(
-        (total, booking) =>
-          total + booking.totalAmount,
-        0
-      )
+      estimatedRevenue:
+        bookings
+          .filter(
+            booking =>
+              booking.status !== 'CANCELADO'
+          )
+          .reduce(
+            (total, booking) =>
+              total +
+              booking.totalAmount,
+            0
+          )
 
     };
 
@@ -311,11 +504,7 @@ export class Dashboard implements OnInit {
   ): void {
 
     const date =
-      bookings.length > 0
-        ? new Date(
-          bookings[0].startDatetime
-        )
-        : this.selectedDate;
+      this.selectedDate;
 
     this.headerSubtitle =
       date.toLocaleDateString(
@@ -328,25 +517,25 @@ export class Dashboard implements OnInit {
       );
 
     this.headerSubtitle =
-      this.headerSubtitle.charAt(0).toUpperCase() +
+      this.headerSubtitle
+        .charAt(0)
+        .toUpperCase() +
       this.headerSubtitle.slice(1);
 
   }
 
-  onDateSelected(date: Date): void {
+  onDateSelected(
+    date: Date
+  ): void {
 
-    this.selectedDate = date;
-
-    console.log(
-      'Nueva fecha:',
-      this.selectedDate
-    );
+    this.selectedDate =
+      date;
 
     this.loadBookings();
 
   }
 
-  private formatDateStart(
+  private formatLocalDate(
     date: Date
   ): string {
 
@@ -363,31 +552,9 @@ export class Dashboard implements OnInit {
         date.getDate()
       ).padStart(2, '0');
 
-    return `${year}-${month}-${day}T00:00:00`;
+    return `${year}-${month}-${day}`;
 
   }
-
-  private formatDateEnd(
-    date: Date
-  ): string {
-
-    const year =
-      date.getFullYear();
-
-    const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, '0');
-
-    const day =
-      String(
-        date.getDate()
-      ).padStart(2, '0');
-
-    return `${year}-${month}-${day}T23:59:59`;
-
-  }
-
 
   openBookingModal(
     slot: SpaceSlotModel
@@ -400,39 +567,63 @@ export class Dashboard implements OnInit {
     this.selectedBooking =
       slot.booking;
 
-    this.showBookingModal = true;
+    this.showBookingModal =
+      true;
+
+  }
+
+  openInternalBookingModal(
+    slot?: SpaceSlotModel
+  ): void {
+
+    if (slot?.booking) {
+
+      this.selectedBooking =
+        slot.booking;
+
+    }
+
+    this.showInternalBookingModal =
+      true;
 
   }
 
   closeBookingModal(): void {
 
-    this.showBookingModal = false;
+    this.showBookingModal =
+      false;
 
     this.selectedBooking =
       undefined;
 
   }
 
-
-  openInternalBookingModal(): void {
-
-    this.showInternalBookingModal = true;
-
-  }
-
   closeInternalBookingModal(): void {
 
-    this.showInternalBookingModal = false;
+    this.showInternalBookingModal =
+      false;
 
   }
 
   onBookingCreated(): void {
+
+    this.showInternalBookingModal =
+      false;
+
     this.loadBookings();
+
   }
 
-  onBookingCancelled(): void {
-    this.closeBookingModal();
+  onBookingCanceled(): void {
+
+    this.showBookingModal =
+      false;
+
+    this.selectedBooking =
+      undefined;
+
     this.loadBookings();
+
   }
 
   confirmPayment(
@@ -440,47 +631,12 @@ export class Dashboard implements OnInit {
   ): void {
 
     console.log(
-      'Pago confirmado'
+      'Pago confirmado',
+      booking
     );
-
-    console.log(booking);
 
     this.closeBookingModal();
 
   }
-
-
-  spaces: SpaceModel[] = [];
-
-  stats = {
-
-    todayBookings: 0,
-
-    occupiedSpaces: 0,
-
-    nextBookingTime: '--:--',
-
-    nextBookingSubtitle: '',
-
-    estimatedRevenue: 0
-
-  };
-
-  headerTitle =
-    'Turnos del dia';
-
-  headerSubtitle = '';
-
-  selectedDate =
-    new Date();
-
-  showBookingModal =
-    false;
-
-  showInternalBookingModal =
-    false;
-
-  selectedBooking?:
-    BookingListModel;
 
 }
