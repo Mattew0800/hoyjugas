@@ -25,3 +25,8 @@ export function getAdminSpaceApiUrl(): string {
   return `http://${host}:8080/hoyjugas/admin/spaces`;
 
 }
+
+export function getRecurringBookingApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/recurring-bookings`;
+}
