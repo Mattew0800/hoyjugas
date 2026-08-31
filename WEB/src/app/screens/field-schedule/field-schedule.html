@@ -1,143 +1,95 @@
-<div class="page">
-
+<!--
+<div style="position:fixed; top:50%; left:0; background:red; color:white; z-index:99999; padding:6px; font-size:16px;">
+  H: {{ realHeight }}
+</div>
+-->
   <app-header></app-header>
 
-  <div class="content">
+  <section class="schedule-layout">
 
-    <img
-      src="/cancha1.png"
-      alt="Cancha"
-      class="field-image"
-    />
-
-    <div class="field-card">
-
-      <h2>Cancha 1 - Fútbol 5</h2>
-
-      <p class="subtitle">
-        Techada · Césped sintético
-      </p>
-
-      <div class="info-container">
-
-        <div class="info-box">
-          <span class="label">tipo</span>
-          <span>Techada</span>
-        </div>
-
-        <div class="info-box">
-          <span class="label">precio</span>
-          <span>$8.000/h</span>
-        </div>
-
-        <div class="info-box">
-          <span class="label">horario</span>
-          <span>08:00 - 23:00</span>
-        </div>
-
+    <!-- 1. Stepper -->
+    <div class="step-header">
+      <div class="stepper-row">
+        <div class="step active">1</div>
+        <div class="line active"></div>
+        <div class="step">2</div>
+        <div class="line"></div>
+        <div class="step">3</div>
       </div>
-
-      <div class="date-section">
-
-        <label>Elegí tu turno:</label>
-
-        <div class="date-selector">
-
-          @for(date of visibleDates; track date.value){
-
-            <button
-              class="date-pill"
-              [class.selected-date]="selectedDate.toDateString() === date.value.toDateString()"
-              (click)="selectDate(date.value)">
-
-              <div class="date-calendar">
-
-          <span class="month">
-            {{ date.month }}
-          </span>
-
-                <span class="day">
-            {{ date.day }}
-          </span>
-
-              </div>
-
-              <span class="availability">
-          {{ date.availableSlots }} libres
-        </span>
-
-            </button>
-
-          }
-
-          <button
-            class="calendar-pill"
-            (click)="calendarInput.showPicker()">
-
-            📅
-
-          </button>
-
-          <input
-            #calendarInput
-            hidden
-            type="date"
-            (change)="onDateChange($event)"
-          />
-
-        </div>
-
-      </div>
-
-      <div class="hours-grid">
-
-        @for(slot of timeSlots; track slot.hour){
-
-          <button
-            class="hour-btn"
-            [class.selected]="selectedHour === slot.hour"
-            [class.unavailable]="!slot.available"
-            (click)="selectHour(slot.hour)"
-          >
-
-            {{slot.hour}}
-
-          </button>
-
-        }
-
-      </div>
-
-      <div class="legend">
-
-        <div>
-          <span class="dot unavailable-dot"></span>
-          No disponible
-        </div>
-
-        <div>
-          <span class="dot selected-dot"></span>
-          Seleccionado
-        </div>
-
-        <div>
-          <span class="dot available-dot"></span>
-          Disponible
-        </div>
-
-      </div>
-
-      <button
-        class="reserve-btn"
-        (click)="reserve()"
-      >
-        RESERVAR TURNO
-      </button>
-
+      <p class="step-title">Paso 1 de 3: Selección de Fecha</p>
     </div>
 
-  </div>
+
+
+    <!-- 2.  -->
+    <article class="field-card">
+      <p class="field-title">Cancha 1 • Fútbol 5</p>
+    </article>
+
+    <!-- 3.  -->
+    <div class="date-grid">
+      <div class="date-card active">
+        <span class="date-month">HOY</span>
+        <span class="date-number">15</span>
+        <span class="date-status">2 libres</span>
+      </div>
+
+      <div class="date-card">
+        <span class="date-month">AGO</span>
+        <span class="date-number">16</span>
+        <span class="date-status">6 libres</span>
+      </div>
+
+      <div class="date-card disabled">
+        <span class="date-month">AGO</span>
+        <span class="date-number">17</span>
+        <span class="date-status">Agotado</span>
+      </div>
+
+      <div class="date-card">
+        <span class="date-month">AGO</span>
+        <span class="date-number">18</span>
+        <span class="date-status">8 libres</span>
+      </div>
+
+      <div class="date-card">
+        <span class="date-month">AGO</span>
+        <span class="date-number">19</span>
+        <span class="date-status">7 libres</span>
+      </div>
+
+      <div class="date-card">
+        <span class="date-month">AGO</span>
+        <span class="date-number">20</span>
+        <span class="date-status">8 libres</span>
+      </div>
+
+      <div class="date-card">
+        <span class="date-month">AGO</span>
+        <span class="date-number">21</span>
+        <span class="date-status">8 libres</span>
+      </div>
+
+      <div class="date-card more-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#CEA764" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span class="more-text">VER MÁS</span>
+      </div>
+    </div>
+
+    <!-- 4.CTA -->
+    <div class="fixed-bottom-action">
+      <button class="btn-primary">Continuar</button>
+    </div>
+
+
+  </section>
+
 
   <app-bottom-navbar></app-bottom-navbar>
 
-</div>
+
