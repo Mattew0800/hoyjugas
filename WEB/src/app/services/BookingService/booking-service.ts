@@ -132,4 +132,16 @@ export class BookingService {
 
   }
 
+  getBookingDetail(request: {
+    bookingId: number;
+  }) {
+    return this.http.post(
+      `${this.bookingApiUrl}/detail`,
+      request,
+      {
+        withCredentials: true
+      }
+    );
+  }
+
 }

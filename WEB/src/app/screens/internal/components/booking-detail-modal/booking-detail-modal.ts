@@ -3,13 +3,15 @@ import { BookingListModel } from '../../models/booking-list.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../../services/BookingService/booking-service';
+import {ClientProfileModal} from '../client-profile-modal/client-profile-modal';
 
 @Component({
   selector: 'app-booking-detail-modal',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    ClientProfileModal
   ],
   templateUrl: './booking-detail-modal.html',
   styleUrl: './booking-detail-modal.scss'
@@ -38,6 +40,18 @@ export class BookingDetailModal {
 
   cancellationLoading = false;
 
+  showClientProfile = false;
+
+  clientProfileLoading = false;
+
+  clientProfileError = '';
+
+  selectedClient: {
+    id: number;
+    name: string;
+    phone: string;
+  } | null = null;
+
   constructor(
     private bookingService: BookingService
   ) {}
@@ -54,11 +68,15 @@ export class BookingDetailModal {
   }
 
   closeModal(): void {
+
     this.close.emit();
+
   }
 
   onConfirmPayment(): void {
+
     this.confirmPayment.emit(this.booking);
+
   }
 
   openCancelForm(): void {
@@ -144,6 +162,63 @@ export class BookingDetailModal {
       }
 
     });
+
+  }
+
+  openClientProfile(): void {
+
+    this.clientProfileError = '';
+
+    this.clientProfileLoading = true;
+
+    this.bookingService.getBookingDetail({
+      bookingId: this.booking.id
+    }).subscribe({
+
+      next: (response: any) => {
+
+        this.selectedClient = {
+
+          id: response.clientId,
+
+          name: response.clientName,
+
+          phone: response.clientPhone
+
+        };
+
+        this.clientProfileLoading = false;
+
+        this.showClientProfile = true;
+
+      },
+
+      error: error => {
+
+        console.error(
+          'ERROR AL OBTENER PERFIL DEL CLIENTE:',
+          error
+        );
+
+        this.clientProfileLoading = false;
+
+        this.clientProfileError =
+          error?.error ||
+          'No se pudo obtener la información del cliente.';
+
+      }
+
+    });
+
+  }
+
+  closeClientProfile(): void {
+
+    this.showClientProfile = false;
+
+    this.selectedClient = null;
+
+    this.clientProfileError = '';
 
   }
 

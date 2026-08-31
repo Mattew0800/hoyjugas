@@ -1,0 +1,125 @@
+<div
+  class="modal-overlay"
+  (click)="closeModal()">
+
+  <div
+    class="profile-modal"
+    (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <div>
+
+        <span class="modal-eyebrow">
+          PERFIL DEL CLIENTE
+        </span>
+
+        <h2>
+          Información del cliente
+        </h2>
+
+      </div>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeModal()">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div class="profile-hero">
+
+        <div class="client-avatar">
+
+          {{ getClientInitial() }}
+
+        </div>
+
+        <div class="client-main-info">
+
+          <h3>
+            {{ client.name }}
+          </h3>
+
+          <span>
+            Cliente registrado
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="information-section">
+
+        <h4>
+          Información de contacto
+        </h4>
+
+        <div class="info-row">
+
+          <div class="info-content">
+
+            <span class="info-label">
+              Teléfono
+            </span>
+
+            <span class="info-value">
+              {{ client.phone || 'No registrado' }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="info-row">
+
+          <div class="info-content">
+
+            <span class="info-label">
+              ID de cliente
+            </span>
+
+            <span class="info-value">
+              #{{ client.id }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="profile-note">
+
+        <span>
+          La información adicional del cliente estará disponible cuando se incorpore el detalle completo del perfil.
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="closeModal()">
+
+        Cerrar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
