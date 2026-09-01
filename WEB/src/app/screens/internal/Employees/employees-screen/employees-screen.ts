@@ -85,11 +85,6 @@ export class EmployeesScreen implements OnInit {
 
         next: employees => {
 
-          console.log(
-            'PERSONAL ACTIVO:',
-            employees
-          );
-
           this.employees = employees;
 
           this.loadingEmployees = false;
@@ -196,23 +191,12 @@ export class EmployeesScreen implements OnInit {
     employee: EmployeeCreateModel
   ): void {
 
-    console.log(
-      'CREANDO EMPLEADO:',
-      employee
-    );
-
 
     this.employeeService
       .createEmployee(employee)
       .subscribe({
 
         next: response => {
-
-          console.log(
-            'EMPLEADO CREADO:',
-            response
-          );
-
 
           const newEmployee: EmployeeModel = {
 
@@ -294,11 +278,6 @@ export class EmployeesScreen implements OnInit {
 
         next: response => {
 
-          console.log(
-            'PIN ACTUALIZADO:',
-            response
-          );
-
           this.savingPin = false;
 
           this.closePinModal();
@@ -357,12 +336,6 @@ export class EmployeesScreen implements OnInit {
       .subscribe({
 
         next: response => {
-
-          console.log(
-            'EMPLEADO DADO DE BAJA:',
-            response
-          );
-
 
           this.employees =
             this.employees.filter(

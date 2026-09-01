@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../../services/BookingService/booking-service';
 import {ClientProfileModal} from '../client-profile-modal/client-profile-modal';
+import {BookingDetailModel} from '../../models/booking-detail-model';
 
 @Component({
   selector: 'app-booking-detail-modal',
@@ -175,7 +176,7 @@ export class BookingDetailModal {
       bookingId: this.booking.id
     }).subscribe({
 
-      next: (response: any) => {
+      next: (response: BookingDetailModel) => {
 
         this.selectedClient = {
 

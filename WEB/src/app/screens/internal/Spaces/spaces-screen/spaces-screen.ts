@@ -49,8 +49,6 @@ export class SpacesScreen implements OnInit {
 
       next: spaces => {
 
-        console.log('SPACES', spaces);
-
         this.spaces = spaces;
 
       },

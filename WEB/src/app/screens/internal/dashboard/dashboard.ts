@@ -86,8 +86,6 @@ export class Dashboard implements OnInit {
 
       next: ({ spaces, bookings }) => {
 
-        console.log('SPACES', spaces);
-        console.log('BOOKINGS', bookings);
 
         const availabilityRequests = spaces.map(space =>
           this.bookingService.getAvailability(

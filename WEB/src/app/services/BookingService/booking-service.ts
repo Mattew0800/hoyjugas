@@ -7,10 +7,21 @@ import { getBookingApiUrl } from '../../config/api.config';
 import { SpaceCardDTO } from '../../models/SpaceCardDTO';
 import { AvailableSlotsResponse } from '../../models/AvailableSlotsResponse';
 
-import { BookingFilterModel } from '../../screens/internal/models/booking-filter.model';
-import { PageResponse } from '../../screens/internal/models/page-response.model';
-import { BookingListModel } from '../../screens/internal/models/booking-list.model';
-import {SpaceAvailabilityModel} from '../../screens/internal/models/space-availability.model';
+import { BookingFilterModel }
+  from '../../screens/internal/models/booking-filter.model';
+
+import { PageResponse }
+  from '../../screens/internal/models/page-response.model';
+
+import { BookingListModel }
+  from '../../screens/internal/models/booking-list.model';
+
+import { SpaceAvailabilityModel }
+  from '../../screens/internal/models/space-availability.model';
+
+import {InternalBookingRequestModel} from '../../screens/internal/models/internal-booking-request.model';
+
+import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -48,14 +59,19 @@ export class BookingService {
 
   }
 
-  getComplexSchedule() {
+  getComplexSchedule(): Observable<{
+    open?: boolean;
+    openingTime?: string;
+    closingTime?: string;
+    dayType?: string;
+  } & Record<string, unknown>> {
 
     return this.http.get<{
       open?: boolean;
       openingTime?: string;
       closingTime?: string;
       dayType?: string;
-    } & Record<string, any>>(
+    } & Record<string, unknown>>(
       `${this.bookingApiUrl}/schedule`,
       {
         withCredentials: true
@@ -75,12 +91,18 @@ export class BookingService {
 
   }
 
-  createBookingByEmployee(request: any) {
-    return this.http.post(
+  createInternalBooking(
+    request: InternalBookingRequestModel
+  ): Observable<BookingResponseModel> {
+
+    return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/create`,
       request,
-      { withCredentials: true }
+      {
+        withCredentials: true
+      }
     );
+
   }
 
   cancelBooking(request: {
@@ -88,14 +110,16 @@ export class BookingService {
     cancellationReason: string;
     employeePin?: string;
     requesterId?: number;
-  }) {
-    return this.http.post(
+  }): Observable<BookingResponseModel> {
+
+    return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/cancel`,
       request,
       {
         withCredentials: true
       }
     );
+
   }
 
   getAvailability(
@@ -106,8 +130,8 @@ export class BookingService {
     return this.http.post<SpaceAvailabilityModel[]>(
       `${this.bookingApiUrl}/availability`,
       {
-        spaceId: spaceId,
-        date: date
+        spaceId,
+        date
       },
       {
         withCredentials: true
@@ -116,32 +140,18 @@ export class BookingService {
 
   }
 
-  private formatDateForApi(date: Date): string {
-
-    const year = date.getFullYear();
-
-    const month = String(
-      date.getMonth() + 1
-    ).padStart(2, '0');
-
-    const day = String(
-      date.getDate()
-    ).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-
-  }
-
   getBookingDetail(request: {
     bookingId: number;
-  }) {
-    return this.http.post(
+  }): Observable<BookingResponseModel> {
+
+    return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/detail`,
       request,
       {
         withCredentials: true
       }
     );
+
   }
 
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { Router } from '@angular/router';
 import {RoleService} from '../../../../services/RoleService/role-service';
+import {AuthService} from '../../../../services/AuthService/auth-service';
 
 @Component({
   selector: 'app-internal-side-bar',
@@ -14,7 +15,8 @@ export class InternalSideBar implements OnInit{
 
   constructor(
     private router: Router,
-    public roleService: RoleService
+    public roleService: RoleService,
+    private authService:AuthService
   ) {}
 
   showManagementMenu = false;
@@ -100,7 +102,11 @@ export class InternalSideBar implements OnInit{
 
   logout(): void {
 
-    console.log('Cerrar sesión');
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/sign-in']);
+      }
+    });
 
   }
 
