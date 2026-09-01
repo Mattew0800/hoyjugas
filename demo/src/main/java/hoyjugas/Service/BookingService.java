@@ -258,28 +258,25 @@ public class BookingService extends BaseBookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Para cancelar un turno fijo usá el endpoint de cancelación de ciclo");
         }
-
-        SystemConfig config = getSystemConfig();
-        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
-        boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
-
-        if (devolution) {
-            BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
-
-            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
-                Payment refund = buildPayment(
-                        booking,
-                        null,
-                        totalCollected,
-                        null,
-                        employee,
-                        PaymentType.DEVOLUCION
-                );
-                refund.setStatus(PaymentStatus.PENDIENTE);
-                paymentRepository.save(refund);
-                booking.setRefunded(false);
-            }
-        }
+//        SystemConfig config = getSystemConfig();   AGREGAR ESTO EN CASO DE DEVOLUCIONES
+//        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
+//        boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
+//        if (devolution) {
+//            BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
+//            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
+//                Payment refund = buildPayment(
+//                        booking,
+//                        null,  TIPO DE METODO DE PAGO
+//                        totalCollected,
+//                        null,
+//                        employee,
+//                        PaymentType.DEVOLUCION
+//                );
+//                refund.setStatus(PaymentStatus.PENDIENTE);
+//                paymentRepository.save(refund);
+//                booking.setRefunded(false);
+//            }
+//        }
         booking.setBookingStatus(BookingStatus.CANCELADO);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(dto.getCancellationReason());
@@ -288,7 +285,6 @@ public class BookingService extends BaseBookingService {
         scheduleNotification(booking, NotificationType.CANCELACION);
         return buildBookingResponseDTO(booking);
     }
-
 
     public Page<BookingListDTO> getBookings(Long clientId, Long spaceId, BookingStatus status,
                                             Long employeeId, LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable) {
