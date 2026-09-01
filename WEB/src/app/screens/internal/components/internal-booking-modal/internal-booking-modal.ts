@@ -141,6 +141,8 @@ export class InternalBookingModal {
 
     });
 
+    this.setBookingType('single');
+
   }
 
   ngOnInit(): void {
@@ -376,7 +378,9 @@ export class InternalBookingModal {
 
   }
 
-  private buildRecurringBookingRequest(): RecurringBookingRequestModel {
+  private buildRecurringBookingRequest(
+    depositAmount?: number
+  ): RecurringBookingRequestModel {
 
     const formValue = this.form.value;
 
@@ -396,7 +400,8 @@ export class InternalBookingModal {
 
       termsAccepted: formValue.termsAccepted,
 
-      depositAmount: formValue.depositAmount,
+      depositAmount:
+        depositAmount ?? formValue.depositAmount,
 
       paymentMethod: formValue.paymentMethod,
 
@@ -487,12 +492,24 @@ export class InternalBookingModal {
       return;
     }
 
+    const requiredDeposit =
+      this.preview.firstDepositAmount;
+
+    if (requiredDeposit === null || requiredDeposit === undefined) {
+
+      this.errorMessage =
+        'No se pudo determinar el monto de la seña necesaria.';
+
+      return;
+
+    }
+
     this.errorMessage = '';
 
     this.loading = true;
 
     const request =
-      this.buildRecurringBookingRequest();
+      this.buildRecurringBookingRequest(requiredDeposit);
 
     this.recurringBookingService
       .createRecurringBooking(request)
