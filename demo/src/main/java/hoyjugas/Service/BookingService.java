@@ -97,6 +97,7 @@ public class BookingService extends BaseBookingService {
                 current = slotEnd;
             }
         }
+
         return slots;
     }
 
