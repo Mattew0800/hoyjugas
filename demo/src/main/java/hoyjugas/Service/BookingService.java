@@ -71,7 +71,6 @@ public class BookingService extends BaseBookingService {
         for (SpaceSchedule schedule : schedules) {
             LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
             LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
-
             boolean crossesMidnight = !schedule.getClosingTime().isAfter(schedule.getOpeningTime());
             if (crossesMidnight) {
                 endOfDay = date.plusDays(1).atTime(schedule.getClosingTime());
@@ -85,9 +84,7 @@ public class BookingService extends BaseBookingService {
                         b.getStartDatetime().isBefore(slotEnd) &&
                                 b.getEndDatetime().isAfter(slotStart)
                 );
-
                 BigDecimal price = pricingService.getPriceForSlot(space, slotStart);
-
                 SpaceAvailabilityDTO slot = new SpaceAvailabilityDTO();
                 slot.setSpaceId(space.getId());
                 slot.setSpaceName(space.getName());
@@ -97,41 +94,44 @@ public class BookingService extends BaseBookingService {
                 slot.setPrice(price);
                 slot.setAvailable(!occupied);
                 slots.add(slot);
-
                 current = slotEnd;
             }
         }
-
         return slots;
     }
 
     @Transactional
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(slots));
         BigDecimal minDeposit = space.getDepositValue();
+
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
         }
-        if (dto.getDepositAmount().compareTo(price) > 0) {
+        if (dto.getDepositAmount().compareTo(totalPrice) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El monto no puede superar el total");
         }
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
+        booking.setSlots(slots);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
-
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
 
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
-                null, null, PaymentType.DEPOSITO); //implementar con api de mp dsps
+                null, null, PaymentType.DEPOSITO);
         deposit.setStatus(PaymentStatus.PAGADO);
         paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
+        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -141,23 +141,28 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO createBookingByEmployee(EmployeeBookingRequestDTO dto, User employee) {
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal price =
-                pricingService.getPriceForSlot(space, dto.getStartDatetime());
-        BigDecimal minimumDeposit =
-                calculateDeposit(space, price);
-        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, price);
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(slots));
+        BigDecimal minimumDeposit = calculateDeposit(space, totalPrice);
+        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
+
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
+        booking.setSlots(slots);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         assignBookingNumber(saved);
+
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
-                dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
+                dto.getTransactionId(), employee, PaymentType.DEPOSITO);
         paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
+        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -449,6 +454,7 @@ public class BookingService extends BaseBookingService {
                 endDatetime,
                 newPrice
         );
+        newBooking.setSlots(original.getSlots());
         newBooking.setRescheduledFrom(original);
         newBooking.setCreatedBy(employee);
         newBooking.setTermsAccepted(dto.getTermsAccepted());

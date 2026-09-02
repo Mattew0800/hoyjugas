@@ -27,6 +27,7 @@ public class RecurringBookingResponseDTO {
     private String dayOfWeek;
     private LocalTime startTime;
     private LocalDate startDate;
+    private LocalTime endTime;
     private LocalDate endDate;
     private Integer intervalWeeks;
     private String status;
@@ -39,8 +40,8 @@ public class RecurringBookingResponseDTO {
     private Integer cancelledBookings;
     private String firstBookingPaymentStatus;
     private BigDecimal firstBookingDepositAmount;
-
     private List<RecurringBookingSlotDTO> slots = new ArrayList<>();
+    private int amountSlots;
 
     public static RecurringBookingResponseDTO fromEntity(
             RecurringBooking recurring,
@@ -57,8 +58,9 @@ public class RecurringBookingResponseDTO {
         dto.setSpaceId(recurring.getSpace().getId());
         dto.setSpaceName(recurring.getSpace().getName());
         dto.setSpaceType(recurring.getSpace().getType());
-
-        dto.setDayOfWeek(recurring.getDayOfWeek().name());
+        if (!bookings.isEmpty()) {
+            dto.setAmountSlots(bookings.getFirst().getSlots());
+        }        dto.setDayOfWeek(recurring.getDayOfWeek().name());
         dto.setStartTime(recurring.getStartTime());
         dto.setStartDate(recurring.getStartDate());
         dto.setEndDate(recurring.getEndDate());

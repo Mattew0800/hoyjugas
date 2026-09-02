@@ -99,7 +99,7 @@ public abstract class BaseBookingService {
         bookings.forEach(b ->
                 b.setBookingNumber("BK-" + String.format("%08d", b.getId()))
         );
-        bookingRepository.saveAll(bookings);
+        bookingRepository.saveAllAndFlush(bookings);
     }
 
     protected Booking assignBookingNumber(Booking booking) {
