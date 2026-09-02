@@ -5,7 +5,7 @@ import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 
 @Component({
   selector: 'app-step-time-selection',
-  imports: [RouterLink, Header, BottomNavbar],
+  imports: [Header, BottomNavbar, RouterLink],
   templateUrl: './step-time-selection.html',
   styleUrl: './step-time-selection.scss',
 })
