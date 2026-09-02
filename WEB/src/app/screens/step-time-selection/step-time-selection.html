@@ -1,1 +1,53 @@
-<p>step-time-selection works!</p>
+<app-header></app-header>
+
+<section class="schedule-layout">
+  <!-- 1. Stepper -->
+  <div class="step-header">
+    <div class="stepper-row">
+      <div class="step completed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#050505" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <div class="line active"></div>
+      <div class="step active">2</div>
+      <div class="line half"></div>
+      <div class="step">3</div>
+    </div>
+    <p class="step-title">Paso 2 de 3: Selección de Horario</p>
+  </div>
+
+  <!-- 2. Selected Field Summary Card -->
+  <article class="selected-field-card">
+    <div class="field-info-left">
+      <div class="field-thumb"></div>
+      <div class="field-text">
+        <h3 class="field-name">Cancha 1 • Fútbol 5</h3>
+        <p class="field-date">Sabado 15 de Agosto</p>
+      </div>
+    </div>
+    <button class="change-btn">Cambiar</button>
+  </article>
+
+  <!-- 3. Tabs -->
+  <div class="tabs-container">
+    <button class="tab-item">Mañana</button>
+    <button class="tab-item active">Tarde</button>
+    <button class="tab-item">Noche</button>
+  </div>
+
+  <!-- 4. Time Slots Grid -->
+  <div class="time-grid">
+    <div class="time-card">13:00</div>
+    <div class="time-card">14:00</div>
+    <div class="time-card">15:00</div>
+    <div class="time-card disabled">16:00</div>
+    <div class="time-card active">17:00</div>
+    <div class="time-card disabled">18:00</div>
+  </div>
+
+  <!-- 5. Bottom CTA -->
+  <div class="fixed-bottom-action">
+    <button class="btn-primary">Continuar</button>
+  </div>
+</section>
+
+<app-bottom-navbar></app-bottom-navbar>

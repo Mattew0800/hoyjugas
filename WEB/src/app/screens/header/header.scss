@@ -61,7 +61,27 @@
 }
 
 .profile-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: #141416; // Fondo oscuro de superficie
+  border: 1px solid rgba(255, 255, 255, 0.08); // Sutil borde de integración
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    // Asegurate de que el SVG de la silueta tenga el color dorado (#CEA764)
+  }
 }
 
 .profile-menu {

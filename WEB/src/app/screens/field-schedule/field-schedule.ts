@@ -3,7 +3,7 @@ import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface DateOption {
   value: Date;
@@ -18,6 +18,7 @@ interface DateOption {
   imports: [
     FormsModule,
     CommonModule,
+    RouterLink,
     Header,
     BottomNavbar
   ],
