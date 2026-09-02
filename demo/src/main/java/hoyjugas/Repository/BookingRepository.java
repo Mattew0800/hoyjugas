@@ -32,7 +32,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endDatetime") LocalDateTime endDatetime,
             @Param("cancelado") BookingStatus cancelado
     );
-    @Modifying
+    @Modifying (clearAutomatically = true)
     @Query("UPDATE Booking b SET b.bookingNumber = :bookingNumber WHERE b.id = :id")
     void updateBookingNumber(@Param("id") Long id, @Param("bookingNumber") String bookingNumber);
 
@@ -132,4 +132,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("now") LocalDateTime now,
             @Param("status") BookingStatus status
     );
+    List<Booking> findByRecurringBookingIdAndStartDatetimeGreaterThanEqualOrderByStartDatetimeAsc(
+            Long recurringBookingId, LocalDateTime datetime);
+
 }

@@ -1,10 +1,7 @@
 package hoyjugas.DTO.Booking;
 
 import hoyjugas.Enum.PaymentMethod;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -30,4 +27,7 @@ public class ClientBookingRequestDTO {
     @NotNull(message = "El monto es obligatorio")
     @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
     private BigDecimal depositAmount;
+
+    @Min(value = 1, message = "Mínimo 1 slot")
+    private Integer slots = 1;
 }

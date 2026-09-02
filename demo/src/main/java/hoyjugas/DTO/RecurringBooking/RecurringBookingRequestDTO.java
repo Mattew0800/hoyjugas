@@ -1,10 +1,7 @@
 package hoyjugas.DTO.RecurringBooking;
 
 import hoyjugas.Enum.PaymentMethod;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +33,9 @@ public class RecurringBookingRequestDTO {
     private Integer intervalWeeks = 1;
 
     private LocalDate endDate;
+
+    @Min(value = 1, message = "Mínimo 1 slot")
+    private Integer slots = 1;
 
     @NotNull(message = "Debe aceptar los términos y condiciones")
     @AssertTrue(message = "Debe aceptar los términos y condiciones")

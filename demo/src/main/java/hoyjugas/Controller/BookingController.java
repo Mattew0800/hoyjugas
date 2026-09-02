@@ -46,8 +46,7 @@ public class BookingController {
     @PostMapping("/public/create")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookingResponseDTO> createBookingByClient(@Valid @RequestBody ClientBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl client) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(bookingService.createBookingByClient(dto,userService.getClientById(client.getId())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByClient(dto,userService.getClientById(client.getId())));
     }
 
     @PostMapping("/detail")

@@ -57,5 +57,8 @@ public class RecurringBooking {
     @JoinColumn(name = "cancelled_by")
     private User cancelledBy;
 
+    @Column(nullable = false)
+    private Integer slots = 1;
+
     private LocalDateTime cancelledAt;
 }
