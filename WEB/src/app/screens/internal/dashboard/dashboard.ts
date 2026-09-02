@@ -69,7 +69,9 @@ export class Dashboard implements OnInit {
 
   private loadBookings(): void {
 
-    const date = this.formatLocalDate(this.selectedDate);
+    const date = this.formatLocalDate(
+      this.selectedDate
+    );
 
     forkJoin({
       spaces: this.spaceService.getSpaceCards(),
@@ -86,26 +88,63 @@ export class Dashboard implements OnInit {
 
       next: ({ spaces, bookings }) => {
 
+        /*
+         * Para fechas pasadas no consultamos disponibilidad,
+         * porque el endpoint /availability rechaza esas fechas.
+         */
 
-        const availabilityRequests = spaces.map(space =>
-          this.bookingService.getAvailability(
-            space.id,
-            date
-          )
+        if (this.isPastDate(this.selectedDate)) {
+
+          this.spaces = this.mapSpaces(
+            spaces,
+            bookings.content,
+            []
+          );
+
+          this.stats = this.buildStats(
+            bookings.content
+          );
+
+          this.updateHeader(
+            bookings.content
+          );
+
+          return;
+
+        }
+
+        /*
+         * Para hoy y fechas futuras mantenemos
+         * el comportamiento actual.
+         */
+
+        const availabilityRequests = spaces.map(
+          space =>
+            this.bookingService.getAvailability(
+              space.id,
+              date
+            )
         );
 
         if (availabilityRequests.length === 0) {
 
           this.spaces = [];
 
-          this.stats = this.buildStats(bookings.content);
+          this.stats = this.buildStats(
+            bookings.content
+          );
 
-          this.updateHeader(bookings.content);
+          this.updateHeader(
+            bookings.content
+          );
 
           return;
+
         }
 
-        forkJoin(availabilityRequests).subscribe({
+        forkJoin(
+          availabilityRequests
+        ).subscribe({
 
           next: availabilityResponses => {
 
@@ -115,9 +154,13 @@ export class Dashboard implements OnInit {
               availabilityResponses
             );
 
-            this.stats = this.buildStats(bookings.content);
+            this.stats = this.buildStats(
+              bookings.content
+            );
 
-            this.updateHeader(bookings.content);
+            this.updateHeader(
+              bookings.content
+            );
 
           },
 
@@ -134,9 +177,13 @@ export class Dashboard implements OnInit {
               []
             );
 
-            this.stats = this.buildStats(bookings.content);
+            this.stats = this.buildStats(
+              bookings.content
+            );
 
-            this.updateHeader(bookings.content);
+            this.updateHeader(
+              bookings.content
+            );
 
           }
 
@@ -154,6 +201,27 @@ export class Dashboard implements OnInit {
       }
 
     });
+
+  }
+
+  private isPastDate(date: Date): boolean {
+
+    const selectedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    const today = new Date();
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    );
+
+    return selectedDate < today;
 
   }
 
@@ -184,6 +252,79 @@ export class Dashboard implements OnInit {
           ? availability
           : availability?.slots ?? [];
 
+      /*
+       * Para fechas pasadas no tenemos disponibilidad.
+       *
+       * En ese caso construimos los slots
+       * directamente desde los turnos existentes.
+       */
+
+      if (availabilityList.length === 0) {
+
+        const slots: SpaceSlotModel[] =
+          spaceBookings.map(
+            booking => {
+
+              return {
+
+                id: booking.id,
+
+                startTime: this.formatTime(
+                  booking.startDatetime
+                ),
+
+                endTime: this.formatTime(
+                  booking.endDatetime
+                ),
+
+                status: this.mapStatus(
+                  booking
+                ),
+
+                clientName: booking.clientName,
+
+                phone: booking.clientPhone,
+
+                booking
+
+              };
+
+            }
+          );
+
+        return {
+
+          id: space.id,
+
+          name: space.name,
+
+          type: space.type,
+
+          slotDuration: space.slotDuration,
+
+          status: space.isActive
+            ? 'AVAILABLE'
+            : 'MAINTENANCE',
+
+          nextBookingTime:
+            slots.length > 0
+              ? slots.find(
+                slot =>
+                  slot.status !== 'FREE'
+              )?.startTime
+              : undefined,
+
+          slots
+
+        };
+
+      }
+
+      /*
+       * Para hoy y fechas futuras mantenemos
+       * la lógica actual basada en availability.
+       */
+
       const slots: SpaceSlotModel[] =
         availabilityList.map(
           (availableSlot: any) => {
@@ -212,43 +353,63 @@ export class Dashboard implements OnInit {
             if (booking) {
 
               return {
+
                 id: booking.id,
+
                 startTime: this.formatTime(
                   booking.startDatetime
                 ),
+
                 endTime: this.formatTime(
                   booking.endDatetime
                 ),
-                status: this.mapStatus(booking),
+
+                status: this.mapStatus(
+                  booking
+                ),
+
                 clientName: booking.clientName,
+
                 phone: booking.clientPhone,
+
                 booking
+
               };
 
             }
 
             return {
+
               id: this.createSlotId(
                 space.id,
                 startDatetime
               ),
+
               startTime: this.formatAvailabilityTime(
                 startDatetime
               ),
+
               endTime: this.formatAvailabilityTime(
                 endDatetime
               ),
+
               status: 'FREE',
+
               booking: undefined
+
             };
 
           }
         );
 
       return {
+
         id: space.id,
+
         name: space.name,
+
         type: space.type,
+
         slotDuration: space.slotDuration,
 
         status: space.isActive
@@ -264,6 +425,7 @@ export class Dashboard implements OnInit {
             : undefined,
 
         slots
+
       };
 
     });
