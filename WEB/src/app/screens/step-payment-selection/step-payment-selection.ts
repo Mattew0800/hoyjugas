@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {Header} from '../header/header';
-import {RouterOutlet} from '@angular/router';
+import {Router} from '@angular/router';
 import {BottomNavbar} from '../bottom-navbar/bottom-navbar';
 
 @Component({
@@ -10,5 +10,11 @@ import {BottomNavbar} from '../bottom-navbar/bottom-navbar';
   styleUrl: './step-payment-selection.scss',
 })
 export class StepPaymentSelection {
+
+  constructor(private router: Router){}
+
+  goToSuccess() {
+    this.router.navigate(['/booking-success']);
+  }
 
 }

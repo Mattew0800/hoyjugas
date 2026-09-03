@@ -16,6 +16,7 @@ import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 import { StepTimeSelection } from './screens/step-time-selection/step-time-selection';
 import {StepPaymentSelection} from './screens/step-payment-selection/step-payment-selection';
+import {BookingSuccess} from './screens/booking-success/booking-success';
 
 
 export const routes: Routes = [
@@ -29,6 +30,7 @@ export const routes: Routes = [
   {path: 'field-schedule/date-selection', component: StepTimeSelection, canActivate: [authGuard]},
   {path: 'field-schedule/payment-selection', component: StepPaymentSelection, canActivate: [authGuard]},
   {path: 'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
+  {path: 'booking-success', component: BookingSuccess, canActivate:[authGuard]},
   {path: 'payment-selection', component: PaymentSelection, canActivate:[authGuard]},
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},

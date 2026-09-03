@@ -1,1 +1,29 @@
-<p>booking-success works!</p>
+<app-header></app-header>
+
+<section class="success-layout">
+  <!-- Contenedor nativo para la animación -->
+  <div class="success-icon-container" #lottieContainer></div>
+
+  <div class="success-message">
+    <h2>¡Reserva Confirmada!</h2>
+    <p>Te enviamos los detalles a tu WhatsApp</p>
+  </div>
+
+  <article class="reservation-summary-card" (click)="goToReservations()">
+    <div class="field-info-left">
+      <div class="field-thumb"></div>
+      <div class="field-text">
+        <h3 class="field-name">Cancha 1 • Fútbol 5</h3>
+        <p class="field-date">Sábado 15 de Agosto · 17:00 hs</p>
+      </div>
+    </div>
+    <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </article>
+
+  <div class="fixed-bottom-action">
+    <button class="btn-primary" (click)="goToReservations()">Ver mis reservas</button>
+    <button class="btn-text" (click)="goHome()">Volver al inicio</button>
+  </div>
+</section>
+
+<app-bottom-navbar></app-bottom-navbar>
