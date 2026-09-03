@@ -1,0 +1,64 @@
+<div class="modal-backdrop" [class.closing]="isClosing" (click)="close()">
+  <div class="modal-sheet" [class.closing]="isClosing" (click)="$event.stopPropagation()">
+    <div class="drag-handle"></div>
+
+    <div class="modal-header">
+      <h2>Seleccionar Fecha</h2>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+    <div class="month-navigation">
+      <button class="nav-arrow">&lt;</button>
+      <span class="month-title">Agosto 2026</span>
+      <button class="nav-arrow">&gt;</button>
+    </div>
+
+    <div class="calendar-grid">
+      <div class="weekdays">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="days-grid">
+        <span class="day"></span>
+        <span class="day"></span>
+        <span class="day"></span>
+        <span class="day"></span>
+        <span class="day"></span>
+        <span class="day">1</span>
+        <span class="day">2</span>
+        <span class="day">3</span>
+        <span class="day">4</span>
+        <span class="day">5</span>
+        <span class="day">6</span>
+        <span class="day">7</span>
+        <span class="day">8</span>
+        <span class="day">9</span>
+        <span class="day">10</span>
+        <span class="day">11</span>
+        <span class="day">12</span>
+        <span class="day">13</span>
+        <span class="day">14</span>
+        <span class="day selected">15</span>
+        <span class="day">16<span class="dot"></span></span>
+        <span class="day">17<span class="dot"></span></span>
+        <span class="day">18<span class="dot"></span></span>
+        <span class="day">19<span class="dot"></span></span>
+        <span class="day">20<span class="dot"></span></span>
+        <span class="day">21<span class="dot"></span></span>
+        <span class="day">22<span class="dot"></span></span>
+        <span class="day">23<span class="dot"></span></span>
+        <span class="day">24<span class="dot"></span></span>
+        <span class="day">25<span class="dot"></span></span>
+        <span class="day">26<span class="dot"></span></span>
+        <span class="day">27<span class="dot"></span></span>
+        <span class="day">28<span class="dot"></span></span>
+        <span class="day">29<span class="dot"></span></span>
+        <span class="day">30<span class="dot"></span></span>
+        <span class="day">31<span class="dot"></span></span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-primary" (click)="confirm()">Confirmar Fecha</button>
+    </div>
+  </div>
+</div>

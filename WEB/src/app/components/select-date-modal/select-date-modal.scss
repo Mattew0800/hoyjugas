@@ -1,0 +1,199 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+  z-index: 1000;
+}
+
+.modal-sheet {
+  width: 100%;
+  background: #121216;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 12px 20px 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid #26262B;
+}
+
+.drag-handle {
+  width: 36px;
+  height: 4px;
+  background: #3F3F46;
+  border-radius: 2px;
+  align-self: center;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+
+  h2 {
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: #A1A1AA;
+    font-size: 24px;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    padding: 0;
+    line-height: 1;
+  }
+}
+
+.month-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+
+  .nav-arrow {
+    background: none;
+    border: none;
+    color: #A1A1AA;
+    font-size: 16px;
+    cursor: pointer;
+  }
+}
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    color: #71717A;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 8px;
+    text-align: center;
+
+    .day {
+      height: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 20%;
+      cursor: pointer;
+      position: relative;
+
+      &.selected {
+        background-color: #CEA764;
+        color: #050505;
+        font-weight: 700;
+      }
+
+      .dot {
+        width: 4px;
+        height: 4px;
+        background-color: #CEA764;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 4px;
+      }
+    }
+  }
+}
+
+.modal-footer {
+  margin-top: 8px;
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: #FFFFFF;
+    color: #050505;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+  z-index: 1000;
+  animation: fadeIn 0.4s ease forwards;
+
+  &.closing {
+    animation: fadeOut 0.4s ease forwards;
+  }
+}
+
+.modal-sheet {
+  width: 100%;
+  background: #121216;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 12px 20px 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid #26262B;
+
+  will-change: transform;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &.closing {
+    animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes slideUp {
+  0% { transform: translate3d(0, 100%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideDown {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 100%, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+
