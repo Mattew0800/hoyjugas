@@ -68,5 +68,8 @@ public interface RecurringBookingRepository extends JpaRepository<RecurringBooki
             @Param("startTime") LocalTime startTime,
             @Param("status") RecurringStatus status
     );
+    List<RecurringBooking> findByClientIdAndStatusAndEndDateGreaterThanEqual(Long clientId, RecurringStatus status, LocalDate date);
+
+    List<RecurringBooking> findByStatusAndEndDateGreaterThanEqual(RecurringStatus status, LocalDate date);
 }
 

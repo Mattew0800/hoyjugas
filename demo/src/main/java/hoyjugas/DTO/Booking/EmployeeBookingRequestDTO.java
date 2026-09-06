@@ -35,4 +35,6 @@ public class EmployeeBookingRequestDTO {
     @AssertTrue
     private Boolean termsAccepted;
 
+    @Min(value = 1, message = "Mínimo 1 slot")
+    private Integer slots = 1;
 }
