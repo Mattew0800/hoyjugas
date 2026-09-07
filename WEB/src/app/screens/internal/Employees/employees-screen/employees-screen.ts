@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
+import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 
 import {
@@ -10,7 +12,7 @@ import {
 } from '../employee-modal/employee-modal';
 
 import { EmployeeService } from '../../../../services/EmployeeService/employee-service';
-import {PinModal} from '../pin-modal/pin-modal';
+import { PinModal } from '../pin-modal/pin-modal';
 
 
 @Component({
@@ -20,6 +22,7 @@ import {PinModal} from '../pin-modal/pin-modal';
   imports: [
     FormsModule,
     InternalHeader,
+    InternalSideBar,
     EmployeeModal,
     PinModal
   ],
@@ -28,12 +31,15 @@ import {PinModal} from '../pin-modal/pin-modal';
 
   styleUrl: './employees-screen.scss'
 })
-export class EmployeesScreen implements OnInit {
+export class EmployeesScreen implements OnInit, OnDestroy {
 
 
   constructor(
     private employeeService: EmployeeService
   ) {}
+
+
+  private subscriptions = new Subscription();
 
 
   searchTerm = '';
@@ -51,7 +57,6 @@ export class EmployeesScreen implements OnInit {
   errorMessage = '';
 
 
-
   showPinModal = false;
 
   selectedEmployeeForPin?: EmployeeModel;
@@ -65,9 +70,37 @@ export class EmployeesScreen implements OnInit {
   savingPin = false;
 
 
+  showDismissConfirmation = false;
+
+  selectedEmployeeForDismiss?: EmployeeModel;
+
+  dismissingEmployee = false;
+
+
+  showingHistory = false;
+
+  historyEmployees: EmployeeModel[] = [];
+
+  loadingHistory = false;
+
+
+  showRehireConfirmation = false;
+
+  selectedEmployeeForRehire?: EmployeeModel;
+
+  rehiringEmployee = false;
+
+
   ngOnInit(): void {
 
     this.loadEmployees();
+
+  }
+
+
+  ngOnDestroy(): void {
+
+    this.subscriptions.unsubscribe();
 
   }
 
@@ -79,37 +112,38 @@ export class EmployeesScreen implements OnInit {
     this.errorMessage = '';
 
 
-    this.employeeService
-      .getActiveStaff()
-      .subscribe({
+    this.subscriptions.add(
+      this.employeeService
+        .getActiveStaff()
+        .subscribe({
 
-        next: employees => {
+          next: employees => {
 
-          this.employees = employees;
+            this.employees = employees;
 
-          this.loadingEmployees = false;
+            this.loadingEmployees = false;
 
-        },
+          },
 
 
-        error: error => {
+          error: error => {
 
-          console.error(
-            'ERROR AL CARGAR PERSONAL:',
-            error
-          );
+            console.error(
+              'ERROR AL CARGAR PERSONAL:',
+              error
+            );
 
-          this.errorMessage =
-            'No se pudo cargar el personal.';
+            this.errorMessage =
+              'No se pudo cargar el personal.';
 
-          this.loadingEmployees = false;
+            this.loadingEmployees = false;
 
-        }
+          }
 
-      });
+        })
+    );
 
   }
-
 
 
   get filteredEmployees(): EmployeeModel[] {
@@ -120,14 +154,20 @@ export class EmployeesScreen implements OnInit {
         .toLowerCase();
 
 
+    const employeesToShow =
+      this.showingHistory
+        ? this.historyEmployees
+        : this.employees;
+
+
     if (!search) {
 
-      return this.employees;
+      return employeesToShow;
 
     }
 
 
-    return this.employees.filter(employee =>
+    return employeesToShow.filter(employee =>
 
       employee.name
         .toLowerCase()
@@ -155,7 +195,6 @@ export class EmployeesScreen implements OnInit {
   }
 
 
-
   openNewEmployee(): void {
 
     this.selectedEmployee = undefined;
@@ -163,7 +202,6 @@ export class EmployeesScreen implements OnInit {
     this.showEmployeeModal = true;
 
   }
-
 
 
   editEmployee(
@@ -187,56 +225,59 @@ export class EmployeesScreen implements OnInit {
 
   }
 
+
   saveEmployee(
     employee: EmployeeCreateModel
   ): void {
 
+    this.subscriptions.add(
+      this.employeeService
+        .createEmployee(employee)
+        .subscribe({
 
-    this.employeeService
-      .createEmployee(employee)
-      .subscribe({
+          next: response => {
 
-        next: response => {
+            const newEmployee: EmployeeModel = {
 
-          const newEmployee: EmployeeModel = {
+              id: response.id,
 
-            id: response.id,
+              name: response.name,
 
-            name: response.name,
+              email: response.email,
 
-            email: response.email,
+              phone: response.phone,
 
-            phone: response.phone,
+              role: response.role,
 
-            role: response.role,
+              active: true
 
-            active: true
-
-          };
-
-
-          this.employees.push(
-            newEmployee
-          );
+            };
 
 
-          this.closeEmployeeModal();
+            this.employees.push(
+              newEmployee
+            );
 
-        },
+
+            this.closeEmployeeModal();
+
+          },
 
 
-        error: error => {
+          error: error => {
 
-          console.error(
-            'ERROR AL CREAR EMPLEADO:',
-            error
-          );
+            console.error(
+              'ERROR AL CREAR EMPLEADO:',
+              error
+            );
 
-        }
+          }
 
-      });
+        })
+    );
 
   }
+
 
   resetPin(
     employee: EmployeeModel
@@ -257,47 +298,54 @@ export class EmployeesScreen implements OnInit {
   }
 
 
-
   confirmResetPin(event: {
     pin: string;
     confirmPin: string;
   }): void {
 
     if (!this.selectedEmployeeForPin) {
+
       return;
+
     }
+
 
     this.savingPin = true;
 
-    this.employeeService
-      .resetPin(
-        this.selectedEmployeeForPin.id,
-        event.pin
-      )
-      .subscribe({
 
-        next: response => {
+    this.subscriptions.add(
+      this.employeeService
+        .resetPin(
+          this.selectedEmployeeForPin.id,
+          event.pin
+        )
+        .subscribe({
 
-          this.savingPin = false;
+          next: () => {
 
-          this.closePinModal();
+            this.savingPin = false;
 
-        },
+            this.closePinModal();
 
-        error: error => {
+          },
 
-          console.error(
-            'ERROR AL RESETEAR PIN:',
-            error
-          );
 
-          this.savingPin = false;
+          error: error => {
 
-        }
+            console.error(
+              'ERROR AL RESETEAR PIN:',
+              error
+            );
 
-      });
+            this.savingPin = false;
+
+          }
+
+        })
+    );
 
   }
+
 
   closePinModal(): void {
 
@@ -315,46 +363,243 @@ export class EmployeesScreen implements OnInit {
 
   }
 
+
   toggleEmployeeStatus(
     employee: EmployeeModel
   ): void {
 
     if (!employee.active) {
 
-      console.log(
-        'aun no se permite reactivar empleados:',
-        employee.name
-      );
+      return;
+
+    }
+
+
+    this.selectedEmployeeForDismiss = employee;
+
+    this.showDismissConfirmation = true;
+
+  }
+
+
+  closeDismissConfirmation(): void {
+
+    if (this.dismissingEmployee) {
 
       return;
 
     }
 
 
-    this.employeeService
-      .dismissEmployee(employee.id)
-      .subscribe({
+    this.showDismissConfirmation = false;
 
-        next: response => {
+    this.selectedEmployeeForDismiss = undefined;
 
-          this.employees =
-            this.employees.filter(
-              e => e.id !== employee.id
+  }
+
+
+  confirmDismissEmployee(): void {
+
+    if (
+      !this.selectedEmployeeForDismiss ||
+      this.dismissingEmployee
+    ) {
+
+      return;
+
+    }
+
+
+    this.dismissingEmployee = true;
+
+
+    this.subscriptions.add(
+      this.employeeService
+        .dismissEmployee(
+          this.selectedEmployeeForDismiss.id
+        )
+        .subscribe({
+
+          next: () => {
+
+            const employeeId =
+              this.selectedEmployeeForDismiss?.id;
+
+
+            this.employees =
+              this.employees.filter(
+                employee =>
+                  employee.id !== employeeId
+              );
+
+
+            this.dismissingEmployee = false;
+
+            this.showDismissConfirmation = false;
+
+            this.selectedEmployeeForDismiss = undefined;
+
+          },
+
+
+          error: error => {
+
+            console.error(
+              'ERROR AL DAR DE BAJA EMPLEADO:',
+              error
             );
 
-        },
+            this.dismissingEmployee = false;
+
+          }
+
+        })
+    );
+
+  }
 
 
-        error: error => {
+  openHistory(): void {
 
-          console.error(
-            'ERROR AL DAR DE BAJA EMPLEADO:',
-            error
-          );
+    this.showingHistory = true;
 
-        }
+    this.loadingHistory = true;
 
-      });
+    this.errorMessage = '';
+
+
+    this.subscriptions.add(
+      this.employeeService
+        .getAllStaff()
+        .subscribe({
+
+          next: employees => {
+
+            this.historyEmployees =
+              employees.filter(
+                employee => !employee.active
+              );
+
+            this.loadingHistory = false;
+
+          },
+
+
+          error: error => {
+
+            console.error(
+              'ERROR AL CARGAR HISTORIAL:',
+              error
+            );
+
+            this.errorMessage =
+              'No se pudo cargar el historial de empleados.';
+
+            this.loadingHistory = false;
+
+          }
+
+        })
+    );
+
+  }
+
+
+  closeHistory(): void {
+
+    this.showingHistory = false;
+
+    this.searchTerm = '';
+
+    this.loadEmployees();
+
+  }
+
+
+  openRehireConfirmation(
+    employee: EmployeeModel
+  ): void {
+
+    this.selectedEmployeeForRehire = employee;
+
+    this.showRehireConfirmation = true;
+
+  }
+
+
+  closeRehireConfirmation(): void {
+
+    if (this.rehiringEmployee) {
+
+      return;
+
+    }
+
+
+    this.showRehireConfirmation = false;
+
+    this.selectedEmployeeForRehire = undefined;
+
+  }
+
+
+  confirmRehireEmployee(): void {
+
+    if (
+      !this.selectedEmployeeForRehire ||
+      this.rehiringEmployee
+    ) {
+
+      return;
+
+    }
+
+
+    this.rehiringEmployee = true;
+
+
+    this.subscriptions.add(
+      this.employeeService
+        .rehireEmployee(
+          this.selectedEmployeeForRehire.id
+        )
+        .subscribe({
+
+          next: () => {
+
+            const employeeId =
+              this.selectedEmployeeForRehire?.id;
+
+
+            this.historyEmployees =
+              this.historyEmployees.filter(
+                employee =>
+                  employee.id !== employeeId
+              );
+
+
+            this.rehiringEmployee = false;
+
+            this.showRehireConfirmation = false;
+
+            this.selectedEmployeeForRehire = undefined;
+
+          },
+
+
+          error: error => {
+
+            console.error(
+              'ERROR AL REACTIVAR EMPLEADO:',
+              error
+            );
+
+            this.rehiringEmployee = false;
+
+          }
+
+        })
+    );
 
   }
 
