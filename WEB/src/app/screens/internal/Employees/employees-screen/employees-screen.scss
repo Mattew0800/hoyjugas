@@ -278,7 +278,7 @@
 
   cursor: pointer;
 
-  font-size: 15px;
+  font-size: 20px;
 
   transition: .2s;
 }
@@ -305,4 +305,186 @@
   color: #666;
 
   font-size: 14px;
+}
+
+.dismiss-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, .72);
+
+}
+
+.dismiss-modal {
+
+  width: 100%;
+
+  max-width: 420px;
+
+  padding: 32px;
+
+  border-radius: 16px;
+
+  background: #111111;
+
+  border: 1px solid rgba(255, 255, 255, .08);
+
+  box-sizing: border-box;
+
+  position: relative;
+
+  text-align: center;
+
+}
+
+.dismiss-icon {
+
+  width: 46px;
+
+  height: 46px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(206, 167, 100, .12);
+
+  border: 1px solid rgba(206, 167, 100, .3);
+
+  color: #CEA764;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+}
+
+.dismiss-modal h2 {
+
+  margin: 0 0 14px;
+
+  color: white;
+
+  font-size: 20px;
+
+}
+
+.dismiss-modal p {
+
+  margin: 0;
+
+  color: #c4c4c4;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+}
+
+.dismiss-modal strong {
+
+  color: white;
+
+}
+
+.dismiss-description {
+
+  display: block;
+
+  margin-top: 12px;
+
+  color: #777;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+}
+
+.dismiss-actions {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 28px;
+
+}
+
+.dismiss-actions button {
+
+  height: 40px;
+
+  padding: 0 18px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.dismiss-cancel-button {
+
+  border: 1px solid rgba(255, 255, 255, .1);
+
+  background: transparent;
+
+  color: #aaa;
+
+}
+
+.dismiss-cancel-button:hover {
+
+  background: rgba(255, 255, 255, .04);
+
+  color: white;
+
+}
+
+.dismiss-confirm-button {
+
+  border: 1px solid rgba(206, 167, 100, .45);
+
+  background: rgba(206, 167, 100, .12);
+
+  color: #CEA764;
+
+}
+
+.dismiss-confirm-button:hover:not(:disabled) {
+
+  background: rgba(206, 167, 100, .2);
+
+}
+
+.dismiss-actions button:disabled {
+
+  opacity: .5;
+
+  cursor: not-allowed;
+
 }

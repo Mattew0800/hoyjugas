@@ -64,6 +64,12 @@ export class EmployeesScreen implements OnInit {
 
   savingPin = false;
 
+  showDismissConfirmation = false;
+
+  selectedEmployeeForDismiss?: EmployeeModel;
+
+  dismissingEmployee = false;
+
 
   ngOnInit(): void {
 
@@ -321,29 +327,67 @@ export class EmployeesScreen implements OnInit {
 
     if (!employee.active) {
 
-      console.log(
-        'aun no se permite reactivar empleados:',
-        employee.name
-      );
+      return;
+
+    }
+
+    this.selectedEmployeeForDismiss = employee;
+
+    this.showDismissConfirmation = true;
+
+  }
+
+  closeDismissConfirmation(): void {
+
+    if (this.dismissingEmployee) {
 
       return;
 
     }
 
+    this.showDismissConfirmation = false;
+
+    this.selectedEmployeeForDismiss = undefined;
+
+  }
+
+  confirmDismissEmployee(): void {
+
+    if (
+      !this.selectedEmployeeForDismiss ||
+      this.dismissingEmployee
+    ) {
+
+      return;
+
+    }
+
+    this.dismissingEmployee = true;
 
     this.employeeService
-      .dismissEmployee(employee.id)
+      .dismissEmployee(
+        this.selectedEmployeeForDismiss.id
+      )
       .subscribe({
 
-        next: response => {
+        next: () => {
+
+          const employeeId =
+            this.selectedEmployeeForDismiss?.id;
 
           this.employees =
             this.employees.filter(
-              e => e.id !== employee.id
+              employee =>
+                employee.id !== employeeId
             );
 
-        },
+          this.dismissingEmployee = false;
 
+          this.showDismissConfirmation = false;
+
+          this.selectedEmployeeForDismiss = undefined;
+
+        },
 
         error: error => {
 
@@ -351,6 +395,8 @@ export class EmployeesScreen implements OnInit {
             'ERROR AL DAR DE BAJA EMPLEADO:',
             error
           );
+
+          this.dismissingEmployee = false;
 
         }
 

@@ -142,10 +142,10 @@
           <button
             type="button"
             class="action-button"
-            title="Cambiar estado"
+            title="Dar de baja"
             (click)="toggleEmployeeStatus(employee)">
 
-            ⋮
+            ×
 
           </button>
 
@@ -191,5 +191,76 @@
     (close)="closePinModal()"
     (confirm)="confirmResetPin($event)">
   </app-pin-modal>
+
+}
+
+@if (
+  showDismissConfirmation &&
+  selectedEmployeeForDismiss
+  ) {
+
+  <div
+    class="dismiss-overlay"
+    (click)="closeDismissConfirmation()">
+
+    <div
+      class="dismiss-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="dismiss-icon">
+        !
+      </div>
+
+      <h2>
+        Dar de baja empleado
+      </h2>
+
+      <p>
+
+        ¿Estás seguro de que querés dar de baja a
+        <strong>
+          {{ selectedEmployeeForDismiss.name }}
+        </strong>?
+
+      </p>
+
+      <span class="dismiss-description">
+
+        El empleado dejará de tener acceso al sistema.
+        Podrás reactivarlo más adelante desde el historial.
+
+      </span>
+
+      <div class="dismiss-actions">
+
+        <button
+          type="button"
+          class="dismiss-cancel-button"
+          (click)="closeDismissConfirmation()"
+          [disabled]="dismissingEmployee">
+
+          Cancelar
+
+        </button>
+
+        <button
+          type="button"
+          class="dismiss-confirm-button"
+          (click)="confirmDismissEmployee()"
+          [disabled]="dismissingEmployee">
+
+          {{
+            dismissingEmployee
+              ? 'Dando de baja...'
+              : 'Dar de baja'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
 
 }
