@@ -88,10 +88,6 @@ export class Dashboard implements OnInit {
 
       next: ({ spaces, bookings }) => {
 
-        /*
-         * Para fechas pasadas no consultamos disponibilidad,
-         * porque el endpoint /availability rechaza esas fechas.
-         */
 
         if (this.isPastDate(this.selectedDate)) {
 
@@ -112,11 +108,6 @@ export class Dashboard implements OnInit {
           return;
 
         }
-
-        /*
-         * Para hoy y fechas futuras mantenemos
-         * el comportamiento actual.
-         */
 
         const availabilityRequests = spaces.map(
           space =>
@@ -252,13 +243,6 @@ export class Dashboard implements OnInit {
           ? availability
           : availability?.slots ?? [];
 
-      /*
-       * Para fechas pasadas no tenemos disponibilidad.
-       *
-       * En ese caso construimos los slots
-       * directamente desde los turnos existentes.
-       */
-
       if (availabilityList.length === 0) {
 
         const slots: SpaceSlotModel[] =
@@ -319,11 +303,6 @@ export class Dashboard implements OnInit {
         };
 
       }
-
-      /*
-       * Para hoy y fechas futuras mantenemos
-       * la lógica actual basada en availability.
-       */
 
       const slots: SpaceSlotModel[] =
         availabilityList.map(
@@ -735,6 +714,10 @@ export class Dashboard implements OnInit {
   openInternalBookingModal(
     slot?: SpaceSlotModel
   ): void {
+
+    console.log(
+      'ABRIENDO MODAL DE TURNO'
+    );
 
     if (slot?.booking) {
 

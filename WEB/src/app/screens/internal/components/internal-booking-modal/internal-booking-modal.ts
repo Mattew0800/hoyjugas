@@ -205,85 +205,72 @@ export class InternalBookingModal {
 
     this.preview = null;
 
+    const startDatetime =
+      this.form.get('startDatetime');
+
+    const startDate =
+      this.form.get('startDate');
+
+    const startTime =
+      this.form.get('startTime');
+
+    const intervalWeeks =
+      this.form.get('intervalWeeks');
+
+    const endDate =
+      this.form.get('endDate');
+
     if (type === 'single') {
 
-      this.form
-        .get('startDatetime')
-        ?.setValidators([
-          Validators.required
-        ]);
+      startDatetime?.setValidators([
+        Validators.required
+      ]);
 
-      this.form
-        .get('startDate')
-        ?.clearValidators();
+      startDate?.clearValidators();
 
-      this.form
-        .get('startTime')
-        ?.clearValidators();
+      startTime?.clearValidators();
 
-      this.form
-        .get('intervalWeeks')
-        ?.clearValidators();
+      intervalWeeks?.clearValidators();
 
-      this.form
-        .get('endDate')
-        ?.clearValidators();
+      endDate?.clearValidators();
 
     } else {
 
-      this.form
-        .get('startDatetime')
-        ?.clearValidators();
+      startDatetime?.clearValidators();
 
-      this.form
-        .get('startDate')
-        ?.setValidators([
-          Validators.required
-        ]);
+      startDate?.setValidators([
+        Validators.required
+      ]);
 
-      this.form
-        .get('startTime')
-        ?.setValidators([
-          Validators.required
-        ]);
+      startTime?.setValidators([
+        Validators.required
+      ]);
 
-      this.form
-        .get('intervalWeeks')
-        ?.setValidators([
-          Validators.required
-        ]);
+      intervalWeeks?.setValidators([
+        Validators.required
+      ]);
 
-      this.form
-        .get('endDate')
-        ?.setValidators([
-          Validators.required
-        ]);
+      endDate?.setValidators([
+        Validators.required
+      ]);
 
     }
 
-    this.form
-      .get('startDatetime')
-      ?.updateValueAndValidity();
+    startDatetime?.updateValueAndValidity();
 
-    this.form
-      .get('startDate')
-      ?.updateValueAndValidity();
+    startDate?.updateValueAndValidity();
 
-    this.form
-      .get('startTime')
-      ?.updateValueAndValidity();
+    startTime?.updateValueAndValidity();
 
-    this.form
-      .get('intervalWeeks')
-      ?.updateValueAndValidity();
+    intervalWeeks?.updateValueAndValidity();
 
-    this.form
-      .get('endDate')
-      ?.updateValueAndValidity();
+    endDate?.updateValueAndValidity();
 
   }
 
   save(): void {
+
+    this.errorMessage = '';
 
     if (this.bookingType === 'single') {
 
@@ -293,34 +280,14 @@ export class InternalBookingModal {
 
     }
 
-    if (!this.previewVisible) {
-
-      this.previewRecurringBooking();
-
-      return;
-
-    }
-
-    if (!this.previewConfirmed) {
-
-      this.confirmRecurringBooking();
-
-      return;
-
-    }
-
-    this.createRecurringBooking();
+    this.previewRecurringBooking();
 
   }
 
   private saveSingleBooking(): void {
 
-    if (this.form.invalid) {
-
-      this.form.markAllAsTouched();
-
+    if (!this.validateSingleBookingForm()) {
       return;
-
     }
 
     this.errorMessage = '';
@@ -541,6 +508,30 @@ export class InternalBookingModal {
 
   }
 
+  private validateSingleBookingForm(): boolean {
+
+    const requiredFields = [
+
+      'clientId',
+
+      'spaceId',
+
+      'startDatetime',
+
+      'paymentMethod',
+
+      'depositAmount',
+
+      'employeePin',
+
+      'termsAccepted'
+
+    ];
+
+    return this.validateFields(requiredFields);
+
+  }
+
   private validateRecurringForm(): boolean {
 
     const requiredFields = [
@@ -567,38 +558,15 @@ export class InternalBookingModal {
 
     ];
 
-    let valid = true;
-
-    for (
-      const field of requiredFields
-      ) {
-
-      const control =
-        this.form.get(field);
-
-      if (control?.invalid) {
-
-        control.markAsTouched();
-
-        valid = false;
-
-      }
-
-    }
-
-    if (!valid) {
+    if (!this.validateFields(requiredFields)) {
       return false;
     }
 
     const startDate =
-      this.form
-        .get('startDate')
-        ?.value;
+      this.form.get('startDate')?.value;
 
     const endDate =
-      this.form
-        .get('endDate')
-        ?.value;
+      this.form.get('endDate')?.value;
 
     if (
       startDate &&
@@ -608,6 +576,70 @@ export class InternalBookingModal {
 
       this.errorMessage =
         'La fecha de finalización debe ser posterior a la fecha de inicio.';
+
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+  private validateFields(
+    fields: string[]
+  ): boolean {
+
+    const invalidFields: string[] = [];
+
+    const fieldNames: Record<string, string> = {
+
+      clientId: 'Cliente',
+
+      spaceId: 'Cancha',
+
+      startDatetime: 'Fecha y hora',
+
+      startDate: 'Fecha de inicio',
+
+      startTime: 'Horario',
+
+      intervalWeeks: 'Frecuencia',
+
+      endDate: 'Fecha de finalización',
+
+      paymentMethod: 'Método de pago',
+
+      depositAmount: 'Seña',
+
+      employeePin: 'PIN del empleado',
+
+      termsAccepted: 'Aceptación de términos'
+
+    };
+
+    for (const field of fields) {
+
+      const control =
+        this.form.get(field);
+
+      control?.markAsTouched();
+
+      control?.updateValueAndValidity();
+
+      if (control?.invalid) {
+
+        invalidFields.push(
+          fieldNames[field] ?? field
+        );
+
+      }
+
+    }
+
+    if (invalidFields.length > 0) {
+
+      this.errorMessage =
+        `Completá correctamente: ${invalidFields.join(', ')}.`;
 
       return false;
 
