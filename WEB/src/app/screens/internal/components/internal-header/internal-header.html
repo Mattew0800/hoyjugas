@@ -1,0 +1,66 @@
+<header class="internal-header">
+
+  <div class="brand">
+
+    <div class="brand-text">
+      <h1>{{ title }}</h1>
+      <span>{{ subtitle }}</span>
+    </div>
+
+  </div>
+
+  <div class="user-section">
+
+    <div class="user-info">
+
+      <span class="welcome">
+        Bienvenido
+      </span>
+
+      <span class="name">
+        {{ (currentUser$ | async)?.name }}
+      </span>
+
+    </div>
+
+    <div class="profile-wrapper">
+
+      <button
+        class="profile-button"
+        (click)="toggleMenu()">
+
+        <img
+          src="/assets/emojis/header-profile.svg"
+          alt="Usuario">
+
+      </button>
+
+      @if (menuOpen) {
+
+        <div class="profile-menu">
+
+          <button
+            class="menu-item"
+            (click)="goToProfile()">
+
+            Mi perfil
+
+          </button>
+
+          <button
+            class="menu-item logout"
+            (click)="logout()">
+
+            Cerrar sesión
+
+          </button>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+</header>

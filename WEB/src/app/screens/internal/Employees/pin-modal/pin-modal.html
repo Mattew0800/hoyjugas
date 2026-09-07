@@ -1,0 +1,104 @@
+<div class="modal-overlay" (click)="closeModal()">
+
+  <div class="pin-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <div>
+        <h2>Cambiar PIN</h2>
+
+        <p>
+          {{ employeeName }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeModal()">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <form
+      class="pin-form"
+      (ngSubmit)="save()">
+
+      <div class="form-group">
+
+        <label for="pin">
+          Nuevo PIN
+        </label>
+
+        <input
+          id="pin"
+          type="password"
+          name="pin"
+          [(ngModel)]="pin"
+          maxlength="4"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="••••">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="confirmPin">
+          Confirmar PIN
+        </label>
+
+        <input
+          id="confirmPin"
+          type="password"
+          name="confirmPin"
+          [(ngModel)]="confirmPin"
+          maxlength="4"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="••••">
+
+      </div>
+
+
+      @if (pinError) {
+
+        <div class="pin-error">
+          {{ pinError }}
+        </div>
+
+      }
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="closeModal()">
+
+          Cancelar
+
+        </button>
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="saving">
+
+          {{ saving ? 'Guardando...' : 'Cambiar PIN' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

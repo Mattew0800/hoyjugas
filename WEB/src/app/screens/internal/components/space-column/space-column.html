@@ -1,0 +1,51 @@
+<div class="space-column">
+
+  <div class="column-header">
+
+    <div class="header-info">
+
+      <h3>{{ space.name }}</h3>
+
+      <span>{{ space.type }}</span>
+
+    </div>
+
+    <div
+      class="status-indicator"
+      [class.available]="space.status === 'AVAILABLE'"
+      [class.occupied]="space.status === 'OCCUPIED'"
+      [class.maintenance]="space.status === 'MAINTENANCE'">
+    </div>
+
+
+  </div>
+
+  <div class="column-body">
+
+    @for(slot of space.slots; track slot.id){
+
+      <app-space-slot
+        [slot]="slot"
+        (slotClick)="onSlotClick($event)">
+      </app-space-slot>
+
+    }
+
+  </div>
+
+  <div class="column-footer">
+
+    <img
+      src="/assets/emojis/clock.svg"
+      alt="Próximo turno">
+
+    <span>
+
+        Próximo turno:
+      {{ space.nextBookingTime }}
+
+    </span>
+
+  </div>
+
+</div>

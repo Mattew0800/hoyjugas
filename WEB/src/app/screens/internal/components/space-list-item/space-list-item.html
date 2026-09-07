@@ -1,0 +1,81 @@
+<div class="space-item">
+
+  <div class="space-content">
+
+    <div class="space-info">
+
+      <h2 class="space-title">
+        {{ space.name }}
+      </h2>
+
+      <p class="space-type">
+        {{ space.type }}
+      </p>
+
+      <div class="space-details">
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Duración del turno
+          </span>
+
+          <span class="detail-value">
+            {{ space.slotDuration }} minutos
+          </span>
+
+        </div>
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Franjas horarias
+          </span>
+
+          <span class="detail-value">
+            {{ space.pricingCount }}
+            {{ space.pricingCount === 1 ? 'configuración' : 'configuraciones' }}
+          </span>
+
+        </div>
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Seña fija
+          </span>
+
+          <span class="detail-value">
+                  {{ '$' + space.fixedDeposit }}
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="space-actions">
+
+      <span
+        class="status-badge"
+        [class.active]="space.isActive"
+        [class.inactive]="!space.isActive">
+
+        {{ space.isActive ? 'Activa' : 'Inactiva' }}
+
+      </span>
+
+      <button
+        class="edit-button"
+        (click)="editSpace()">
+
+        Editar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
