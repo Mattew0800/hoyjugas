@@ -52,21 +52,63 @@
 
       <div class="dashboard-left">
 
-        <div class="spaces-container">
+        <div class="schedule-layout">
 
-          @for(space of spaces; track space.id) {
+          <div class="timeline-column">
 
-            <app-space-column
-              [space]="space"
-              (slotClick)="openBookingModal($event)">
-            </app-space-column>
+            <div class="timeline-header">
+              Horario
+            </div>
 
-          }
+            <div class="timeline-body">
+
+              @for (
+                time of timelineHours;
+                track time
+                ) {
+
+                <div
+                  class="timeline-row"
+                  [style.height.px]="pixelsPerHalfHour">
+
+        <span>
+          {{ formatTimelineTime(time) }}
+        </span>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+          <div class="spaces-scroll">
+
+            <div class="spaces-container">
+
+              @for (
+                space of spaces;
+                track space.id
+                ) {
+
+                <app-space-column
+                  [space]="space"
+                  [timelineStartMinutes]="timelineStartMinutes"
+                  [timelineEndMinutes]="timelineEndMinutes"
+                  [pixelsPerHalfHour]="61"
+                  (slotClick)="openBookingModal($event)">
+                </app-space-column>
+
+              }
+
+            </div>
+
+          </div>
 
         </div>
 
       </div>
-
       <div class="dashboard-right">
 
         <app-mini-calendar

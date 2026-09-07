@@ -57,6 +57,20 @@ export class Dashboard implements OnInit {
 
   selectedBooking?: BookingListModel;
 
+
+  timelineHours: number[] = [];
+
+   timelineStartMinutes = 0;
+
+   timelineEndMinutes = 24 * 60;
+
+  readonly slotHeight = 110;
+  readonly slotGap = 12;
+  readonly timelineIntervalMinutes = 30;
+  pixelsPerHalfHour = 61;
+  readonly timelineRowHeight =
+    this.pixelsPerHalfHour;
+
   constructor(
     private bookingService: BookingService,
     private spaceService: SpaceService,
@@ -65,6 +79,94 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     this.loadBookings();
+    this.buildTimeline();
+  }
+
+  private buildTimeline(): void {
+
+    this.timelineHours = [];
+
+    for (
+      let minutes = this.timelineStartMinutes;
+      minutes <= this.timelineEndMinutes;
+      minutes += 30
+    ) {
+
+      this.timelineHours.push(minutes);
+
+    }
+
+  }
+
+  private updateTimelineRange(): void {
+
+    const slotTimes: number[] = [];
+
+    this.spaces.forEach(space => {
+
+      space.slots.forEach(slot => {
+
+        slotTimes.push(
+          this.timeToMinutes(slot.startTime)
+        );
+
+        slotTimes.push(
+          this.timeToMinutes(slot.endTime)
+        );
+
+      });
+
+    });
+
+    if (slotTimes.length === 0) {
+
+      this.timelineStartMinutes = 0;
+
+      this.timelineEndMinutes = 24 * 60;
+
+      this.buildTimeline();
+
+      return;
+
+    }
+
+    const minimumTime = Math.min(...slotTimes);
+
+    const maximumTime = Math.max(...slotTimes);
+
+    this.timelineStartMinutes =
+      Math.floor(minimumTime / 30) * 30;
+
+    this.timelineEndMinutes =
+      Math.ceil(maximumTime / 30) * 30;
+
+    this.buildTimeline();
+
+  }
+
+  private timeToMinutes(
+    time: string
+  ): number {
+
+    const [hours, minutes] =
+      time.split(':').map(Number);
+
+    return hours * 60 + minutes;
+
+  }
+
+  formatTimelineTime(
+    minutes: number
+  ): string {
+
+    const hours =
+      Math.floor(minutes / 60);
+
+    const remainingMinutes =
+      minutes % 60;
+
+    return `${String(hours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+
   }
 
   private loadBookings(): void {
@@ -97,6 +199,8 @@ export class Dashboard implements OnInit {
             []
           );
 
+          this.updateTimelineRange();
+
           this.stats = this.buildStats(
             bookings.content
           );
@@ -120,6 +224,8 @@ export class Dashboard implements OnInit {
         if (availabilityRequests.length === 0) {
 
           this.spaces = [];
+
+          this.updateTimelineRange();
 
           this.stats = this.buildStats(
             bookings.content
@@ -145,6 +251,8 @@ export class Dashboard implements OnInit {
               availabilityResponses
             );
 
+            this.updateTimelineRange();
+
             this.stats = this.buildStats(
               bookings.content
             );
@@ -167,6 +275,8 @@ export class Dashboard implements OnInit {
               bookings.content,
               []
             );
+
+            this.updateTimelineRange();
 
             this.stats = this.buildStats(
               bookings.content

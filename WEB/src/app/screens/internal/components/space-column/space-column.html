@@ -4,9 +4,13 @@
 
     <div class="header-info">
 
-      <h3>{{ space.name }}</h3>
+      <h3>
+        {{ space.name }}
+      </h3>
 
-      <span>{{ space.type }}</span>
+      <span>
+        {{ space.type }}
+      </span>
 
     </div>
 
@@ -17,17 +21,28 @@
       [class.maintenance]="space.status === 'MAINTENANCE'">
     </div>
 
-
   </div>
 
-  <div class="column-body">
+  <div
+    class="column-body"
+    [style.height.px]="timelineHeight">
 
-    @for(slot of space.slots; track slot.id){
+    @for (
+      slot of space.slots;
+      track slot.id
+      ) {
 
-      <app-space-slot
-        [slot]="slot"
-        (slotClick)="onSlotClick($event)">
-      </app-space-slot>
+      <div
+        class="positioned-slot"
+        [style.top.px]="getSlotTop(slot)"
+        [style.height.px]="getSlotHeight(slot)">
+
+        <app-space-slot
+          [slot]="slot"
+          (slotClick)="onSlotClick($event)">
+        </app-space-slot>
+
+      </div>
 
     }
 
@@ -41,7 +56,7 @@
 
     <span>
 
-        Próximo turno:
+      Próximo turno:
       {{ space.nextBookingTime }}
 
     </span>
