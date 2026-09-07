@@ -3,9 +3,24 @@
 }
 
 :host {
-  display: block;
+  display: flex;
   min-height: 100vh;
   background: #050505;
+}
+
+
+.employees-container {
+
+  flex: 1;
+
+  min-width: 0;
+
+  margin-left: 105px;
+
+  display: flex;
+
+  flex-direction: column;
+
 }
 
 .employees-page {
@@ -94,11 +109,6 @@
   line-height: 1;
 }
 
-
-/* =========================
-   TABLA
-   ========================= */
-
 .employees-card {
   width: 100%;
 
@@ -166,11 +176,6 @@
   background: rgba(255,255,255,.02);
 }
 
-
-/* =========================
-   EMPLEADO
-   ========================= */
-
 .employee-name {
   display: flex;
 
@@ -210,10 +215,6 @@
 }
 
 
-/* =========================
-   ESTADO
-   ========================= */
-
 .status {
   display: inline-flex;
 
@@ -246,10 +247,6 @@
   border: 1px solid rgba(255,255,255,.08);
 }
 
-
-/* =========================
-   ACCIONES
-   ========================= */
 
 .actions {
   display: flex;
@@ -288,11 +285,6 @@
 
   color: #CEA764;
 }
-
-
-/* =========================
-   VACÍO
-   ========================= */
 
 .empty-state {
   min-height: 180px;
@@ -486,5 +478,73 @@
   opacity: .5;
 
   cursor: not-allowed;
+
+}
+
+.toolbar-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+.history-button {
+
+  height: 42px;
+
+  padding: 0 18px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  background: transparent;
+
+  color: #b8b8b8;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.history-button:hover {
+
+  background: rgba(255,255,255,.04);
+
+  color: white;
+
+}
+
+.rehire-button {
+
+  min-height: 32px;
+
+  padding: 0 14px;
+
+  border: 1px solid rgba(81,207,102,.35);
+
+  border-radius: 7px;
+
+  background: rgba(81,207,102,.08);
+
+  color: #51CF66;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.rehire-button:hover {
+
+  background: rgba(81,207,102,.16);
 
 }

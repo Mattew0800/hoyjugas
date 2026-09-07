@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
+import {InternalSideBar} from '../../components/internal-side-bar/internal-side-bar';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 
 import {
@@ -20,6 +20,7 @@ import {PinModal} from '../pin-modal/pin-modal';
   imports: [
     FormsModule,
     InternalHeader,
+    InternalSideBar,
     EmployeeModal,
     PinModal
   ],
@@ -69,6 +70,18 @@ export class EmployeesScreen implements OnInit {
   selectedEmployeeForDismiss?: EmployeeModel;
 
   dismissingEmployee = false;
+
+  showingHistory = false;
+
+  historyEmployees: EmployeeModel[] = [];
+
+  loadingHistory = false;
+
+  showRehireConfirmation = false;
+
+  selectedEmployeeForRehire?: EmployeeModel;
+
+  rehiringEmployee = false;
 
 
   ngOnInit(): void {
@@ -125,15 +138,18 @@ export class EmployeesScreen implements OnInit {
         .trim()
         .toLowerCase();
 
+    const employeesToShow =
+      this.showingHistory
+        ? this.historyEmployees
+        : this.employees;
 
     if (!search) {
 
-      return this.employees;
+      return employeesToShow;
 
     }
 
-
-    return this.employees.filter(employee =>
+    return employeesToShow.filter(employee =>
 
       employee.name
         .toLowerCase()
@@ -159,7 +175,6 @@ export class EmployeesScreen implements OnInit {
     );
 
   }
-
 
 
   openNewEmployee(): void {
@@ -397,6 +412,131 @@ export class EmployeesScreen implements OnInit {
           );
 
           this.dismissingEmployee = false;
+
+        }
+
+      });
+
+  }
+
+  openHistory(): void {
+
+    this.showingHistory = true;
+
+    this.loadingHistory = true;
+
+    this.errorMessage = '';
+
+    this.employeeService
+      .getAllStaff()
+      .subscribe({
+
+        next: employees => {
+
+          this.historyEmployees =
+            employees.filter(
+              employee => !employee.active
+            );
+
+          this.loadingHistory = false;
+
+        },
+
+        error: error => {
+
+          console.error(
+            'ERROR AL CARGAR HISTORIAL:',
+            error
+          );
+
+          this.errorMessage =
+            'No se pudo cargar el historial de empleados.';
+
+          this.loadingHistory = false;
+
+        }
+
+      });
+
+  }
+
+
+  closeHistory(): void {
+
+    this.showingHistory = false;
+
+    this.searchTerm = '';
+
+    this.loadEmployees();
+
+  }
+
+  openRehireConfirmation(
+    employee: EmployeeModel
+  ): void {
+
+    this.selectedEmployeeForRehire = employee;
+
+    this.showRehireConfirmation = true;
+
+  }
+
+  closeRehireConfirmation(): void {
+
+    if (this.rehiringEmployee) {
+      return;
+    }
+
+    this.showRehireConfirmation = false;
+
+    this.selectedEmployeeForRehire = undefined;
+
+  }
+
+  confirmRehireEmployee(): void {
+
+    if (
+      !this.selectedEmployeeForRehire ||
+      this.rehiringEmployee
+    ) {
+      return;
+    }
+
+    this.rehiringEmployee = true;
+
+    this.employeeService
+      .rehireEmployee(
+        this.selectedEmployeeForRehire.id
+      )
+      .subscribe({
+
+        next: () => {
+
+          const employeeId =
+            this.selectedEmployeeForRehire?.id;
+
+          this.historyEmployees =
+            this.historyEmployees.filter(
+              employee =>
+                employee.id !== employeeId
+            );
+
+          this.rehiringEmployee = false;
+
+          this.showRehireConfirmation = false;
+
+          this.selectedEmployeeForRehire = undefined;
+
+        },
+
+        error: error => {
+
+          console.error(
+            'ERROR AL REACTIVAR EMPLEADO:',
+            error
+          );
+
+          this.rehiringEmployee = false;
 
         }
 

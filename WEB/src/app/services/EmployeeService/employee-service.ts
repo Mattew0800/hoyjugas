@@ -108,4 +108,20 @@ export class EmployeeService {
 
   }
 
+  rehireEmployee(
+    id: number
+  ): Observable<any> {
+
+    return this.http.put(
+      `${this.apiUrl}/auth/rehire-employee`,
+      {
+        id
+      },
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
 }
