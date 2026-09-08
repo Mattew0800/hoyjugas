@@ -22,4 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User>findAllByPinIsNotNull();
     List<User> findByRoleIn(List<Role> roles);
     List<User> findByRoleInAndEnabledTrue(List<Role> roles);
+    boolean existsByPhoneAndIdNot(String phone, Long id);
+    boolean existsByDniAndIdNot(String dni, Long id);
+    boolean existsByEmailAndIdNot(String email, Long id);
 }
