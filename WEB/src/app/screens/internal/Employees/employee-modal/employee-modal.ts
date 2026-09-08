@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
+import {EmployeeUpdateModel} from '../../models/employee-modal';
 
 
 export interface EmployeeModel {
@@ -69,6 +70,10 @@ export class EmployeeModal implements OnInit {
   @Output()
   saveEmployee =
     new EventEmitter<EmployeeCreateModel>();
+
+  @Output()
+  updateEmployee =
+    new EventEmitter<EmployeeUpdateModel>();
 
 
   name = '';
@@ -135,10 +140,6 @@ export class EmployeeModal implements OnInit {
     this.passwordError = '';
 
 
-    // =========================
-    // VALIDACIONES GENERALES
-    // =========================
-
     if (
       !this.name.trim() ||
       !this.email.trim() ||
@@ -149,10 +150,6 @@ export class EmployeeModal implements OnInit {
 
     }
 
-
-    // =========================
-    // CREACIÓN
-    // =========================
 
     if (!this.isEditing) {
 
@@ -215,17 +212,17 @@ export class EmployeeModal implements OnInit {
     }
 
 
-    // =========================
-    // EDICIÓN
-    // =========================
+    const updatedEmployee: EmployeeUpdateModel = {
 
-    /*
-     * Por ahora el endpoint de edición
-     * todavía no está conectado.
-     *
-     * Por eso no emitimos EmployeeCreateModel
-     * cuando estamos editando.
-     */
+      name: this.name.trim(),
+
+      email: this.email.trim(),
+
+      phone: this.phone.trim()
+
+    };
+
+    this.updateEmployee.emit(updatedEmployee);
 
   }
 

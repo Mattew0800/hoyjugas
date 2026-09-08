@@ -216,6 +216,36 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
   }
 
+  updateEmployee(updatedEmployee: {
+    name: string;
+    email: string;
+    phone: string;
+  }): void {
+
+    if (!this.selectedEmployee) {
+      return;
+    }
+
+    const employeeId = this.selectedEmployee.id;
+
+    const updatedIndex =
+      this.employees.findIndex(
+        employee => employee.id === employeeId
+      );
+
+    if (updatedIndex === -1) {
+      return;
+    }
+
+    this.employees[updatedIndex] = {
+      ...this.employees[updatedIndex],
+      ...updatedEmployee
+    };
+
+    this.closeEmployeeModal();
+
+  }
+
 
   closeEmployeeModal(): void {
 
