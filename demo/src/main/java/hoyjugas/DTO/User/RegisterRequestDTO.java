@@ -23,7 +23,7 @@ public class RegisterRequestDTO {
     private String email;
 
     @NotBlank(message = "La contraseña es requerida")
-    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
+    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")//dsps cambiar la animalada esta jijox
     private String password;
 
     @NotBlank(message = "El DNI es requerido")
