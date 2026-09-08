@@ -2,6 +2,7 @@ package hoyjugas.Controller;
 
 import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
+import hoyjugas.DTO.Login.UserResponseDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.PasswordResetService;
@@ -38,6 +39,12 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeCreatedDTO> registerEmployee(@Valid @RequestBody RegisterRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerEmployee(request));
+    }
+
+    @PostMapping("/edit-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponseDTO> updateEmployee(@Valid @RequestBody UpdateEmployeeRequestDTO dto) {
+        return ResponseEntity.ok(authService.updateEmployee(dto));
     }
 
     @PostMapping("/promote-to-employee")
