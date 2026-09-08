@@ -52,6 +52,7 @@ public class RecurringBookingService extends BaseBookingService{
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         SystemConfig config = getSystemConfig();
+
         LocalDate endDate = dto.getEndDate() != null
                 ? dto.getEndDate()
                 : LocalDate.of(LocalDate.now().getYear(), 12, 31);
@@ -62,6 +63,7 @@ public class RecurringBookingService extends BaseBookingService{
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un turno fijo activo para ese cliente, espacio y horario");
         }
+
         RecurringBooking recurring = new RecurringBooking();
         recurring.setClient(client);
         recurring.setSpace(space);
