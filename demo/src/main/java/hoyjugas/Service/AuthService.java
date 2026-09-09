@@ -247,23 +247,18 @@ public class AuthService {
         User employee = userRepository.findById(dto.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Empleado no encontrado"));
-
         if (!employee.getRole().equals(Role.EMPLOYEE)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El usuario no es un empleado");
         }
         String password=dto.getPassword();
         if(password!=null) {
-            if(password.length()<6||password.length()>100) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"La contraseña debe tener entre 6 y 100 caracteres");//dsps cambiar limite de caracteres pw
-            }
             employee.setPassword(passwordEncoder.encode(password));
         }
         if (dto.getName() != null) employee.setName(dto.getName());
         if (dto.getPhone() != null && !dto.getPhone().equals(employee.getPhone())) {
             if (userRepository.existsByPhoneAndIdNot(dto.getPhone(), dto.getId())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Ya existe un usuario con ese teléfono");
+                throw new ResponseStatusException(HttpStatus.CONFLICT,"Ya existe un usuario con ese teléfono");
             }
             employee.setPhone(dto.getPhone());
         }
@@ -282,5 +277,17 @@ public class AuthService {
             employee.setEmail(dto.getEmail());
         }
         return UserResponseDTO.fromEntity(userRepository.save(employee), true);
+    }
+
+    public List<UserResponseDTO> getClients(Boolean enabled) {
+        List<User> clients;
+        if (enabled == null) {
+            clients = userRepository.findByRole(Role.USER);
+        } else {
+            clients = userRepository.findByRoleAndEnabled(Role.USER, enabled);
+        }
+        return clients.stream()
+                .map(u -> UserResponseDTO.fromEntity(u, true))
+                .toList();
     }
 }
