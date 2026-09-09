@@ -7,7 +7,10 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import {EmployeeUpdateModel} from '../../models/employee-modal';
+
+import {
+  EmployeeUpdateModel
+} from '../../models/employee-modal';
 
 
 export interface EmployeeModel {
@@ -19,6 +22,8 @@ export interface EmployeeModel {
   email: string;
 
   phone: string;
+
+  dni: string;
 
   role: string;
 
@@ -38,7 +43,6 @@ export interface EmployeeCreateModel {
   dni: string;
 
   phone: string;
-
 
 }
 
@@ -71,6 +75,7 @@ export class EmployeeModal implements OnInit {
   saveEmployee =
     new EventEmitter<EmployeeCreateModel>();
 
+
   @Output()
   updateEmployee =
     new EventEmitter<EmployeeUpdateModel>();
@@ -84,15 +89,13 @@ export class EmployeeModal implements OnInit {
 
   dni = '';
 
-
   password = '';
 
   confirmPassword = '';
 
-
   passwordError = '';
 
-  active=true;
+  active = true;
 
 
   ngOnInit(): void {
@@ -104,7 +107,11 @@ export class EmployeeModal implements OnInit {
       this.email = this.employee.email;
 
       this.phone = this.employee.phone;
-      this.active=this.employee.active;
+
+      this.dni = this.employee.dni;
+
+      this.active = this.employee.active;
+
     }
 
   }
@@ -212,15 +219,70 @@ export class EmployeeModal implements OnInit {
     }
 
 
+    if (!this.dni.trim()) {
+
+      return;
+
+    }
+
+
+    if (
+      this.password.trim() ||
+      this.confirmPassword.trim()
+    ) {
+
+      if (!this.password.trim()) {
+
+        this.passwordError =
+          'Ingresá la nueva contraseña.';
+
+        return;
+
+      }
+
+
+      if (!this.confirmPassword.trim()) {
+
+        this.passwordError =
+          'Debés confirmar la nueva contraseña.';
+
+        return;
+
+      }
+
+
+      if (this.password !== this.confirmPassword) {
+
+        this.passwordError =
+          'Las contraseñas no coinciden.';
+
+        return;
+
+      }
+
+    }
+
+
     const updatedEmployee: EmployeeUpdateModel = {
 
       name: this.name.trim(),
 
       email: this.email.trim(),
 
-      phone: this.phone.trim()
+      phone: this.phone.trim(),
+
+      dni: this.dni.trim()
 
     };
+
+
+    if (this.password.trim()) {
+
+      updatedEmployee.password =
+        this.password;
+
+    }
+
 
     this.updateEmployee.emit(updatedEmployee);
 

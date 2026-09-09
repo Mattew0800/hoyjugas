@@ -1,9 +1,15 @@
 export interface EmployeeUpdateModel {
 
-  name: string;
+  id?: number;
 
-  email: string;
+  name?: string;
 
-  phone: string;
+  email?: string;
+
+  phone?: string;
+
+  dni?: string;
+
+  password?: string;
 
 }

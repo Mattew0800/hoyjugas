@@ -6,6 +6,7 @@ import {
   EmployeeCreateModel,
   EmployeeModel
 } from '../../screens/internal/Employees/employee-modal/employee-modal';
+import {EmployeeUpdateModel} from '../../screens/internal/models/employee-modal';
 
 
 export interface EmployeeCreatedResponse {
@@ -64,6 +65,20 @@ export class EmployeeService {
 
     return this.http.post<EmployeeCreatedResponse>(
       `${this.apiUrl}/auth/register-employee`,
+      employee,
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
+  updateEmployee(
+    employee: EmployeeUpdateModel
+  ): Observable<EmployeeModel> {
+
+    return this.http.post<EmployeeModel>(
+      `${this.apiUrl}/auth/edit-employee`,
       employee,
       {
         withCredentials: true

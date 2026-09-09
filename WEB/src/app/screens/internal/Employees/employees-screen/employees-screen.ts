@@ -13,6 +13,7 @@ import {
 
 import { EmployeeService } from '../../../../services/EmployeeService/employee-service';
 import { PinModal } from '../pin-modal/pin-modal';
+import {EmployeeUpdateModel} from '../../models/employee-modal';
 
 
 @Component({
@@ -208,6 +209,8 @@ export class EmployeesScreen implements OnInit, OnDestroy {
     employee: EmployeeModel
   ): void {
 
+    console.log('EMPLEADO A EDITAR: ', employee);
+
     this.selectedEmployee = {
       ...employee
     };
@@ -216,11 +219,9 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
   }
 
-  updateEmployee(updatedEmployee: {
-    name: string;
-    email: string;
-    phone: string;
-  }): void {
+  updateEmployee(
+    updatedEmployee: EmployeeUpdateModel
+  ): void {
 
     if (!this.selectedEmployee) {
       return;
@@ -228,21 +229,48 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
     const employeeId = this.selectedEmployee.id;
 
-    const updatedIndex =
-      this.employees.findIndex(
-        employee => employee.id === employeeId
-      );
+    const employeeToUpdate: EmployeeUpdateModel = {
 
-    if (updatedIndex === -1) {
-      return;
-    }
+      id: employeeId,
 
-    this.employees[updatedIndex] = {
-      ...this.employees[updatedIndex],
       ...updatedEmployee
+
     };
 
-    this.closeEmployeeModal();
+    this.employeeService
+      .updateEmployee(employeeToUpdate)
+      .subscribe({
+
+        next: updatedEmployeeResponse => {
+
+          const updatedIndex =
+            this.employees.findIndex(
+              employee => employee.id === employeeId
+            );
+
+          if (updatedIndex !== -1) {
+
+            this.employees[updatedIndex] = {
+              ...this.employees[updatedIndex],
+              ...updatedEmployeeResponse
+            };
+
+          }
+
+          this.closeEmployeeModal();
+
+        },
+
+        error: error => {
+
+          console.error(
+            'ERROR AL ACTUALIZAR EMPLEADO:',
+            error
+          );
+
+        }
+
+      });
 
   }
 
@@ -267,7 +295,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
           next: response => {
 
-            const newEmployee: EmployeeModel = {
+            const newEmployee: { id: number; name: string; email: string; phone: string; role: string; active: boolean } = {
 
               id: response.id,
 
@@ -285,7 +313,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
 
             this.employees.push(
-              newEmployee
+              <EmployeeModel>newEmployee
             );
 
 
