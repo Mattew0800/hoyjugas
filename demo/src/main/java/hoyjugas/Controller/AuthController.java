@@ -86,6 +86,12 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Empleado dado de baja correctamente"));
     }
 
+    @GetMapping("/clients")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<List<UserResponseDTO>> getClients(@RequestParam(required = false) Boolean enabled) {
+        return ResponseEntity.ok(authService.getClients(enabled));
+    }
+
     @GetMapping("/view-current-staff")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<EmployeeCardDTO>> viewActiveStaff(){
