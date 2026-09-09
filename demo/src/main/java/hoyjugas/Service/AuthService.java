@@ -245,34 +245,33 @@ public class AuthService {
     @Transactional
     public UserResponseDTO updateEmployee(UpdateEmployeeRequestDTO dto) {
         User employee = userRepository.findById(dto.getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
         if (!employee.getRole().equals(Role.EMPLOYEE)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El usuario no es un empleado");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
         }
         String password=dto.getPassword();
         if(password!=null) {
+            if(passwordEncoder.matches(password, employee.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "La contraseña nueva no puede ser igual a la actual");
+            }
             employee.setPassword(passwordEncoder.encode(password));
         }
         if (dto.getName() != null) employee.setName(dto.getName());
         if (dto.getPhone() != null && !dto.getPhone().equals(employee.getPhone())) {
             if (userRepository.existsByPhoneAndIdNot(dto.getPhone(), dto.getId())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,"Ya existe un usuario con ese teléfono");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese teléfono");
             }
             employee.setPhone(dto.getPhone());
         }
         if (dto.getDni() != null && !dto.getDni().equals(employee.getDni())) {
             if (userRepository.existsByDniAndIdNot(dto.getDni(), dto.getId())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Ya existe un usuario con ese DNI");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese DNI");
             }
             employee.setDni(dto.getDni());
         }
         if (dto.getEmail() != null && !dto.getEmail().equals(employee.getEmail())) {
             if (userRepository.existsByEmailAndIdNot(dto.getEmail(), dto.getId())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Ya existe un usuario con ese email");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese email");
             }
             employee.setEmail(dto.getEmail());
         }
