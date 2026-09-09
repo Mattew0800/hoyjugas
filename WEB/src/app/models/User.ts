@@ -5,4 +5,5 @@ export class User{
   email?: string;
   dni?: string;
   phone?: string;
+  role?: 'USER' | 'EMPLOYEE' | 'ADMIN';
 }

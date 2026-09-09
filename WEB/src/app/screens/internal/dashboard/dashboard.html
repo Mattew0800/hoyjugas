@@ -1,0 +1,147 @@
+<app-internal-side-bar></app-internal-side-bar>
+
+<div class="dashboard-container">
+
+  <app-internal-header
+    [title]="headerTitle"
+    [subtitle]="headerSubtitle">
+  </app-internal-header>
+
+  <main class="dashboard-content">
+
+    <div class="stats-container">
+
+      <app-stat-card
+        icon="assets/emojis/calendario.svg"
+        [value]="stats.todayBookings.toString()"
+        title="Turnos de hoy"
+        subtitle="Hoy">
+      </app-stat-card>
+
+      <app-stat-card
+        icon="/field-icon.svg"
+        [value]="stats.occupiedSpaces.toString()"
+        title="Canchas ocupadas"
+        subtitle="ahora mismo">
+      </app-stat-card>
+
+      <app-stat-card
+        icon="/assets/emojis/clock.svg"
+        [value]="stats.nextBookingTime"
+        title="Próximo turno"
+        [subtitle]="stats.nextBookingSubtitle">
+      </app-stat-card>
+
+      @if (roleService.isAdmin()) {
+        <app-stat-card
+          icon="/assets/emojis/coin.svg"
+          [value]="'$' + stats.estimatedRevenue.toLocaleString('es-AR')"
+          title="Ingresos"
+          subtitle="estimados del día">
+        </app-stat-card>
+      }
+
+      <button class="change-date-btn" (click)="openInternalBookingModal()">
+        Cargar turno
+      </button>
+
+
+    </div>
+
+    <div class="dashboard-body">
+
+      <div class="dashboard-left">
+
+        <div class="schedule-layout">
+
+          <div class="timeline-column">
+
+            <div class="timeline-header">
+              Horario
+            </div>
+
+            <div class="timeline-body">
+
+              @for (
+                time of timelineHours;
+                track time
+                ) {
+
+                <div
+                  class="timeline-row"
+                  [style.height.px]="pixelsPerHalfHour">
+
+        <span>
+          {{ formatTimelineTime(time) }}
+        </span>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+          <div class="spaces-scroll">
+
+            <div class="spaces-container">
+
+              @for (
+                space of spaces;
+                track space.id
+                ) {
+
+                <app-space-column
+                  [space]="space"
+                  [timelineStartMinutes]="timelineStartMinutes"
+                  [timelineEndMinutes]="timelineEndMinutes"
+                  [pixelsPerHalfHour]="61"
+                  (slotClick)="openBookingModal($event)">
+                </app-space-column>
+
+              }
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+      <div class="dashboard-right">
+
+        <app-mini-calendar
+          (dateSelected)="onDateSelected($event)">
+        </app-mini-calendar>
+
+      </div>
+
+    </div>
+
+
+  </main>
+
+  @if(showBookingModal && selectedBooking){
+
+    <app-booking-detail-modal
+      [booking]="selectedBooking"
+
+      (close)="closeBookingModal()"
+
+      (confirmPayment)="confirmPayment($event)"
+
+      (bookingCancelled)="onBookingCanceled()">
+    </app-booking-detail-modal>
+
+  }
+
+  @if (showInternalBookingModal) {
+    <app-internal-booking-modal
+      [selectedDate]="selectedDate"
+      (close)="closeInternalBookingModal()"
+      (bookingCreated)="onBookingCreated()">
+    </app-internal-booking-modal>
+  }
+
+</div>

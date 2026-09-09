@@ -20,7 +20,7 @@ export class AuthService {
 
 
   constructor(public http: HttpClient) {
-    this.checkBackendSession().subscribe();
+  this.checkBackendSession().subscribe();
   }
 
   checkBackendSession(): Observable<User | null> {
@@ -45,6 +45,10 @@ export class AuthService {
 
   private setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);
+  }
+
+  get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
   }
 
   private clearCurrentUser(): void {
