@@ -19,7 +19,7 @@ import {EmployeesScreen} from './screens/internal/Employees/employees-screen/emp
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 import {internalAuthGuard} from './auth/InternalAuthGuard';
-
+import {CustomersScreen} from './screens/internal/Customers/customers-screen/customers-screen';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -38,6 +38,7 @@ export const routes: Routes = [
   {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},
   {path:'**', component:Error}
 
 ];

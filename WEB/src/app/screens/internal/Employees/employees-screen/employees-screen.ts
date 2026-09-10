@@ -208,15 +208,20 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   editEmployee(
     employee: EmployeeModel
   ): void {
-
-    console.log('EMPLEADO A EDITAR: ', employee);
-
-    this.selectedEmployee = {
-      ...employee
-    };
-
-    this.showEmployeeModal = true;
-
+    this.employeeService
+      .getEmployeeDetail(employee.id)
+      .subscribe({
+        next: employeeDetail => {
+          this.selectedEmployee = employeeDetail;
+          this.showEmployeeModal = true;
+        },
+        error: error => {
+          console.error(
+            'ERROR AL OBTENER EMPLEADO:',
+            error
+          );
+        }
+      });
   }
 
   updateEmployee(

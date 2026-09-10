@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { getUserApiUrl } from '../../config/api.config';
-import {UserUpdateDTO} from '../../models/UserUpdateDTO';
+import { getUserApiUrl, getAuthApiUrl } from '../../config/api.config';
+import { UserUpdateDTO } from '../../models/UserUpdateDTO';
+import {CustomerModel} from '../../screens/internal/models/user-response';
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +10,9 @@ import {UserUpdateDTO} from '../../models/UserUpdateDTO';
 export class UserService {
 
   USER_API_URL = getUserApiUrl();
+  AUTH_API_URL = getAuthApiUrl();
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getMe() {
     return this.http.get<any>(
@@ -29,4 +29,10 @@ export class UserService {
     );
   }
 
+  getClients() {
+    return this.http.get<CustomerModel[]>(
+      `${this.AUTH_API_URL}/clients`,
+      { withCredentials: true }
+    );
+  }
 }

@@ -139,4 +139,16 @@ export class EmployeeService {
 
   }
 
+  getEmployeeDetail(id: number): Observable<EmployeeModel> {
+
+    return this.http.post<EmployeeModel>(
+      `${this.apiUrl}/auth/get-employee`,
+      { id },
+      {
+        withCredentials: true
+      }
+    );
+
+  }
+
 }
