@@ -289,4 +289,13 @@ public class AuthService {
                 .map(u -> UserResponseDTO.fromEntity(u, true))
                 .toList();
     }
+
+    public EmployeeDetailDTO getEmployeeById(Long id) {
+        User employee = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+        if (!employee.getRole().equals(Role.EMPLOYEE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
+        }
+        return EmployeeDetailDTO.fromEntity(employee);
+    }
 }
