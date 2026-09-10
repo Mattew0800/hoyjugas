@@ -41,6 +41,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerEmployee(request));
     }
 
+    @PostMapping("/get-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmployeeDetailDTO> getEmployee(@Valid @RequestBody ClientIdRequestDTO dto) {
+        return ResponseEntity.ok(authService.getEmployeeById(dto.getId()));
+    }
+
     @PostMapping("/edit-employee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> updateEmployee(@Valid @RequestBody UpdateEmployeeRequestDTO dto) {
@@ -118,7 +124,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Usuario dado de alta correctamente"));
     }
 
-    @PutMapping("rehire-employee")
+    @PutMapping("/rehire-employee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?>rehireEmployee(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
         authService.rehireEmployee(dto.getId(),me.getId());
