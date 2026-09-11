@@ -8,6 +8,10 @@ import {
 
 import { FormsModule } from '@angular/forms';
 
+import {
+  EmployeeUpdateModel
+} from '../../models/employee-modal';
+
 
 export interface EmployeeModel {
 
@@ -18,6 +22,8 @@ export interface EmployeeModel {
   email: string;
 
   phone: string;
+
+  dni: string;
 
   role: string;
 
@@ -37,7 +43,6 @@ export interface EmployeeCreateModel {
   dni: string;
 
   phone: string;
-
 
 }
 
@@ -71,6 +76,11 @@ export class EmployeeModal implements OnInit {
     new EventEmitter<EmployeeCreateModel>();
 
 
+  @Output()
+  updateEmployee =
+    new EventEmitter<EmployeeUpdateModel>();
+
+
   name = '';
 
   email = '';
@@ -79,15 +89,13 @@ export class EmployeeModal implements OnInit {
 
   dni = '';
 
-
   password = '';
 
   confirmPassword = '';
 
-
   passwordError = '';
 
-  active=true;
+  active = true;
 
 
   ngOnInit(): void {
@@ -99,7 +107,11 @@ export class EmployeeModal implements OnInit {
       this.email = this.employee.email;
 
       this.phone = this.employee.phone;
-      this.active=this.employee.active;
+
+      this.dni = this.employee.dni;
+
+      this.active = this.employee.active;
+
     }
 
   }
@@ -135,10 +147,6 @@ export class EmployeeModal implements OnInit {
     this.passwordError = '';
 
 
-    // =========================
-    // VALIDACIONES GENERALES
-    // =========================
-
     if (
       !this.name.trim() ||
       !this.email.trim() ||
@@ -150,10 +158,6 @@ export class EmployeeModal implements OnInit {
     }
 
 
-    // =========================
-    // CREACIÓN
-    // =========================
-
     if (!this.isEditing) {
 
       if (!this.dni.trim()) {
@@ -161,6 +165,7 @@ export class EmployeeModal implements OnInit {
         return;
 
       }
+
 
 
       if (!this.password.trim()) {
@@ -215,17 +220,82 @@ export class EmployeeModal implements OnInit {
     }
 
 
-    // =========================
-    // EDICIÓN
-    // =========================
+    if (!this.dni.trim()) {
 
-    /*
-     * Por ahora el endpoint de edición
-     * todavía no está conectado.
-     *
-     * Por eso no emitimos EmployeeCreateModel
-     * cuando estamos editando.
-     */
+      return;
+
+    }
+
+
+    if (
+      this.password.trim() ||
+      this.confirmPassword.trim()
+    ) {
+
+      if (!this.password.trim()) {
+
+        this.passwordError =
+          'Ingresá la nueva contraseña.';
+
+        return;
+
+      }
+
+
+      if (this.password.trim().length < 6) {
+
+        this.passwordError =
+          'La contraseña debe tener al menos 6 caracteres.';
+
+        return;
+
+      }
+
+
+      if (!this.confirmPassword.trim()) {
+
+        this.passwordError =
+          'Debés confirmar la nueva contraseña.';
+
+        return;
+
+      }
+
+
+      if (this.password !== this.confirmPassword) {
+
+        this.passwordError =
+          'Las contraseñas no coinciden.';
+
+        return;
+
+      }
+
+    }
+
+
+    const updatedEmployee: EmployeeUpdateModel = {
+
+      name: this.name.trim(),
+
+      email: this.email.trim(),
+
+      phone: this.phone.trim(),
+
+      dni: this.dni.trim()
+
+    };
+
+
+    if (this.password.trim()) {
+
+      updatedEmployee.password =
+        this.password;
+
+    }
+
+
+    this.updateEmployee.emit(updatedEmployee);
 
   }
 

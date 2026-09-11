@@ -1,0 +1,93 @@
+<app-internal-side-bar></app-internal-side-bar>
+
+<div class="customers-container">
+
+  <app-internal-header
+    [title]="'Clientes'"
+    [subtitle]="'Administrá los clientes del complejo'">
+  </app-internal-header>
+
+  <div class="customers-page">
+    <div class="customers-toolbar">
+
+      <div class="search-container">
+
+        <span class="search-icon">⌕</span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Buscar cliente..."
+        />
+
+      </div>
+
+    </div>
+
+
+    <div class="customers-card">
+
+      <div class="table-header">
+
+        <div>CLIENTE</div>
+        <div>EMAIL</div>
+        <div>TELÉFONO</div>
+        <div>DNI</div>
+
+      </div>
+
+
+      @if (loading) {
+
+        <div class="empty-state">
+          Cargando clientes...
+        </div>
+
+      } @else if (filteredCustomers.length === 0) {
+
+        <div class="empty-state">
+          No se encontraron clientes.
+        </div>
+
+      } @else {
+
+        @for (customer of filteredCustomers; track customer.id) {
+
+          <div class="customer-row">
+
+            <div class="customer-name">
+
+              <div class="customer-avatar">
+                {{ customer.name.charAt(0).toUpperCase() }}
+              </div>
+
+              <span>
+            {{ customer.name }}
+          </span>
+
+            </div>
+
+
+            <div class="customer-email">
+              {{ customer.email }}
+            </div>
+
+
+            <div>
+              {{ customer.phone || '-' }}
+            </div>
+
+
+            <div>
+              {{ customer.dni || '-' }}
+            </div>
+
+          </div>
+
+        }
+
+      }
+    </div>
+  </div>
+
+</div>
