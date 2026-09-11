@@ -1,3 +1,3 @@
-interface AvailableSlotsResponse {
+export interface AvailableSlotsResponse {
   "Turnos disponibles totales:": number;
 }

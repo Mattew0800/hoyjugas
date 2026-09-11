@@ -3,6 +3,8 @@ package hoyjugas.Repository;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +17,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByPhone(String phone);
     boolean existsByDni(String dni);
     boolean existsByEmail(String dni);
+    @Query("SELECT u.pin FROM User u WHERE u.pin IS NOT NULL")
+    List<String> findAllPinHashes();
+    List<User>findAllByPinIsNotNull();
+    List<User> findByRoleIn(List<Role> roles);
+    List<User> findByRoleInAndEnabledTrue(List<Role> roles);
+    boolean existsByPhoneAndIdNot(String phone, Long id);
+    boolean existsByDniAndIdNot(String dni, Long id);
+    boolean existsByEmailAndIdNot(String email, Long id);
+    List<User> findByRoleAndEnabled(Role role, Boolean enabled);
 }

@@ -1,0 +1,477 @@
+<div class="modal-overlay" (click)="closeModal()">
+
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <h2>
+        {{ bookingType === 'single' ? 'Cargar turno' : 'Cargar turno fijo' }}
+      </h2>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeModal()"
+        [disabled]="loading || previewLoading">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <div class="booking-type-selector">
+
+      <button
+        type="button"
+        [class.active]="bookingType === 'single'"
+        (click)="setBookingType('single')"
+        [disabled]="loading || previewLoading">
+
+        Turno único
+
+      </button>
+
+      <button
+        type="button"
+        [class.active]="bookingType === 'recurring'"
+        (click)="setBookingType('recurring')"
+        [disabled]="loading || previewLoading">
+
+        Turno fijo
+
+      </button>
+
+    </div>
+
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <div class="form-group">
+
+        <label for="clientId">
+          Cliente
+        </label>
+
+        <input
+          id="clientId"
+          type="number"
+          placeholder="ID del cliente"
+          formControlName="clientId">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="spaceId">
+          Cancha
+        </label>
+
+        <input
+          id="spaceId"
+          type="number"
+          placeholder="ID de la cancha"
+          formControlName="spaceId">
+
+      </div>
+
+
+      @if (bookingType === 'single') {
+
+        <div class="form-group">
+
+          <label for="startDatetime">
+            Fecha y hora
+          </label>
+
+          <input
+            id="startDatetime"
+            type="datetime-local"
+            formControlName="startDatetime">
+
+        </div>
+
+      }
+
+
+      @if (bookingType === 'recurring') {
+
+        <div class="recurring-section">
+
+          <div class="recurring-title">
+            Configuración del turno fijo
+          </div>
+
+          <div class="recurring-description">
+            El día de la semana se determina según la fecha de inicio.
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="startDate">
+              Fecha de inicio
+            </label>
+
+            <input
+              id="startDate"
+              type="date"
+              formControlName="startDate">
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="startTime">
+              Horario
+            </label>
+
+            <input
+              id="startTime"
+              type="time"
+              formControlName="startTime">
+
+          </div>
+
+
+          <div class="form-row">
+
+            <div class="form-group">
+
+              <label for="intervalWeeks">
+                Frecuencia
+              </label>
+
+              <select
+                id="intervalWeeks"
+                formControlName="intervalWeeks">
+
+                <option [value]="1">
+                  Semanal
+                </option>
+
+                <option [value]="2">
+                  Quincenal
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="endDate">
+                Fecha de finalización
+              </label>
+
+              <input
+                id="endDate"
+                type="date"
+                formControlName="endDate">
+
+            </div>
+
+          </div>
+
+        </div>
+
+      }
+
+
+      <div class="form-group">
+
+        <label for="paymentMethod">
+          Método de pago
+        </label>
+
+        <select
+          id="paymentMethod"
+          formControlName="paymentMethod">
+
+          <option value="">
+            Seleccionar
+          </option>
+
+          <option value="EFECTIVO">
+            Efectivo
+          </option>
+
+          <option value="TRANSFERENCIA">
+            Transferencia
+          </option>
+
+          <option value="MERCADOPAGO">
+            Mercado Pago
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="depositAmount">
+          Seña
+        </label>
+
+        <input
+          id="depositAmount"
+          type="number"
+          min="0"
+          placeholder="Monto de la seña"
+          formControlName="depositAmount">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="transactionId">
+          ID de transacción
+        </label>
+
+        <input
+          id="transactionId"
+          type="text"
+          placeholder="Opcional"
+          formControlName="transactionId">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="employeePin">
+          PIN del empleado
+        </label>
+
+        <input
+          id="employeePin"
+          type="password"
+          placeholder="PIN"
+          formControlName="employeePin">
+
+      </div>
+
+
+      <label class="terms">
+
+        <input
+          type="checkbox"
+          formControlName="termsAccepted">
+
+        El cliente acepta los términos y condiciones
+
+      </label>
+
+
+      @if (previewVisible && preview) {
+
+        <div class="preview-box">
+
+          <div class="preview-header">
+
+            <div>
+
+              <h3>
+                Vista previa del turno fijo
+              </h3>
+
+              <p>
+                {{ preview.spaceName }}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="preview-summary">
+
+            <div class="preview-item">
+
+              <span>
+                Desde
+              </span>
+
+              <strong>
+                {{ preview.startDate }}
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Hasta
+              </span>
+
+              <strong>
+                {{ preview.endDate }}
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Turnos
+              </span>
+
+              <strong>
+                {{ preview.totalSlotsGenerated }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="preview-result"
+            [class.has-conflicts]="getPreviewConflictCount() > 0"
+            [class.no-conflicts]="getPreviewConflictCount() === 0">
+
+            @if (getPreviewConflictCount() === 0) {
+
+              <strong>
+                ✓ No hay conflictos
+              </strong>
+
+              <span>
+                Todos los turnos están disponibles.
+              </span>
+
+            } @else {
+
+              <strong>
+                ⚠ {{ getPreviewConflictCount() }} conflictos
+              </strong>
+
+              <span>
+                Hay turnos que ya están ocupados.
+              </span>
+
+            }
+
+          </div>
+
+
+          @if (getPreviewConflictCount() > 0) {
+
+            <div class="conflict-list">
+
+              <div class="conflict-title">
+                Turnos en conflicto
+              </div>
+
+              @for (
+                conflict of getPreviewConflictDates();
+                track $index
+                ) {
+
+                <div class="conflict-item">
+                  {{ conflict }}
+                </div>
+
+              }
+
+            </div>
+
+          }
+
+
+          <div class="preview-actions">
+
+            <button
+              type="button"
+              class="preview-back-button"
+              (click)="backToRecurringForm()"
+              [disabled]="loading">
+
+              Volver
+
+            </button>
+
+
+            @if (getPreviewConflictCount() === 0) {
+
+              <button
+                type="button"
+                class="preview-confirm-button"
+                (click)="confirmRecurringBooking()"
+                [disabled]="loading">
+
+                {{ loading ? 'Creando...' : 'Confirmar turno fijo' }}
+
+              </button>
+
+            }
+
+          </div>
+
+        </div>
+
+      }
+
+
+      @if (errorMessage) {
+
+        <p class="error-message">
+          {{ errorMessage }}
+        </p>
+
+      }
+
+
+      @if (!previewVisible) {
+
+        <div class="actions">
+
+          <button
+            type="button"
+            (click)="closeModal()"
+            [disabled]="loading || previewLoading">
+
+            Cancelar
+
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="loading || previewLoading">
+
+            @if (loading) {
+
+              Cargando...
+
+            } @else if (previewLoading) {
+
+              Verificando...
+
+            } @else {
+
+              {{ bookingType === 'single'
+              ? 'Cargar turno'
+              : 'Ver disponibilidad' }}
+
+            }
+
+          </button>
+
+        </div>
+
+      }
+
+    </form>
+
+  </div>
+
+</div>

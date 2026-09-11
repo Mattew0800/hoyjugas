@@ -1,9 +1,7 @@
 package hoyjugas.Service;
 
-import hoyjugas.DTO.User.EmployeeCreatedDTO;
-import hoyjugas.DTO.User.LoginRequestDTO;
-import hoyjugas.DTO.User.LoginResponseDTO;
-import hoyjugas.DTO.User.RegisterRequestDTO;
+import hoyjugas.DTO.Login.UserResponseDTO;
+import hoyjugas.DTO.User.*;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Repository.UserRepository;
@@ -18,9 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -44,6 +44,9 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Correo o contraseña incorrectos"));
+        if (!user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tu cuenta ha sido dada de baja, si piensas que es un error, comunicate con el complejo");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Correo o contraseña incorrectos");
@@ -85,16 +88,91 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponseDTO registerAdmin(RegisterRequestDTO request) {
-        User user = createUser(request, Role.ADMIN, false, null);
-        return new LoginResponseDTO(null, user.getEmail(), user.getName(),user.getRole().name());
+    public EmployeeCreatedDTO updatePin(Long id, String pin, Long requesterId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        boolean isEmployee = user.getRole() == Role.EMPLOYEE;
+        boolean isAdminUpdatingSelf = user.getRole() == Role.ADMIN && requesterId.equals(user.getId());
+        if (!isEmployee && !isAdminUpdatingSelf) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede modificar el PIN de otro admin o de un usuario sin PIN");
+        }if (isPinAlreadyInUse(pin, user.getId())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese PIN ya está en uso por otro usuario");
+        }
+        user.setPin(passwordEncoder.encode(pin));
+        User savedUser = userRepository.save(user);
+        return new EmployeeCreatedDTO(savedUser, pin);
+    }
+
+    private boolean isPinAlreadyInUse(String rawPin, Long excludeUserId) {
+        List<User> usersWithPin = userRepository.findAllByPinIsNotNull();
+        return usersWithPin.stream()
+                .filter(u -> !u.getId().equals(excludeUserId))
+                .anyMatch(u -> passwordEncoder.matches(rawPin, u.getPin()));
+    }
+
+    @Transactional
+    public void dismissEmployee(Long id, Long requesterId) {
+        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE&&employee.isEnabled()) {
+            employee.setEnabled(false);
+            userRepository.save(employee);
+        } else if(!employee.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este empleado ya ha sido dado de baja");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este empleado");
+    }
+
+    @Transactional
+    public void rehireEmployee(Long id, Long requesterId) {
+        User employee=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El empleado no existe"));
+        if(admin.getRole() == Role.ADMIN&&employee.getRole() == Role.EMPLOYEE&&!employee.isEnabled()) {
+            employee.setEnabled(true);
+            userRepository.save(employee);
+        } else if(employee.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este empleado ya ha sido dado de alta");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de alta a este Empleado");
+    }
+
+    @Transactional
+    public void deactivateUser(Long id, Long requesterId) {
+        User user=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        if(admin.getRole() == Role.ADMIN&&user.getRole() == Role.USER&&user.isEnabled()) {
+            user.setEnabled(false);
+            userRepository.save(user);
+        }else if(!user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de baja");
+        }
+        else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este usuario");
+    }
+
+    @Transactional
+    public void activateUser(Long id, Long requesterId) {
+        User user=userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        User admin=userRepository.findById(requesterId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe"));
+        if(admin.getRole() == Role.ADMIN&&user.getRole() == Role.USER&&!user.isEnabled()) {
+            user.setEnabled(true);
+            userRepository.save(user);
+        }else if(user.isEnabled()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este usuario ya ha sido dado de alta");
+        }
+        else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de alta a este usuario");
+    }
+
+    @Transactional
+    public EmployeeCreatedDTO registerAdmin(RegisterRequestDTO request) {
+        String rawPin = generateRawPin();
+        User user = createUser(request, Role.ADMIN, true, rawPin);
+        return new EmployeeCreatedDTO(user,rawPin);
     }
 
     private User createUser(RegisterRequestDTO request, Role role, boolean hasPin, String rawPin) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese mail ya pertenece a una cuenta");
         }
-        if (userRepository.existsByPhone(request.getPhone())) {
+        String formattedPhone="+549" + request.getPhone();
+        if (userRepository.existsByPhone(formattedPhone)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese telefono ya pertenece a una cuenta");
         }
         if (userRepository.existsByDni(request.getDni())) {
@@ -109,8 +187,19 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private String generateRawPin() {
-        return String.format("%04d", new Random().nextInt(10000));
+        List<String> existingPins = userRepository.findAllPinHashes();
+        String rawPin;
+        boolean isUnique;
+        do {
+            int number = RANDOM.nextInt(10000);
+            rawPin = String.format("%04d", number);
+            final String candidate = rawPin;
+            isUnique = existingPins.stream().noneMatch(hash -> passwordEncoder.matches(candidate, hash));
+        } while (!isUnique);
+        return rawPin;
     }
 
     public String generateToken(User user) {
@@ -128,10 +217,87 @@ public class AuthService {
 
     public void setAuthCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie("authToken", token);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setSecure(cookieSecure);//cambiar en prod
         cookie.setPath("/");
         cookie.setMaxAge(86400);
         response.addCookie(cookie);
+    }
+
+    public List<EmployeeCardDTO> viewStaff() {
+        return userRepository.findByRoleIn(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
+                .map(u -> new EmployeeCardDTO(u.getId(),u.getName(),u.getEmail(), u.getPhone(),u.getRole(),u.isEnabled()))
+                .collect(Collectors.toList());
+    }
+
+    public List<EmployeeCardDTO> viewActiveStaff() {
+        return userRepository.findByRoleInAndEnabledTrue(List.of(Role.EMPLOYEE, Role.ADMIN)).stream()
+                .map(u -> new EmployeeCardDTO(
+                        u.getId(),
+                        u.getName(),
+                        u.getEmail(),
+                        u.getPhone(),
+                        u.getRole(),
+                        u.isEnabled()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserResponseDTO updateEmployee(UpdateEmployeeRequestDTO dto) {
+        User employee = userRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+        if (!employee.getRole().equals(Role.EMPLOYEE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
+        }
+        String password=dto.getPassword();
+        if(password!=null) {
+            if(passwordEncoder.matches(password, employee.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "La contraseña nueva no puede ser igual a la actual");
+            }
+            employee.setPassword(passwordEncoder.encode(password));
+        }
+        if (dto.getName() != null) employee.setName(dto.getName());
+        String formattedPhone="+549" + dto.getPhone();
+        if (dto.getPhone() != null && !formattedPhone.equals(employee.getPhone())) {
+            if (userRepository.existsByPhoneAndIdNot(formattedPhone, employee.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese teléfono");
+            }
+            employee.setPhone(formattedPhone);
+        }
+        if (dto.getDni() != null && !dto.getDni().equals(employee.getDni())) {
+            if (userRepository.existsByDniAndIdNot(dto.getDni(), dto.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese DNI");
+            }
+            employee.setDni(dto.getDni());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().equals(employee.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(dto.getEmail(), dto.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese email");
+            }
+            employee.setEmail(dto.getEmail());
+        }
+        return UserResponseDTO.fromEntity(userRepository.save(employee), true);
+    }
+
+    public List<UserResponseDTO> getClients(Boolean enabled) {
+        List<User> clients;
+        if (enabled == null) {
+            clients = userRepository.findByRole(Role.USER);
+        } else {
+            clients = userRepository.findByRoleAndEnabled(Role.USER, enabled);
+        }
+        return clients.stream()
+                .map(u -> UserResponseDTO.fromEntity(u, true))
+                .toList();
+    }
+
+    public EmployeeDetailDTO getEmployeeById(Long id) {
+        User employee = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+        if (!employee.getRole().equals(Role.EMPLOYEE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
+        }
+        return EmployeeDetailDTO.fromEntity(employee);
     }
 }

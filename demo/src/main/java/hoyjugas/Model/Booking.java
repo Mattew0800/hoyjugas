@@ -89,6 +89,9 @@ public class Booking {
     @JoinColumn(name = "rescheduled_from_id")
     private Booking rescheduledFrom;
 
+    @Column(nullable = false)
+    private Integer slots = 1;
+
     public boolean isRecurring() {
         return this.recurringBooking != null;
     }

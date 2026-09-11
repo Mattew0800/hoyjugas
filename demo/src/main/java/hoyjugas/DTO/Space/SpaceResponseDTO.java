@@ -15,7 +15,6 @@ public class SpaceResponseDTO {
     private String type;
     private Integer slotDuration;
     private Boolean isActive;
-    private BigDecimal depositFactor;
     private BigDecimal fixedDeposit;
     private List<SpacePricingDTO> pricings;
     private String depositInfo;
@@ -28,7 +27,6 @@ public class SpaceResponseDTO {
         dto.setType(space.getType());
         dto.setSlotDuration(space.getSlotDuration());
         dto.setIsActive(space.getIsActive());
-        dto.setDepositFactor(space.getFixedDeposit());
         dto.setFixedDeposit(space.getDepositValue());
         dto.setPhotoUrl(space.getPhotoUrl());
         dto.setPricings(space.getPricings().stream()
@@ -44,10 +42,6 @@ public class SpaceResponseDTO {
     private static String buildDepositInfo(Space space) {
         if (space.getDepositValue() != null && space.getDepositValue().compareTo(BigDecimal.ZERO) > 0) {
             return String.format("Seña fija de $%s", space.getDepositValue().toPlainString());
-        }
-        BigDecimal factor = space.getFixedDeposit();
-        if (factor != null && factor.compareTo(BigDecimal.ZERO) > 0) {
-            return String.format("Seña del %d%% del total", factor.multiply(new BigDecimal("100")).intValue());
         }
         return "Seña según configuración general";
     }

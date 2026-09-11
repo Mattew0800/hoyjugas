@@ -1,6 +1,8 @@
 package hoyjugas.Controller;
 
+import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Login.ResetPasswordRequestDTO;
+import hoyjugas.DTO.Login.UserResponseDTO;
 import hoyjugas.DTO.User.*;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.PasswordResetService;
@@ -11,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,6 +41,18 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerEmployee(request));
     }
 
+    @PostMapping("/get-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmployeeDetailDTO> getEmployee(@Valid @RequestBody ClientIdRequestDTO dto) {
+        return ResponseEntity.ok(authService.getEmployeeById(dto.getId()));
+    }
+
+    @PostMapping("/edit-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponseDTO> updateEmployee(@Valid @RequestBody UpdateEmployeeRequestDTO dto) {
+        return ResponseEntity.ok(authService.updateEmployee(dto));
+    }
+
     @PostMapping("/promote-to-employee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> promoteToEmployee(@Valid @RequestBody EmailRequestDTO dto) {
@@ -57,11 +74,61 @@ public class AuthController {
 
     @PostMapping("/register-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LoginResponseDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
-        LoginResponseDTO result = authService.registerAdmin(request);
-        authService.setAuthCookie(response, result.getToken());
-        result.setToken(null);
+    public ResponseEntity<EmployeeCreatedDTO> registerAdmin(@Valid @RequestBody RegisterRequestDTO request) {
+        EmployeeCreatedDTO result = authService.registerAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PutMapping("/update-pin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmployeeCreatedDTO>updatePin(@Valid @RequestBody UpdatePinRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl me){
+        return ResponseEntity.ok(authService.updatePin(dto.getId(), dto.getPin(),me.getId()));
+    }
+
+    @PutMapping("/dismiss-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>dismiss(@Valid @RequestBody ClientIdRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl me){
+        authService.dismissEmployee(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Empleado dado de baja correctamente"));
+    }
+
+    @GetMapping("/clients")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<List<UserResponseDTO>> getClients(@RequestParam(required = false) Boolean enabled) {
+        return ResponseEntity.ok(authService.getClients(enabled));
+    }
+
+    @GetMapping("/view-current-staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmployeeCardDTO>> viewActiveStaff(){
+        return ResponseEntity.ok(authService.viewActiveStaff());
+    }
+
+    @GetMapping("/view-history-staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmployeeCardDTO>> viewHistoryStaff(){
+        return ResponseEntity.ok(authService.viewStaff());
+    }
+
+    @PutMapping("/deactivate-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>deactivateUser(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.deactivateUser(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Usuario dado de baja correctamente"));
+    }
+
+    @PutMapping("/activate-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>activateUser(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.activateUser(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Usuario dado de alta correctamente"));
+    }
+
+    @PutMapping("/rehire-employee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?>rehireEmployee(@Valid @RequestBody ClientIdRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me){
+        authService.rehireEmployee(dto.getId(),me.getId());
+        return ResponseEntity.ok(Map.of("message", "Empleado dado de alta correctamente"));
     }
 
     @PostMapping("/login")

@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class ClientIdRequestDTO {
-    @NotNull(message = "El ID del cliente es obligatorio")
-    private Long clientId;
+    @NotNull(message = "El ID es obligatorio")
+    private Long id;
 }

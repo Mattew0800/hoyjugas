@@ -19,4 +19,6 @@ public interface SpaceRepository extends JpaRepository<Space, Integer> {
     Optional<Space> findByIdWithPricings(@Param("id") Long id);
     Optional<Space> findById(Long id);
     boolean existsById(Long id);
+    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Long id);
 }

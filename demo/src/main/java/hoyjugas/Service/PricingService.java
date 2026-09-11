@@ -26,11 +26,6 @@ public class PricingService {
         LocalDate date = datetime.toLocalDate();
         DayOfWeek day = datetime.getDayOfWeek();
         boolean isHoliday = holidayRepository.existsByDate(date);
-        DayType specificDay = resolveDayType(day);
-        DayType groupDay = (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
-                ? DayType.FIN_DE_SEMANA
-                : DayType.DIA_DE_SEMANA;
-
         if (isHoliday) {
             Optional<SpacePricing> holidayPricing = spacePricingRepository
                     .findPriceForSlot(space.getId(), DayType.FERIADO, datetime.toLocalTime());
@@ -38,9 +33,12 @@ public class PricingService {
                 return holidayPricing.get().getPrice();
             }
         }
-
+        DayType specificDay = resolveSpecificDayType(day);
+        DayType generalDay = resolveDayType(day);
+        DayType groupDay = resolveGroupDay(day);
         return spacePricingRepository
                 .findPriceForSlot(space.getId(), specificDay, datetime.toLocalTime())
+                .or(() -> spacePricingRepository.findPriceForSlot(space.getId(), generalDay, datetime.toLocalTime()))
                 .or(() -> spacePricingRepository.findPriceForSlot(space.getId(), groupDay, datetime.toLocalTime()))
                 .map(SpacePricing::getPrice)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -60,4 +58,22 @@ public class PricingService {
         };
     }
 
+    public DayType resolveSpecificDayType(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> DayType.LUNES;
+            case TUESDAY -> DayType.MARTES;
+            case WEDNESDAY -> DayType.MIERCOLES;
+            case THURSDAY -> DayType.JUEVES;
+            case FRIDAY -> DayType.VIERNES;
+            case SATURDAY -> DayType.SABADO;
+            case SUNDAY -> DayType.DOMINGO;
+        };
+    }
+
+    public DayType resolveGroupDay(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> DayType.DIA_DE_SEMANA;
+            case SATURDAY, SUNDAY -> DayType.FIN_DE_SEMANA;
+        };
+    }
 }

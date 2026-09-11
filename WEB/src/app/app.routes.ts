@@ -12,11 +12,16 @@ import {PaymentSelection} from './screens/payment-selection/payment-selection';
 import {Profile} from './screens/profile/profile';
 import {ChangePassword} from './screens/password/password';
 import {HistoryBookings} from './screens/history-bookings/history-bookings';
+import {Dashboard} from './screens/internal/dashboard/dashboard';
+import {SpacesScreen} from './screens/internal/Spaces/spaces-screen/spaces-screen';
+import {InternalLogin} from './screens/internal/internal-login/internal-login';
+import {EmployeesScreen} from './screens/internal/Employees/employees-screen/employees-screen';
 import {authGuard} from './auth/AuthGuard';
 import {guestGuard} from './auth/GuestGuard';
 import { StepTimeSelection } from './screens/step-time-selection/step-time-selection';
 import {StepPaymentSelection} from './screens/step-payment-selection/step-payment-selection';
 import {BookingSuccess} from './screens/booking-success/booking-success';
+import {internalAuthGuard} from './auth/InternalAuthGuard';
 
 
 export const routes: Routes = [
@@ -35,6 +40,10 @@ export const routes: Routes = [
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
+  {path:'internal/login', component:InternalLogin},
+  {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
+  {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
   {path:'**', component:Error}
 
 ];

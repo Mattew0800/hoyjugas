@@ -56,73 +56,83 @@ public class BookingService extends BaseBookingService {
     public List<SpaceAvailabilityDTO> getAvailability(Long spaceId, LocalDate date) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
-        DayType dayType = pricingService.resolveDayType(date.getDayOfWeek());
-        SpaceSchedule schedule = spaceScheduleRepository
-                .findBySpaceIdAndDayType(spaceId, dayType)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "No hay horario configurado para ese espacio y día"
-                ));
-        LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
-        LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
-        List<Booking> ocuppiedBookings = bookingRepository.findBySpaceAndDate(
+        List<SpaceSchedule> schedules = resolveSchedules(spaceId, date.getDayOfWeek());
+        if (schedules.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No hay horario configurado para ese espacio y día");
+        }
+        List<Booking> occupiedBookings = bookingRepository.findBySpaceAndDate(
                 spaceId,
                 date.atStartOfDay(),
                 date.plusDays(1).atStartOfDay(),
                 BookingStatus.CANCELADO
         );
         List<SpaceAvailabilityDTO> slots = new ArrayList<>();
-        LocalDateTime current = startOfDay;
-        while (current.isBefore(endOfDay)) {
-            LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
-            final LocalDateTime slotStart = current;
+        for (SpaceSchedule schedule : schedules) {
+            LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
+            LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
+            boolean crossesMidnight = !schedule.getClosingTime().isAfter(schedule.getOpeningTime());
+            if (crossesMidnight) {
+                endOfDay = date.plusDays(1).atTime(schedule.getClosingTime());
+            }
+            LocalDateTime current = startOfDay;
+            while (current.isBefore(endOfDay)) {
+                LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
+                final LocalDateTime slotStart = current;
 
-            boolean ocuppied = ocuppiedBookings.stream().anyMatch(b ->
-                    b.getStartDatetime().isBefore(slotEnd) &&
-                            b.getEndDatetime().isAfter(slotStart)
-            );
-            BigDecimal price = pricingService.getPriceForSlot(space, slotStart);
-            SpaceAvailabilityDTO slot = new SpaceAvailabilityDTO();
-            slot.setSpaceId(space.getId());
-            slot.setSpaceName(space.getName());
-            slot.setSpaceType(space.getType());
-            slot.setStartDatetime(slotStart);
-            slot.setEndDatetime(slotEnd);
-            slot.setPrice(price);
-            slot.setAvailable(!ocuppied);
-            slots.add(slot);
-            current = slotEnd;
+                boolean occupied = occupiedBookings.stream().anyMatch(b ->
+                        b.getStartDatetime().isBefore(slotEnd) &&
+                                b.getEndDatetime().isAfter(slotStart)
+                );
+                BigDecimal price = pricingService.getPriceForSlot(space, slotStart);
+                SpaceAvailabilityDTO slot = new SpaceAvailabilityDTO();
+                slot.setSpaceId(space.getId());
+                slot.setSpaceName(space.getName());
+                slot.setSpaceType(space.getType());
+                slot.setStartDatetime(slotStart);
+                slot.setEndDatetime(slotEnd);
+                slot.setPrice(price);
+                slot.setAvailable(!occupied);
+                slots.add(slot);
+                current = slotEnd;
+            }
         }
+
         return slots;
     }
 
     @Transactional
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal price = pricingService.getPriceForSlot(space, dto.getStartDatetime());
+
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(slots));
         BigDecimal minDeposit = space.getDepositValue();
+
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
         }
-        if (dto.getDepositAmount().compareTo(price) > 0) {
+        if (dto.getDepositAmount().compareTo(totalPrice) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El monto no puede superar el total");
         }
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
+        booking.setSlots(slots);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
-
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
 
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
-                null, null, PaymentType.DEPOSITO); //implementar con api de mp dsps
+                null, null, PaymentType.DEPOSITO);
         deposit.setStatus(PaymentStatus.PAGADO);
         paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
+        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -132,31 +142,29 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO createBookingByEmployee(EmployeeBookingRequestDTO dto, User employee) {
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
-        LocalDateTime endDatetime = dto.getStartDatetime().plusMinutes(space.getSlotDuration());
-
+        int slots = dto.getSlots() != null ? dto.getSlots() : 1;
+        LocalDateTime endDatetime = dto.getStartDatetime()
+                .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
 
-        BigDecimal price =
-                pricingService.getPriceForSlot(space, dto.getStartDatetime());
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
+                .multiply(BigDecimal.valueOf(slots));
+        BigDecimal minimumDeposit = calculateDeposit(space, totalPrice);
+        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
 
-        BigDecimal minimumDeposit =
-                calculateDeposit(space, price);
-
-        BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, price);
-
-        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, price);
+        Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
+        booking.setSlots(slots);
         booking.setCreatedBy(employee);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         assignBookingNumber(saved);
+
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
-                dto.getTransactionId(), employee, PaymentType.DEPOSITO);//api de mp
+                dto.getTransactionId(), employee, PaymentType.DEPOSITO);
         paymentRepository.save(deposit);
-
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), price));
+        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
-
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
     }
@@ -256,28 +264,25 @@ public class BookingService extends BaseBookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Para cancelar un turno fijo usá el endpoint de cancelación de ciclo");
         }
-
-        SystemConfig config = getSystemConfig();
-        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
-        boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
-
-        if (devolution) {
-            BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
-
-            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
-                Payment refund = buildPayment(
-                        booking,
-                        null,
-                        totalCollected,
-                        null,
-                        employee,
-                        PaymentType.DEVOLUCION
-                );
-                refund.setStatus(PaymentStatus.PENDIENTE);
-                paymentRepository.save(refund);
-                booking.setRefunded(false);
-            }
-        }
+//        SystemConfig config = getSystemConfig();   AGREGAR ESTO EN CASO DE DEVOLUCIONES
+//        long hoursTillBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getStartDatetime());
+//        boolean devolution = hoursTillBooking >= config.getCancellationHoursLimit();
+//        if (devolution) {
+//            BigDecimal totalCollected = paymentRepository.findTotalCobradoByBookingId(bookingId);
+//            if (totalCollected.compareTo(BigDecimal.ZERO) > 0) {
+//                Payment refund = buildPayment(
+//                        booking,
+//                        null,  TIPO DE METODO DE PAGO
+//                        totalCollected,
+//                        null,
+//                        employee,
+//                        PaymentType.DEVOLUCION
+//                );
+//                refund.setStatus(PaymentStatus.PENDIENTE);
+//                paymentRepository.save(refund);
+//                booking.setRefunded(false);
+//            }
+//        }
         booking.setBookingStatus(BookingStatus.CANCELADO);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(dto.getCancellationReason());
@@ -286,7 +291,6 @@ public class BookingService extends BaseBookingService {
         scheduleNotification(booking, NotificationType.CANCELACION);
         return buildBookingResponseDTO(booking);
     }
-
 
     public Page<BookingListDTO> getBookings(Long clientId, Long spaceId, BookingStatus status,
                                             Long employeeId, LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable) {
@@ -451,6 +455,7 @@ public class BookingService extends BaseBookingService {
                 endDatetime,
                 newPrice
         );
+        newBooking.setSlots(original.getSlots());
         newBooking.setRescheduledFrom(original);
         newBooking.setCreatedBy(employee);
         newBooking.setTermsAccepted(dto.getTermsAccepted());
@@ -573,27 +578,30 @@ public class BookingService extends BaseBookingService {
         List<Space> spaces = spaceRepository.findByIsActiveTrue();
         int totalAvailable = 0;
         for (Space space : spaces) {
-            DayType dayType = pricingService.resolveDayType(today.getDayOfWeek());
-            Optional<SpaceSchedule> schedule = spaceScheduleRepository
-                    .findBySpaceIdAndDayType(space.getId(), dayType);
-            if (schedule.isEmpty()) continue;
-            LocalTime openingTime = schedule.get().getOpeningTime();
-            LocalTime closingTime = schedule.get().getClosingTime();
-            long totalMinutes;
-            if (closingTime.equals(LocalTime.MIDNIGHT) || closingTime.isBefore(openingTime)) {
-                totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT)
-                        + ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, closingTime);
-                if (closingTime.equals(LocalTime.MIDNIGHT)) {
-                    totalMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT);
-                }
-            } else {
-                totalMinutes = ChronoUnit.MINUTES.between(openingTime, closingTime);
-            }
+            List<SpaceSchedule> schedules = resolveSchedules(space.getId(), today.getDayOfWeek());
+            if (schedules.isEmpty()) continue;
             List<Booking> occupied = bookingRepository.findBySpaceAndDate(
                     space.getId(),
                     today.atStartOfDay(),
                     today.plusDays(1).atStartOfDay(),
-                    BookingStatus.CANCELADO);
+                    BookingStatus.CANCELADO
+            );
+            long totalMinutes = 0;
+            for (SpaceSchedule schedule : schedules) {
+                LocalTime openingTime = schedule.getOpeningTime();
+                LocalTime closingTime = schedule.getClosingTime();
+                long rangeMinutes;
+                if (closingTime.equals(LocalTime.MIDNIGHT) || closingTime.isBefore(openingTime)) {
+                    rangeMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT)
+                            + ChronoUnit.MINUTES.between(LocalTime.MIDNIGHT, closingTime);
+                    if (closingTime.equals(LocalTime.MIDNIGHT)) {
+                        rangeMinutes = ChronoUnit.MINUTES.between(openingTime, LocalTime.MIDNIGHT);
+                    }
+                } else {
+                    rangeMinutes = ChronoUnit.MINUTES.between(openingTime, closingTime);
+                }
+                totalMinutes += rangeMinutes;
+            }
             long occupiedMinutes = occupied.stream()
                     .mapToLong(b -> ChronoUnit.MINUTES.between(
                             b.getStartDatetime(), b.getEndDatetime()))
@@ -609,5 +617,26 @@ public class BookingService extends BaseBookingService {
                 .map(this::buildBookingResponseDTO)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
+    }
+
+    private Optional<SpaceSchedule> resolveScheduleOptional(Long spaceId, DayOfWeek dayOfWeek) {
+        DayType specificDay = pricingService.resolveSpecificDayType(dayOfWeek);
+        DayType generalDay = pricingService.resolveDayType(dayOfWeek);
+
+        return spaceScheduleRepository
+                .findBySpaceIdAndDayType(spaceId, specificDay)
+                .or(() -> spaceScheduleRepository.findBySpaceIdAndDayType(spaceId, generalDay));
+    }
+
+    private List<SpaceSchedule> resolveSchedules(Long spaceId, DayOfWeek dayOfWeek) {
+        DayType specificDay = pricingService.resolveSpecificDayType(dayOfWeek);
+        DayType generalDay = pricingService.resolveDayType(dayOfWeek);
+        List<SpaceSchedule> specificSchedules = spaceScheduleRepository
+                .findAllBySpaceIdAndDayType(spaceId, specificDay);
+        if (!specificSchedules.isEmpty()) {
+            return specificSchedules;
+        }
+        return spaceScheduleRepository
+                .findAllBySpaceIdAndDayType(spaceId, generalDay);
     }
 }
