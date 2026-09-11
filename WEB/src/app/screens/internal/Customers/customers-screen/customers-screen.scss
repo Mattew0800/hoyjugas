@@ -253,10 +253,9 @@
 
   }
 
-  .table-header div:last-child,
-  .customer-row div:last-child {
+  .table-header > div:last-child,
+  .customer-row > div:last-child {
     display: none;
-
   }
 
 }

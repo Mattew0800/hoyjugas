@@ -50,6 +50,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
   selectedEmployee?: EmployeeModel;
 
+  private employeeDetailSubscription?: Subscription;
 
   employees: EmployeeModel[] = [];
 
@@ -102,6 +103,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   ngOnDestroy(): void {
 
     this.subscriptions.unsubscribe();
+    this.employeeDetailSubscription?.unsubscribe();
 
   }
 
@@ -208,20 +210,33 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   editEmployee(
     employee: EmployeeModel
   ): void {
-    this.employeeService
-      .getEmployeeDetail(employee.id)
-      .subscribe({
-        next: employeeDetail => {
-          this.selectedEmployee = employeeDetail;
-          this.showEmployeeModal = true;
-        },
-        error: error => {
-          console.error(
-            'ERROR AL OBTENER EMPLEADO:',
-            error
-          );
-        }
-      });
+
+    this.employeeDetailSubscription?.unsubscribe();
+
+    this.employeeDetailSubscription =
+      this.employeeService
+        .getEmployeeDetail(employee.id)
+        .subscribe({
+
+          next: employeeDetail => {
+
+            this.selectedEmployee = employeeDetail;
+
+            this.showEmployeeModal = true;
+
+          },
+
+          error: error => {
+
+            console.error(
+              'ERROR AL OBTENER DETALLE DEL EMPLEADO:',
+              error
+            );
+
+          }
+
+        });
+
   }
 
   updateEmployee(
@@ -300,7 +315,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
           next: response => {
 
-            const newEmployee: { id: number; name: string; email: string; phone: string; role: string; active: boolean } = {
+            const newEmployee: EmployeeModel = {
 
               id: response.id,
 
@@ -310,6 +325,8 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
               phone: response.phone,
 
+              dni: employee.dni,
+
               role: response.role,
 
               active: true
@@ -317,10 +334,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
             };
 
 
-            this.employees.push(
-              <EmployeeModel>newEmployee
-            );
-
+            this.employees.push(newEmployee);
 
             this.closeEmployeeModal();
 

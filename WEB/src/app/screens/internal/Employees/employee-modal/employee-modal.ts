@@ -167,6 +167,7 @@ export class EmployeeModal implements OnInit {
       }
 
 
+
       if (!this.password.trim()) {
 
         this.passwordError =
@@ -235,6 +236,16 @@ export class EmployeeModal implements OnInit {
 
         this.passwordError =
           'Ingresá la nueva contraseña.';
+
+        return;
+
+      }
+
+
+      if (this.password.trim().length < 6) {
+
+        this.passwordError =
+          'La contraseña debe tener al menos 6 caracteres.';
 
         return;
 
