@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import {SelectDateModal} from '../../components/select-date-modal/select-date-modal';
+import { Router } from '@angular/router';
+import { SelectDateModal } from '../../components/select-date-modal/select-date-modal';
 
-interface DateOption {
-  value: Date;
+export interface DateCard {
+  label: string;    // 'HOY' | 'AGO' | etc.
   day: number;
-  month: string;
-  availableSlots: number;
+  slots: number | null; // null = sin disponibilidad
 }
 
 @Component({
@@ -19,7 +18,6 @@ interface DateOption {
   imports: [
     FormsModule,
     CommonModule,
-    RouterLink,
     Header,
     BottomNavbar,
     SelectDateModal
@@ -29,20 +27,43 @@ interface DateOption {
 })
 export class FieldSchedule {
 
-  realHeight = window.innerHeight;
-
-  constructor(
-    private router: Router
-  ) {}
-
+  // ── Estado del modal ──────────────────────────────────────────────
   isModalOpen = false;
-  isClosing = false;
+  isClosing   = false;
 
-  openModal() {
+  // ── Datos de fechas ───────────────────────────────────────────────
+  dates: DateCard[] = [
+    { label: 'HOY', day: 15, slots: 2 },
+    { label: 'AGO', day: 16, slots: 6 },
+    { label: 'AGO', day: 17, slots: null },
+    { label: 'AGO', day: 18, slots: 8 },
+    { label: 'AGO', day: 19, slots: 7 },
+    { label: 'AGO', day: 20, slots: 8 },
+    { label: 'AGO', day: 21, slots: 8 },
+  ];
+
+  selectedDate: DateCard | null = null;
+
+  constructor(private router: Router) {}
+
+  // ── Selección de fecha ────────────────────────────────────────────
+  selectDate(date: DateCard): void {
+    if (date.slots === null) return; // ignorar fechas agotadas
+    this.selectedDate = date;
+  }
+
+  // ── Continuar con validación ──────────────────────────────────────
+  goToTimeSelection(): void {
+    if (!this.selectedDate) return;
+    this.router.navigate(['/field-schedule/date-selection']);
+  }
+
+  // ── Modal ─────────────────────────────────────────────────────────
+  openModal(): void {
     this.isModalOpen = true;
   }
 
-  closeModal() {
+  closeModal(): void {
     this.isClosing = true;
     setTimeout(() => {
       this.isModalOpen = false;
@@ -50,10 +71,8 @@ export class FieldSchedule {
     }, 600);
   }
 
-  handleDateConfirmed(date: string) {
-
+  handleDateConfirmed(date: string): void {
+    // TODO: parsear la fecha seleccionada desde el modal y sincronizarla
     this.isModalOpen = false;
   }
-
-
 }

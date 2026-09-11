@@ -7,58 +7,45 @@
       <button class="close-btn" (click)="close()">×</button>
     </div>
 
+    <!-- Navegación de mes -->
     <div class="month-navigation">
-      <button class="nav-arrow">&lt;</button>
-      <span class="month-title">Agosto 2026</span>
-      <button class="nav-arrow">&gt;</button>
+      <button class="nav-arrow" (click)="prevMonth()">&lt;</button>
+      <span class="month-title">{{ monthLabel }}</span>
+      <button class="nav-arrow" (click)="nextMonth()">&gt;</button>
     </div>
 
+    <!-- Grilla del calendario -->
     <div class="calendar-grid">
       <div class="weekdays">
         <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
       </div>
       <div class="days-grid">
-        <span class="day"></span>
-        <span class="day"></span>
-        <span class="day"></span>
-        <span class="day"></span>
-        <span class="day"></span>
-        <span class="day">1</span>
-        <span class="day">2</span>
-        <span class="day">3</span>
-        <span class="day">4</span>
-        <span class="day">5</span>
-        <span class="day">6</span>
-        <span class="day">7</span>
-        <span class="day">8</span>
-        <span class="day">9</span>
-        <span class="day">10</span>
-        <span class="day">11</span>
-        <span class="day">12</span>
-        <span class="day">13</span>
-        <span class="day">14</span>
-        <span class="day selected">15</span>
-        <span class="day">16<span class="dot"></span></span>
-        <span class="day">17<span class="dot"></span></span>
-        <span class="day">18<span class="dot"></span></span>
-        <span class="day">19<span class="dot"></span></span>
-        <span class="day">20<span class="dot"></span></span>
-        <span class="day">21<span class="dot"></span></span>
-        <span class="day">22<span class="dot"></span></span>
-        <span class="day">23<span class="dot"></span></span>
-        <span class="day">24<span class="dot"></span></span>
-        <span class="day">25<span class="dot"></span></span>
-        <span class="day">26<span class="dot"></span></span>
-        <span class="day">27<span class="dot"></span></span>
-        <span class="day">28<span class="dot"></span></span>
-        <span class="day">29<span class="dot"></span></span>
-        <span class="day">30<span class="dot"></span></span>
-        <span class="day">31<span class="dot"></span></span>
+        @for (cell of calendarDays; track $index) {
+          @if (cell.day === null) {
+            <span class="day empty"></span>
+          } @else {
+            <span
+              class="day"
+              [class.selected]="isSelected(cell.day)"
+              [class.past]="isPast(cell.day)"
+              (click)="selectDay(cell.day)">
+              {{ cell.day }}
+              @if (cell.hasSlots && !isPast(cell.day)) {
+                <span class="dot"></span>
+              }
+            </span>
+          }
+        }
       </div>
     </div>
 
     <div class="modal-footer">
-      <button class="btn-primary" (click)="confirm()">Confirmar Fecha</button>
+      <button
+        class="btn-primary"
+        [disabled]="!selectedDay"
+        (click)="confirm()">
+        Confirmar Fecha
+      </button>
     </div>
   </div>
 </div>

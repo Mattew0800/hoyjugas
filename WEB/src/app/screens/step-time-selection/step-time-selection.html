@@ -24,29 +24,42 @@
         <p class="field-date">Sabado 15 de Agosto</p>
       </div>
     </div>
-    <button class="change-btn">Cambiar</button>
+    <button class="change-btn" (click)="goBack()">Cambiar</button>
   </article>
 
   <!-- 3. Tabs -->
   <div class="tabs-container">
-    <button class="tab-item">Mañana</button>
-    <button class="tab-item active">Tarde</button>
-    <button class="tab-item">Noche</button>
+    @for (tab of tabs; track tab) {
+      <button
+        class="tab-item"
+        [class.active]="tab === activeTab"
+        (click)="selectTab(tab)">
+        {{ capitalize(tab) }}
+      </button>
+    }
   </div>
 
   <!-- 4. Time Slots Grid -->
   <div class="time-grid">
-    <div class="time-card">13:00</div>
-    <div class="time-card">14:00</div>
-    <div class="time-card">15:00</div>
-    <div class="time-card disabled">16:00</div>
-    <div class="time-card active">17:00</div>
-    <div class="time-card disabled">18:00</div>
+    @for (slot of currentSlots; track slot.label) {
+      <div
+        class="time-card"
+        [class.active]="slot === selectedSlot"
+        [class.disabled]="slot.disabled"
+        (click)="selectSlot(slot)">
+        {{ slot.label }}
+      </div>
+    }
   </div>
 
   <!-- 5. Bottom CTA -->
   <div class="fixed-bottom-action">
-    <button class="btn-primary" routerLink="/field-schedule/payment-selection">Continuar</button>
+    <button
+      class="btn-primary"
+      [disabled]="!selectedSlot"
+      (click)="goToPayment()">
+      Continuar
+    </button>
   </div>
 </section>
 

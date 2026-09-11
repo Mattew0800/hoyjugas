@@ -115,6 +115,16 @@
         font-weight: 700;
       }
 
+      &.past {
+        opacity: 0.25;
+        pointer-events: none;
+      }
+
+      &.empty {
+        cursor: default;
+        pointer-events: none;
+      }
+
       .dot {
         width: 4px;
         height: 4px;
