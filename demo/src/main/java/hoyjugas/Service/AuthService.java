@@ -171,7 +171,8 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese mail ya pertenece a una cuenta");
         }
-        if (userRepository.existsByPhone(request.getPhone())) {
+        String formattedPhone="+549" + request.getPhone();
+        if (userRepository.existsByPhone(formattedPhone)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese telefono ya pertenece a una cuenta");
         }
         if (userRepository.existsByDni(request.getDni())) {
@@ -257,11 +258,12 @@ public class AuthService {
             employee.setPassword(passwordEncoder.encode(password));
         }
         if (dto.getName() != null) employee.setName(dto.getName());
-        if (dto.getPhone() != null && !dto.getPhone().equals(employee.getPhone())) {
-            if (userRepository.existsByPhoneAndIdNot(dto.getPhone(), dto.getId())) {
+        String formattedPhone="+549" + dto.getPhone();
+        if (dto.getPhone() != null && !formattedPhone.equals(employee.getPhone())) {
+            if (userRepository.existsByPhoneAndIdNot(formattedPhone, employee.getId())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese teléfono");
             }
-            employee.setPhone(dto.getPhone());
+            employee.setPhone(formattedPhone);
         }
         if (dto.getDni() != null && !dto.getDni().equals(employee.getDni())) {
             if (userRepository.existsByDniAndIdNot(dto.getDni(), dto.getId())) {
