@@ -1,8 +1,6 @@
 package hoyjugas.DTO.System;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -19,17 +17,17 @@ public class SystemConfigUpdateDTO {
 
     private String termsAndConditions;
 
-    @Min(value = 1)
-    @Max(value = 52)
-    private Integer recurringMonthsAhead;
-
-    @Min(value = 1)
+    @Min(value = 1, message = "La cantidad inicial de turnos debe ser al menos 1")
     private Integer recurringInitialDepositTurns;
 
-    @DecimalMin("1.00")
+    @DecimalMin(value = "1.00", message = "El multiplicador debe ser al menos 1.00")
     private BigDecimal recurringDepositMultiplier;
 
-    @Min(value = 1)
+    @Min(value = 1, message = "Debe permitir al menos una cancelación")
     private Integer maxRecurringCancellations;
 
+    @NotNull
+    @Min(1)
+    @Max(52)
+    private Integer recurringMonthsAhead;
 }
