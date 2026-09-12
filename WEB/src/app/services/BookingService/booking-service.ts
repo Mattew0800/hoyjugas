@@ -22,6 +22,8 @@ import { SpaceAvailabilityModel }
 import {InternalBookingRequestModel} from '../../screens/internal/models/internal-booking-request.model';
 
 import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
+import {AuthService} from '../AuthService/auth-service';
+import {BookingListDTO, Page} from '../../models/booking.model';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +33,8 @@ export class BookingService {
   private readonly bookingApiUrl = getBookingApiUrl();
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   getBookings(
@@ -152,6 +155,12 @@ export class BookingService {
       }
     );
 
+  }
+
+  getMyBookings(): Observable<Page<BookingListDTO>> {
+    return this.http.get<Page<BookingListDTO>>(`${this.bookingApiUrl}/my-bookings`, {
+      withCredentials: true
+    });
   }
 
 }

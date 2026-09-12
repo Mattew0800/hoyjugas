@@ -6,6 +6,7 @@ import { Header } from '../header/header';
 import { Meta } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { BookingService } from '../../services/BookingService/booking-service';
+import {BookingListDTO} from '../../models/booking.model';
 
 @Component({
   selector: 'app-home',
@@ -125,5 +126,7 @@ export class Home implements OnInit, OnDestroy {
       ? 'mañana'
       : `el ${day.toLowerCase()}`;
   }
+
+
 
 }

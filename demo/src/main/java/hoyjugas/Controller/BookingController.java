@@ -91,7 +91,9 @@ public class BookingController {
 
     @GetMapping("/my-bookings")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<BookingListDTO>> getMyBookings(@Valid @RequestBody BookingFilterRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+    public ResponseEntity<Page<BookingListDTO>> getMyBookings(
+            @Valid @ModelAttribute BookingFilterRequestDTO dto,
+            @AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(bookingService.getBookings(
                 me.getId(),
                 dto.getSpaceId(),

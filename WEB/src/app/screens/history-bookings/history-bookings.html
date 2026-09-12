@@ -34,18 +34,18 @@
 
   <div
     class="booking-card"
-    *ngFor="let booking of bookings">
+    *ngFor="let booking of filteredBookings">
 
     <div class="card-header">
 
       <div class="date-box">
 
         <span class="month">
-          {{ booking.dateMonth }}
+          {{ booking.startDatetime | date:'MMM' }}
         </span>
 
         <span class="day">
-          {{ booking.dateDay }}
+          {{ booking.startDatetime | date:'d' }}
         </span>
 
       </div>
@@ -53,21 +53,21 @@
       <div class="booking-info">
 
         <h3>
-          {{ booking.field }}
+          {{ booking.spaceName }}
         </h3>
 
         <div class="time">
-          {{ booking.time }}
+          {{ booking.startDatetime | date:'HH:mm' }} - {{ booking.endDatetime | date:'HH:mm' }}
         </div>
 
       </div>
 
       <div
         class="status-badge"
-        [class.deposit]="booking.status === 'deposit'"
-        [class.paid]="booking.status === 'paid'">
+        [class.deposit]="getPaymentClass(booking) === 'deposit'"
+        [class.paid]="getPaymentClass(booking) === 'paid'">
 
-        {{ booking.statusText }}
+        {{ getPaymentText(booking) }}
 
       </div>
 
@@ -76,11 +76,11 @@
     <div class="details">
 
       <span>
-        📍 {{ booking.type }}
+        📍 {{ booking.status }}
       </span>
 
       <span>
-        • {{ booking.extra }}
+        • Total: {{ booking.totalAmount | currency:'ARS' }}
       </span>
 
     </div>
@@ -88,12 +88,12 @@
     <div class="card-footer">
 
       <span>
-        Ref #{{ booking.reference }}
+        Ref #{{ booking.bookingNumber }}
       </span>
 
       <button
         class="details-button"
-        (click)="viewDetails(booking.reference)">
+        (click)="viewDetails(booking.id)">
 
         Ver detalles →
 
@@ -101,6 +101,12 @@
 
     </div>
 
+  </div>
+
+  <div
+    class="empty-state"
+    *ngIf="filteredBookings.length === 0">
+    No hay turnos para mostrar.
   </div>
 
 </div>

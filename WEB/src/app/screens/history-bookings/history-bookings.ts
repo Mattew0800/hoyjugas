@@ -4,6 +4,8 @@ import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import {Meta} from '@angular/platform-browser';
 import {Router} from '@angular/router';
+import {BookingService} from '../../services/BookingService/booking-service';
+import {BookingListDTO} from '../../models/booking.model';
 
 @Component({
   selector: 'app-history-bookings',
@@ -19,12 +21,15 @@ import {Router} from '@angular/router';
 export class HistoryBookings implements OnInit, OnDestroy {
 
   activeTab: 'upcoming' | 'past' = 'upcoming';
+  bookings: BookingListDTO[] = [];
+  totalElements = 0;
 
   constructor(
     private meta: Meta,
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
-    private router: Router
+    private router: Router,
+    private bService: BookingService
   ) {}
 
 
@@ -41,6 +46,18 @@ export class HistoryBookings implements OnInit, OnDestroy {
     } else {
       this.activeTab = 'upcoming';
     }
+
+
+      this.bService.getMyBookings().subscribe({
+        next: (response) => {
+          this.bookings = response.content;
+          this.totalElements = response.totalElements;
+        },
+        error: (e) => {
+          console.log(e);
+        }
+      });
+
   }
 
 
@@ -49,36 +66,50 @@ export class HistoryBookings implements OnInit, OnDestroy {
     this.renderer.removeStyle(this.document.body, 'background-color');
   }
 
-  bookings = [
-    {
-      field: 'Cancha 1 — Fútbol 5',
-      dateMonth: 'SEP',
-      dateDay: '15',
-      time: '13:00 a 14:00 hs',
-      status: 'deposit',
-      statusText: 'SEÑADO ($4.000)',
-      type: 'Techada',
-      extra: 'Restan abonar: $4.000',
-      reference: 'AZ-9821'
-    },
-    {
-      field: 'Cancha 3 — Fútbol 5',
-      dateMonth: 'SEP',
-      dateDay: '22',
-      time: '19:00 a 20:00 hs',
-      status: 'paid',
-      statusText: 'TOTAL PAGADO',
-      type: 'Descubierta',
-      extra: '¡Listo para jugar!',
-      reference: 'AZ-9954'
-    }
-  ];
+  get filteredBookings(): BookingListDTO[] {
+    const now = new Date();
+    return this.bookings.filter(b => {
+      const start = new Date(b.startDatetime);
+      return this.activeTab === 'upcoming' ? start >= now : start < now;
+    });
+  }
 
-  selectTab(tab: 'upcoming' | 'past'): void {
+  selectTab(tab: 'upcoming' | 'past') {
     this.activeTab = tab;
   }
 
-  viewDetails(reference: string): void {
-    console.log(reference);
+  getPaymentClass(booking: BookingListDTO): 'deposit' | 'paid' | 'pending' {
+    switch (booking.paymentStatus) {
+      case 'PAGADO':
+        return 'paid';
+      case 'RESERVADO':
+        return 'deposit';
+      case 'PENDIENTE':
+      case 'NO_PAGADO':
+      case 'RECHAZADO':
+      case 'REEMBOLSADO':
+      default:
+        return 'pending';
+    }
   }
+
+  getPaymentText(booking: BookingListDTO): string {
+    switch (booking.paymentStatus) {
+      case 'PAGADO': return 'Pagado';
+      case 'RESERVADO': return 'Seña pagada';
+      case 'PENDIENTE': return 'Pendiente';
+      case 'NO_PAGADO': return 'No pagado';
+      case 'RECHAZADO': return 'Rechazado';
+      case 'REEMBOLSADO': return 'Reembolsado';
+      default: return booking.paymentStatus;
+    }
+  }
+  viewDetails(id: number) {
+    // navegar a detalle, ej: this.router.navigate(['/bookings', id]);
+  }
+
+
+
+
+
 }
