@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SystemConfig } from './system-config';
+import { SystemConfigScreen } from './system-config';
 
 describe('SystemConfig', () => {
-  let component: SystemConfig;
-  let fixture: ComponentFixture<SystemConfig>;
+  let component: SystemConfigScreen;
+  let fixture: ComponentFixture<SystemConfigScreen>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SystemConfig]
+      imports: [SystemConfigScreen]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SystemConfig);
+    fixture = TestBed.createComponent(SystemConfigScreen);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

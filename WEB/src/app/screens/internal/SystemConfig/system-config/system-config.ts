@@ -34,6 +34,7 @@ export class SystemConfigScreen implements OnInit {
 
   loading = false;
   saving = false;
+  configLoaded = false;
   errorMessage = '';
   successMessage = '';
 
@@ -47,13 +48,16 @@ export class SystemConfigScreen implements OnInit {
 
   loadConfig(): void {
     this.loading = true;
+    this.configLoaded=false;
     this.errorMessage = '';
+    this.successMessage='';
 
     this.systemConfigService
       .getConfig()
       .subscribe({
         next: config => {
           this.config = config;
+          this.configLoaded=true;
           this.loading = false;
         },
         error: error => {
@@ -63,6 +67,7 @@ export class SystemConfigScreen implements OnInit {
           );
 
           this.loading = false;
+          this.configLoaded=false;
           this.errorMessage =
             'No se pudo cargar la configuración.';
         }
@@ -70,7 +75,7 @@ export class SystemConfigScreen implements OnInit {
   }
 
   saveConfig(): void {
-    if (this.saving) {
+    if (this.saving || !this.configLoaded) {
       return;
     }
 

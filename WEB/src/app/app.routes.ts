@@ -37,10 +37,10 @@ export const routes: Routes = [
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
   {path:'internal/login', component:InternalLogin},
   {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
-  {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
-  {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
+  {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
   {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},
-  {path:'internal/config', component:SystemConfigScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/config', component:SystemConfigScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN']}},
   {path:'**', component:Error}
 
 ];
