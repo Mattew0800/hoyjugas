@@ -1,0 +1,200 @@
+<app-internal-side-bar></app-internal-side-bar>
+
+<div class="config-container">
+
+  <app-internal-header
+    [title]="'Configuración del sistema'"
+    [subtitle]="'Administrá las reglas generales del complejo'">
+  </app-internal-header>
+
+  <div class="config-page">
+
+    <div class="config-card">
+
+      <div class="config-section">
+
+        <h2>Configuracion del Sistema</h2>
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label>
+              Horas límite para cancelar una reserva
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              [(ngModel)]="config.cancellationHoursLimit"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>
+              Horas antes de la reserva para enviar recordatorio
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="168"
+              [(ngModel)]="config.reminderHoursBeforeBooking"
+            />
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="config-section">
+
+        <h2>Reservas recurrentes</h2>
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label>
+              Meses permitidos para reservas recurrentes
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="52"
+              [(ngModel)]="config.recurringMonthsAhead"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>
+              Turnos iniciales de depósito recurrente
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              [(ngModel)]="config.recurringInitialDepositTurns"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>
+              Multiplicador del depósito recurrente
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              [(ngModel)]="config.recurringDepositMultiplier"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>
+              Máximo de cancelaciones recurrentes
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              [(ngModel)]="config.maxRecurringCancellations"
+            />
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="config-section">
+
+        <h2>Complejo</h2>
+
+        <div class="form-grid">
+
+          <div class="form-field readonly-field">
+            <label>
+              Nombre del complejo
+            </label>
+
+            <input
+              type="text"
+              [value]="config.sportsComplexName"
+              readonly
+            />
+          </div>
+
+          <div class="form-field readonly-field">
+            <label>
+              Dirección
+            </label>
+
+            <input
+              type="text"
+              [value]="config.address"
+              readonly
+            />
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="config-section">
+
+        <h2>Términos y condiciones</h2>
+
+        <div class="form-field">
+
+          <label>
+            Términos y condiciones
+          </label>
+
+          <textarea
+            rows="8"
+            [(ngModel)]="config.termsAndConditions">
+          </textarea>
+
+        </div>
+
+      </div>
+
+
+      @if (errorMessage) {
+        <div class="message error-message">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (successMessage) {
+        <div class="message success-message">
+          {{ successMessage }}
+        </div>
+      }
+
+
+      <div class="config-actions">
+
+        <button
+          type="button"
+          class="save-button"
+          [disabled]="saving || !configLoaded"
+          (click)="saveConfig()">
+
+          @if (saving) {
+            Guardando...
+          } @else {
+            Guardar cambios
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
