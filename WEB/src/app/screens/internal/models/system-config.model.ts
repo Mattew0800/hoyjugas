@@ -6,4 +6,6 @@ export interface SystemConfigModel {
   recurringInitialDepositTurns: number;
   recurringDepositMultiplier: number;
   maxRecurringCancellations: number;
+  address: string;
+  sportsComplexName: string;
 }

@@ -43,5 +43,13 @@ export class SystemConfigService {
     );
 
   }
+  getConfig(): Observable<SystemConfigModel> {
+    return this.http.get<SystemConfigModel>(
+      `${this.apiUrl}/get`,
+      {
+        withCredentials: true
+      }
+    );
+  }
 
 }

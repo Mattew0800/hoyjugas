@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
 
-import {SystemConfigModel} from '../../models/system-config.model';
+import { SystemConfigModel } from '../../models/system-config.model';
 import { SystemConfigService } from '../../../../services/SystemConfigService/system-config-service';
 
 @Component({
@@ -18,16 +18,18 @@ import { SystemConfigService } from '../../../../services/SystemConfigService/sy
   templateUrl: './system-config.html',
   styleUrl: './system-config.scss'
 })
-export class SystemConfigScreen {
+export class SystemConfigScreen implements OnInit {
 
   config: SystemConfigModel = {
-    cancellationHoursLimit: 24,
-    reminderHoursBeforeBooking: 24,
+    cancellationHoursLimit: 0,
+    reminderHoursBeforeBooking: 1,
     termsAndConditions: '',
-    recurringMonthsAhead: 3,
+    recurringMonthsAhead: 1,
     recurringInitialDepositTurns: 1,
     recurringDepositMultiplier: 1,
-    maxRecurringCancellations: 3
+    maxRecurringCancellations: 1,
+    address: '',
+    sportsComplexName: ''
   };
 
   loading = false;
@@ -38,6 +40,34 @@ export class SystemConfigScreen {
   constructor(
     private systemConfigService: SystemConfigService
   ) {}
+
+  ngOnInit(): void {
+    this.loadConfig();
+  }
+
+  loadConfig(): void {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.systemConfigService
+      .getConfig()
+      .subscribe({
+        next: config => {
+          this.config = config;
+          this.loading = false;
+        },
+        error: error => {
+          console.error(
+            'ERROR AL OBTENER CONFIGURACIÓN:',
+            error
+          );
+
+          this.loading = false;
+          this.errorMessage =
+            'No se pudo cargar la configuración.';
+        }
+      });
+  }
 
   saveConfig(): void {
     if (this.saving) {
@@ -51,7 +81,8 @@ export class SystemConfigScreen {
     this.systemConfigService
       .updateConfig(this.config)
       .subscribe({
-        next: () => {
+        next: config => {
+          this.config = config;
           this.saving = false;
           this.successMessage =
             'La configuración se guardó correctamente.';

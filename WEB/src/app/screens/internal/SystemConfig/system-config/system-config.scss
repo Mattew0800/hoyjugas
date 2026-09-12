@@ -141,6 +141,21 @@
   color: #9bc99f;
 }
 
+.readonly-field input {
+  background: #080808;
+  color: #888;
+  border-color: rgba(255, 255, 255, .04);
+  cursor: default;
+}
+
+.readonly-field input:focus {
+  border-color: rgba(255, 255, 255, .04);
+}
+
+.readonly-field label {
+  color: #777;
+}
+
 @media (max-width: 800px) {
   .config-page {
     padding: 24px;
@@ -160,3 +175,5 @@
     padding: 20px;
   }
 }
+
+
