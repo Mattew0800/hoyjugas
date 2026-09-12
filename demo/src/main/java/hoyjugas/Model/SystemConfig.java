@@ -33,4 +33,8 @@ public class SystemConfig {
     
     private Integer maxRecurringCancellations;
 
+    private String address; //precargar o ver si quitar ya que no es un dato del back
+
+    private String sportsComplexName;
+
 }

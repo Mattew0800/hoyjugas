@@ -1,7 +1,7 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.System.SystemConfigCreateDTO;
-import hoyjugas.DTO.System.SystemConfigScheduleResponseDTO;
+import hoyjugas.DTO.System.SystemConfigResponseDTO;
 import hoyjugas.DTO.System.SystemConfigUpdateDTO;
 import hoyjugas.Model.SystemConfig;
 import hoyjugas.Repository.SystemConfigRepository;
@@ -35,6 +35,10 @@ public class SystemConfigService {
         return systemConfigRepository.save(config);
     }
 
+
+    public SystemConfigResponseDTO getConfig() {
+        return SystemConfigResponseDTO.fromEntity(systemConfigRepository.findById(1).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Configuración no encontrada")));
+    }
 
     private SystemConfig toEntity(SystemConfigCreateDTO dto) {
         SystemConfig config = new SystemConfig();
