@@ -50,6 +50,8 @@ public class SystemConfigService {
         config.setRecurringInitialDepositTurns(dto.getRecurringInitialDepositTurns());
         config.setMaxRecurringCancellations(dto.getMaxRecurringCancellations());
         config.setRecurringDepositMultiplier(dto.getRecurringDepositMultiplier());
+        config.setSportsComplexName(dto.getSportsComplexName());
+        config.setAddress(dto.getAddress());
         return config;
     }
 
