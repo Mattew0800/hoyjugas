@@ -257,6 +257,10 @@
   color: #ccc;
 }
 
+.error-state {
+  color: #d85c5c;
+}
+
 @media (max-width: 900px) {
   .customers-page {
     padding: 24px;
@@ -271,9 +275,13 @@
     grid-template-columns: 1.5fr 1.7fr 1.1fr;
   }
 
-  .table-header > div:last-child,
-  .customer-row > div:last-child {
+  .phone-column {
     display: none;
+  }
+
+  .customers-card.with-actions .table-header,
+  .customers-card.with-actions .customer-row {
+    grid-template-columns: 1.5fr 1.7fr 1fr 1fr;
   }
 }
 
@@ -287,8 +295,13 @@
     grid-template-columns: 1.5fr 1.5fr;
   }
 
-  .table-header > div:nth-child(3),
-  .customer-row > div:nth-child(3) {
+  .phone-column,
+  .dni-column {
     display: none;
+  }
+
+  .customers-card.with-actions .table-header,
+  .customers-card.with-actions .customer-row {
+    grid-template-columns: 1.5fr 1.5fr 1fr;
   }
 }

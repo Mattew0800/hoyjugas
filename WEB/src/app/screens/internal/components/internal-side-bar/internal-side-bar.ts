@@ -64,7 +64,8 @@ export class InternalSideBar implements OnInit{
       label: 'Ajustes',
       icon: '/assets/emojis/settings.svg',
       route: '/internal/config',
-      active: false
+      active: false,
+      adminOnly: true
     }
 
   ];

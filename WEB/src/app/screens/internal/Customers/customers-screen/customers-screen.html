@@ -56,11 +56,11 @@
 
         <div>CLIENTE</div>
         <div>EMAIL</div>
-        <div>TELÉFONO</div>
-        <div>DNI</div>
+        <div class="phone-column">TELÉFONO</div>
+        <div class="dni-column">DNI</div>
 
         @if (isAdmin && statusFilter !== 'all') {
-          <div>ACCIÓN</div>
+          <div class="action-column">ACCIÓN</div>
         }
 
       </div>
@@ -69,6 +69,12 @@
 
         <div class="empty-state">
           Cargando clientes...
+        </div>
+
+      } @else if (errorMessage) {
+
+        <div class="empty-state error-state">
+          {{ errorMessage }}
         </div>
 
       } @else if (filteredCustomers.length === 0) {
@@ -99,17 +105,17 @@
               {{ customer.email }}
             </div>
 
-            <div>
+            <div class="phone-column">
               {{ customer.phone || '-' }}
             </div>
 
-            <div>
+            <div class="dni-column">
               {{ customer.dni || '-' }}
             </div>
 
             @if (isAdmin && statusFilter !== 'all') {
 
-              <div class="customer-action">
+              <div class="customer-action action-column">
 
                 @if (statusFilter === 'active') {
 

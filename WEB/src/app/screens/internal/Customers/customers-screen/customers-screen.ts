@@ -6,6 +6,7 @@ import { RoleService } from '../../../../services/RoleService/role-service';
 import { CustomerModel } from '../../models/user-response';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-customers-screen',
@@ -22,6 +23,8 @@ export class CustomersScreen implements OnInit {
   isAdmin = false;
   confirmingAction: 'desactivate' | 'activate' | null = null;
   confirmingCustomerId: number | null = null;
+  errorMessage: string | null = null;
+  private customersSubscription?: Subscription;
 
   constructor(
     private userService: UserService,
@@ -34,7 +37,10 @@ export class CustomersScreen implements OnInit {
   }
 
   loadCustomers(): void {
+    this.customersSubscription?.unsubscribe();
+
     this.loading = true;
+    this.errorMessage = null;
 
     let enabled: boolean | undefined;
 
@@ -46,7 +52,7 @@ export class CustomersScreen implements OnInit {
       enabled = false;
     }
 
-    this.userService.getClients(enabled).subscribe({
+    this.customersSubscription= this.userService.getClients(enabled).subscribe({
       next: customers => {
         this.customers = customers;
         this.loading = false;
@@ -54,6 +60,7 @@ export class CustomersScreen implements OnInit {
       error: error => {
         console.error('ERROR AL OBTENER CLIENTES:', error);
         this.loading = false;
+        this.errorMessage = 'No se pudieron cargar los clientes.';
       }
     });
   }
@@ -134,6 +141,7 @@ export class CustomersScreen implements OnInit {
         error: error => {
           console.error('ERROR AL DAR DE BAJA CLIENTE:', error);
           this.cancelAction();
+          this.errorMessage = 'No se pudo dar de baja al cliente.';
         }
       });
 
@@ -148,6 +156,7 @@ export class CustomersScreen implements OnInit {
       error: error => {
         console.error('ERROR AL DAR DE ALTA CLIENTE:', error);
         this.cancelAction();
+        this.errorMessage = 'No se pudo dar de alta al cliente.';
       }
     });
   }
