@@ -29,9 +29,31 @@ export class UserService {
     );
   }
 
-  getClients() {
+  getClients(enabled?: boolean) {
+    let url = `${this.AUTH_API_URL}/clients`;
+
+    if (enabled !== undefined) {
+      url += `?enabled=${enabled}`;
+    }
+
     return this.http.get<CustomerModel[]>(
-      `${this.AUTH_API_URL}/clients`,
+      url,
+      { withCredentials: true }
+    );
+  }
+
+  desactivateUser(id: number) {
+    return this.http.put(
+      `${this.AUTH_API_URL}/deactivate-user`,
+      { id },
+      { withCredentials: true }
+    );
+  }
+
+  activateUser(id: number) {
+    return this.http.put(
+      `${this.AUTH_API_URL}/activate-user`,
+      { id },
       { withCredentials: true }
     );
   }

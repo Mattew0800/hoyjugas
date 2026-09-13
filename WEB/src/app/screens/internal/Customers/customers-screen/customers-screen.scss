@@ -1,243 +1,269 @@
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
 }
 
 :host {
   display: flex;
-
   min-height: 100vh;
-
   background: #050505;
 }
 
 .customers-container {
-
   flex: 1;
-
   min-width: 0;
-
   margin-left: 105px;
-
   display: flex;
-
   flex-direction: column;
-
 }
 
 .customers-page {
-
   padding: 28px 32px 32px 32px;
-
 }
 
 .customers-toolbar {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-bottom: 24px;
-
 }
 
 .search-container {
-
   width: 360px;
-
   height: 44px;
-
   display: flex;
-
   align-items: center;
-
   padding: 0 14px;
-
   background: #0c0c0c;
-
-  border: 1px solid rgba(255,255,255,.08);
-
+  border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 10px;
-
 }
 
 .search-icon {
-
   margin-right: 10px;
-
   color: #777;
-
   font-size: 20px;
-
 }
 
 .search-container input {
-
   width: 100%;
-
   border: none;
-
   outline: none;
-
   background: transparent;
-
   color: white;
-
   font-size: 14px;
-
 }
 
 .search-container input::placeholder {
-
   color: #686868;
+}
 
+.status-filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.status-filters button {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  background: #0a0a0a;
+  color: #888;
+  font-family: Roboto, sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.status-filters button:hover {
+  color: white;
+  border-color: rgba(206, 167, 100, .3);
+}
+
+.status-filters button.active {
+  background: rgba(206, 167, 100, .12);
+  border-color: rgba(206, 167, 100, .4);
+  color: #CEA764;
 }
 
 .customers-card {
-
   width: 100%;
-
   background: #0a0a0a;
-
-  border: 1px solid rgba(255,255,255,.06);
-
+  border: 1px solid rgba(255, 255, 255, .06);
   border-radius: 14px;
-
   overflow: hidden;
-
 }
 
 .table-header,
 .customer-row {
-
   display: grid;
-
-  grid-template-columns:
-1.5fr
-1.7fr
-1.1fr
-.9fr;
-
+  grid-template-columns: 1.5fr 1.7fr 1.1fr .9fr 1fr;
   align-items: center;
-
 }
 
 .table-header {
-
   min-height: 52px;
-
   padding: 0 20px;
-
   background: #0d0d0d;
-
-  border-bottom: 1px solid rgba(255,255,255,.06);
-
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
   color: #777;
-
   font-size: 11px;
-
   font-weight: 600;
-
   letter-spacing: .5px;
-
 }
 
 .customer-row {
-
   min-height: 72px;
-
   padding: 0 20px;
-
   color: #c4c4c4;
-
   font-size: 13px;
-
-  border-bottom: 1px solid rgba(255,255,255,.05);
-
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
   transition: .2s;
-
 }
 
 .customer-row:last-child {
-
   border-bottom: none;
-
 }
 
 .customer-row:hover {
-
-  background: rgba(255,255,255,.02);
-
+  background: rgba(255, 255, 255, .02);
 }
 
 .customer-name {
-
   display: flex;
-
   align-items: center;
-
   gap: 10px;
-
   color: white;
-
   font-weight: 500;
-
 }
 
 .customer-avatar {
-
   width: 34px;
-
   height: 34px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   border-radius: 50%;
-
-  background: rgba(206,167,100,.12);
-
-  border: 1px solid rgba(206,167,100,.25);
-
+  background: rgba(206, 167, 100, .12);
+  border: 1px solid rgba(206, 167, 100, .25);
   color: #CEA764;
-
   font-size: 13px;
-
   font-weight: 600;
-
 }
 
 .customer-email {
-
   color: #9a9a9a;
+}
 
+.customer-action {
+  display: flex;
+  align-items: center;
+}
+
+.customer-action button {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-family: Roboto, sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.desactivate-button {
+  border: 1px solid rgba(220, 70, 70, .3);
+  background: rgba(220, 70, 70, .08);
+  color: #d85c5c;
+}
+
+.desactivate-button:hover {
+  border-color: rgba(220, 70, 70, .5);
+  background: rgba(220, 70, 70, .15);
+  color: #ed7070;
+}
+
+.activate-button {
+  border: 1px solid rgba(70, 180, 100, .3);
+  background: rgba(70, 180, 100, .08);
+  color: #63b878;
+}
+
+.activate-button:hover {
+  border-color: rgba(70, 180, 100, .5);
+  background: rgba(70, 180, 100, .15);
+  color: #78cc8c;
+}
+
+.customer-action button:hover {
+  color: #CEA764;
+  border-color: rgba(206, 167, 100, .4);
+  background: rgba(206, 167, 100, .08);
 }
 
 .empty-state {
-
   min-height: 180px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   color: #666;
-
   font-size: 14px;
+}
 
+.confirmation-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmation-container span {
+  color: #aaa;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.confirm-button,
+.cancel-button {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-family: Roboto, sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.confirm-button {
+  border: 1px solid rgba(70, 180, 100, .3);
+  background: rgba(70, 180, 100, .08);
+  color: #63b878;
+}
+
+.confirm-button:hover {
+  border-color: rgba(70, 180, 100, .5);
+  background: rgba(70, 180, 100, .15);
+  color: #78cc8c;
+}
+
+.cancel-button {
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: #101010;
+  color: #888;
+}
+
+.cancel-button:hover {
+  border-color: rgba(255, 255, 255, .15);
+  background: #151515;
+  color: #ccc;
+}
+
+.error-state {
+  color: #d85c5c;
 }
 
 @media (max-width: 900px) {
-
   .customers-page {
     padding: 24px;
-
   }
 
   .search-container {
@@ -246,37 +272,36 @@
 
   .table-header,
   .customer-row {
-    grid-template-columns:
-  1.5fr
-  1.7fr
-  1.1fr;
-
+    grid-template-columns: 1.5fr 1.7fr 1.1fr;
   }
 
-  .table-header > div:last-child,
-  .customer-row > div:last-child {
+  .phone-column {
     display: none;
   }
 
+  .customers-card.with-actions .table-header,
+  .customers-card.with-actions .customer-row {
+    grid-template-columns: 1.5fr 1.7fr 1fr 1fr;
+  }
 }
 
 @media (max-width: 650px) {
-
   .customers-page {
     padding: 16px;
-
   }
 
   .table-header,
   .customer-row {
-    grid-template-columns:
-  1.5fr
-  1.5fr;
+    grid-template-columns: 1.5fr 1.5fr;
   }
 
-  .table-header div:nth-child(3),
-  .customer-row div:nth-child(3) {
+  .phone-column,
+  .dni-column {
     display: none;
   }
 
+  .customers-card.with-actions .table-header,
+  .customers-card.with-actions .customer-row {
+    grid-template-columns: 1.5fr 1.5fr 1fr;
+  }
 }
