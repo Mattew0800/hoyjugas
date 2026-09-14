@@ -1,179 +1,303 @@
+// =====================================================
+// HISTORY BOOKINGS - Alineado al design system de hoyjugas
+// Tokens: bg #000→#111, accent #CEA764, radius 18-22px
+// =====================================================
+
+// --- Design Tokens (locales, alineados al global) ---
+$bg-base:       #000000;
+$bg-surface:    #111111;
+$bg-elevated:   #1a1a1a;
+$bg-subtle:     #0f0f0f;
+
+$accent:        #CEA764;
+$accent-dim:    rgba(#CEA764, 0.12);
+$accent-glow:   rgba(#CEA764, 0.06);
+
+$success:       #00d084;
+$success-dim:   rgba(#00d084, 0.12);
+
+$border:        #1f1f1f;
+$border-soft:   rgba(255, 255, 255, 0.06);
+
+$text-primary:  #ffffff;
+$text-secondary:#8a8a8a;
+$text-muted:    #555555;
+
+$radius-card:   20px;
+$radius-inner:  12px;
+$radius-badge:  10px;
+
+// =====================================================
+
 .history-container {
-  background: #050505;
-
+  background: $bg-base;
   min-height: 100vh;
+  padding: 24px 20px 140px;
+}
 
-  padding: 24px;
-  padding-bottom: 140px;
+// --- Page Header ---
+
+.page-header {
+  margin-bottom: 24px;
 }
 
 .title {
-  color: white;
-
-  font-size: 32px;
+  color: $text-primary;
+  font-size: 30px;
   font-weight: 700;
-
+  letter-spacing: -0.5px;
   margin-bottom: 6px;
 }
 
 .subtitle {
-  color: #8a8a8a;
-
-  margin-bottom: 24px;
+  color: $text-secondary;
+  font-size: 14px;
+  line-height: 1.5;
 }
+
+// --- Tabs ---
 
 .tabs {
   display: flex;
-
-  background: #0f0f0f;
-
-  border: 1px solid rgba(255,255,255,.08);
+  background: $bg-subtle;
+  border: 1px solid $border;
   border-radius: 16px;
-
   padding: 4px;
-
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  gap: 4px;
 }
 
 .tab-button {
   flex: 1;
-
-  height: 42px;
-
+  height: 40px;
   border: none;
-  border-radius: 12px;
-
+  border-radius: $radius-inner;
   background: transparent;
-
-  color: #8a8a8a;
-  font-weight: 600;
-
+  color: $text-muted;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &.active {
+    background: $bg-elevated;
+    color: $accent;
+    box-shadow: inset 0 0 0 1px $border;
+  }
+
+  &:not(.active):hover {
+    color: $text-secondary;
+  }
 }
 
-.tab-button.active {
-  background: #151515;
-  color: #d9b44a;
+// --- Bookings List ---
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
+
+// --- Booking Card ---
 
 .booking-card {
-  background: #0f0f0f;
+  display: flex;
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: $radius-card;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.15s ease;
 
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px;
-
-  padding: 16px;
-
-  margin-bottom: 16px;
+  &:active {
+    transform: scale(0.99);
+  }
 }
+
+// Stripe lateral de acento (status visual)
+.card-stripe {
+  width: 4px;
+  flex-shrink: 0;
+  border-radius: 0; // flush con el card
+
+  &.stripe--paid    { background: $success; }
+  &.stripe--deposit { background: $accent; }
+  &.stripe--pending { background: $text-muted; }
+}
+
+.card-body {
+  flex: 1;
+  padding: 16px 16px 14px;
+  min-width: 0; // evita overflow en flex
+}
+
+// --- Card Header ---
 
 .card-header {
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .date-box {
-  width: 54px;
-  height: 54px;
-
-  border-radius: 12px;
-
-  background: #1a1a1a;
-
+  width: 50px;
+  height: 50px;
+  border-radius: $radius-inner;
+  background: $bg-elevated;
+  border: 1px solid $border;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
 }
 
 .month {
-  color: #8a8a8a;
-
-  font-size: 10px;
+  color: $text-secondary;
+  font-size: 9px;
   font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 .day {
-  color: white;
-
-  font-size: 18px;
+  color: $text-primary;
+  font-size: 20px;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .booking-info {
   flex: 1;
+  min-width: 0;
 }
 
-.booking-info h3 {
-  color: white;
+.space-name {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  font-size: 16px;
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
-  margin: 0 0 4px;
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .time {
-  color: #d9b44a;
-
+  color: $accent;
+  font-size: 13px;
   font-weight: 600;
 }
 
+// --- Status Badge ---
+
 .status-badge {
-  padding: 6px 10px;
-
-  border-radius: 10px;
-
-  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: $radius-badge;
+  font-size: 10px;
   font-weight: 700;
-
   white-space: nowrap;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+
+  &.badge--paid {
+    background: $success-dim;
+    color: $success;
+  }
+
+  &.badge--deposit {
+    background: $accent-dim;
+    color: $accent;
+  }
+
+  &.badge--pending {
+    background: rgba(255, 255, 255, 0.05);
+    color: $text-secondary;
+  }
 }
 
-.deposit {
-  background: rgba(217,180,74,.15);
-  color: #d9b44a;
-}
+// --- Details Row ---
 
-.paid {
-  background: rgba(0,208,132,.15);
-  color: #00d084;
-}
-
-.details {
+.details-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-
-  margin-top: 16px;
-
-  color: #8a8a8a;
+  margin-top: 14px;
 }
 
+.detail-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: $bg-elevated;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 5px 9px;
+
+  span {
+    color: $text-secondary;
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+// --- Card Footer ---
+
 .card-footer {
-  margin-top: 16px;
-  padding-top: 16px;
-
-  border-top: 1px solid rgba(255,255,255,.08);
-
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid $border-soft;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.card-footer span {
-  color: #777;
+.ref-number {
+  color: $text-muted;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .details-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: none;
-
-  color: #d9b44a;
-
+  color: $accent;
+  font-size: 13px;
   font-weight: 600;
-
   cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+// --- Empty State ---
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 24px;
+  text-align: center;
+
+  p {
+    color: $text-muted;
+    font-size: 14px;
+  }
 }

@@ -16,7 +16,7 @@
             class="filter-button"
             [class.active]="selectedFieldType === type"
             (click)="selectFieldType(type)">
-            {{ type }}
+            {{ formatFieldType(type) }}
           </button>
         }
       </div>

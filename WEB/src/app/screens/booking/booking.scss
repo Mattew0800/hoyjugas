@@ -29,17 +29,27 @@
   margin: 0;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  
+
+  color: rgba(255, 255, 255, 0.75); 
+  font-size: 13px; 
+  font-weight: 600; 
+  letter-spacing: 0.8px; 
+  text-transform: uppercase; 
+
+
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 2; // El texto arriba del dorado
-  transition: color 0.3s ease-out;
+  z-index: 2; 
+  transition: color 0.2s ease-out;
 
   &.active {
-    color: #000; // Color oscuro para que contraste con el dorado
+    color: #000000; 
+  
   }
+
 }
 
 .slider {

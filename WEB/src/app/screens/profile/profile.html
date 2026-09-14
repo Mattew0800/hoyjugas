@@ -2,135 +2,217 @@
 
 <div class="profile-container">
 
-  <div class="profile-header">
+  <!-- Identidad -->
+  <section class="profile-header">
 
     <div class="avatar-container">
 
       <div class="avatar">
-        <img
-          src="assets/icons/user.svg"
-          alt="Usuario"
-        >
+
+          <img src="/assets/icons/header/Profile.svg" alt="Perfil">
+
       </div>
 
       <button
+        type="button"
         class="camera-button"
-        (click)="changePhoto()">
+        (click)="changePhoto()"
+        aria-label="Cambiar foto de perfil">
 
-        <img
-          src="assets/icons/camera.svg"
-          alt="Cambiar foto"
-        >
+        <span class="camera-icon"></span>
 
       </button>
 
     </div>
 
-    <h2>{{ user.fullName }}</h2>
+    <h2>{{ user.fullName || 'Tu perfil' }}</h2>
 
     <p>Cliente AZTK Arena</p>
 
-  </div>
+  </section>
 
-  <div class="profile-card">
+  <!-- Datos personales -->
+  <form
+    #profileForm="ngForm"
+    (ngSubmit)="profileForm.valid && saveProfile()"
+    novalidate>
 
-    <div class="field-group">
 
-      <label>
-        NOMBRE COMPLETO
-      </label>
+    <div class="profile-card">
 
-      <input
-        type="text"
-        [(ngModel)]="user.fullName"
-      >
+      <div class="field-group">
+
+        <label for="fullName">NOMBRE COMPLETO</label>
+
+        <div
+          class="input-wrapper"
+          [class.invalid]="fullNameField.invalid && fullNameField.touched">
+
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.2"></circle>
+            <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"></path>
+          </svg>
+
+          <input
+            id="fullName"
+            type="text"
+            name="fullName"
+            placeholder="Tu nombre y apellido"
+            autocomplete="name"
+            required
+            minlength="3"
+            maxlength="60"
+            aria-describedby="fullName-error"
+            [(ngModel)]="user.fullName"
+            #fullNameField="ngModel">
+
+        </div>
+
+        @if (fullNameField.invalid && fullNameField.touched) {
+          <span id="fullName-error" class="field-error">
+            Ingresá tu nombre y apellido
+          </span>
+        }
+
+      </div>
+
+      <div class="field-group">
+
+        <label for="phone">TELÉFONO / WHATSAPP</label>
+
+        <div
+          class="input-wrapper"
+          [class.invalid]="phoneField.invalid && phoneField.touched">
+
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3z"></path>
+          </svg>
+
+          <input
+            id="phone"
+            type="tel"
+            name="phone"
+            inputmode="tel"
+            placeholder="Ej: 11 2345 6789"
+            autocomplete="tel"
+            required
+            pattern="^[0-9+\s()-]{8,}$"
+            aria-describedby="phone-error"
+            [(ngModel)]="user.phone"
+            #phoneField="ngModel">
+
+        </div>
+
+        @if (phoneField.invalid && phoneField.touched) {
+          <span id="phone-error" class="field-error">
+            Ingresá un teléfono válido
+          </span>
+        }
+
+      </div>
+
+      <div class="field-group">
+
+        <label for="email">CORREO ELECTRÓNICO</label>
+
+        <div
+          class="input-wrapper"
+          [class.invalid]="emailField.invalid && emailField.touched">
+
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="5.5" width="17" height="13" rx="2"></rect>
+            <path d="M4 6.5l8 6 8-6"></path>
+          </svg>
+
+          <input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="ejemplo@gmail.com"
+            autocomplete="email"
+            required
+            email
+            aria-describedby="email-error"
+            [(ngModel)]="user.email"
+            #emailField="ngModel">
+
+        </div>
+
+        @if (emailField.invalid && emailField.touched) {
+          <span id="email-error" class="field-error">
+            Ingresá un email válido
+          </span>
+        }
+
+      </div>
 
     </div>
 
-    <div class="field-group">
+    <button
+      type="button"
+      class="password-card"
+      (click)="changePassword()">
 
-      <label>
-        TELÉFONO / WHATSAPP
-      </label>
+      <div class="password-content">
 
-      <input
-        type="text"
-        [(ngModel)]="user.phone"
-      >
+        <span>
+          <img src="/assets/icons/shield.svg"
+               class="shield-icon"
+               alt="">
+        </span>
 
-    </div>
+        <span>
+          Cambiar Contraseña
+        </span>
 
-    <div class="field-group">
+      </div>
 
-      <label>
-        CORREO ELECTRÓNICO
-      </label>
-
-      <input
-        type="email"
-        [(ngModel)]="user.email"
-      >
-
-    </div>
-
-  </div>
-
-  <button
-    class="password-card"
-    (click)="changePassword()">
-
-    <div class="password-content">
-
-      <span>
-        <img src="/assets/emojis/shield.svg"
-             class="shield-icon"
-             alt="Cambiar contraseña">
+      <span class="arrow" aria-hidden="true">
+        ›
       </span>
 
-      <span>
-        Cambiar Contraseña
-      </span>
+    </button>
 
+    @if (successMessage) {
+      <div class="feedback-message success" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="feedback-message error" role="alert" aria-live="assertive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 8v5"></path>
+          <path d="M12 16h.01"></path>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+
+
+      <div class="fixed-bottom-action">
+      <button
+      type="submit"
+      class="btn-primary"
+      [disabled]="profileForm.invalid">
+
+        Guardar Perfil
+      </button>
     </div>
 
-    <span class="arrow">
-      ›
-    </span>
-
-  </button>
-
-  @if(successMessage){
-
-    <div class="success-message">
-
-      {{ successMessage }}
-
-    </div>
-  }
-
-  @if(errorMessage){
-
-    <div class="error-message">
-
-      {{ errorMessage }}
-
-    </div>
-
-  }
+  </form>
 
   <button
-    class="save-button"
-    (click)="saveProfile()">
-
-    GUARDAR CAMBIOS
-
-  </button>
-
-  <button
+    type="button"
     class="logout-button"
     (click)="logout()">
 
-    CERRAR SESIÓN
+    Cerrar sesión
 
   </button>
 

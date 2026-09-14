@@ -1,12 +1,37 @@
+// ---------------------------------------------
+// Tokens — mismo lenguaje visual que el resto de
+// las pantallas (login, turnos, pagos, home)
+// ---------------------------------------------
+$gold: #d9b44a;
+$bg: #000000;
+$card-bg: #0f0f0f;
+$input-bg: #161616;
+$border: rgba(255, 255, 255, .08);
+$text-primary: #ffffff;
+$text-secondary: #888888;
+$text-muted: #777777;
+$danger: #ff5f5f;
+$success: #46c46f;
+
+$radius-lg: 20px;
+$radius-md: 14px;
+$radius-sm: 12px;
+
 .profile-container {
-  background: #050505;
+  background: $bg;
 
   min-height: 100vh;
+  max-width: 480px;
+
+  margin: 0 auto;
 
   padding: 24px;
   padding-bottom: 140px;
 }
 
+// ---------------------------------------------
+// Identidad
+// ---------------------------------------------
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -22,10 +47,10 @@
 }
 
 .avatar {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
 
-  border: 3px solid #d9b44a;
+  border: 1px solid #cea764;
   border-radius: 50%;
 
   display: flex;
@@ -36,56 +61,103 @@
 }
 
 .avatar img {
-  width: 52px;
-  height: 52px;
+  width: 34px;
+  height: 34px;
 }
 
 .camera-button {
   position: absolute;
 
-  right: 0;
-  bottom: 0;
+  right: -4px;
+  bottom: -4px;
 
-  width: 36px;
-  height: 36px;
-
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 50%;
 
-  background: #d9b44a;
-
+  background: #cea764;
   display: flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
+
+  transition: transform .15s ease, opacity .15s ease;
+
+  &:hover {
+    opacity: .8;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 3px;
+  }
 }
 
-.camera-button img {
-  width: 18px;
-  height: 18px;
+.camera-icon {
+  width: 16px;
+  height: 16px;
+
+  background-color: #000;
+
+  mask-image: url('WEB/public/assets/icons/camera.svg');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url('WEB/public/assets/icons/camera.svg');
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
 }
 
 .profile-header h2 {
-  color: white;
+  color: $text-primary;
 
   font-size: 32px;
   font-weight: 700;
 
   margin: 0;
+
+  text-align: center;
+  text-transform: capitalize;
 }
 
 .profile-header p {
-  color: #888;
+  color: $text-secondary;
 
   margin-top: 4px;
 }
 
-.profile-card {
-  background: #0f0f0f;
+// ---------------------------------------------
+// Encabezado de sección (mismo tono que
+// "Monto a pagar" en el flujo de reserva)
+// ---------------------------------------------
+.section-label {
+  display: block;
 
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px;
+  color: rgba(255, 255, 255, .6);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  margin: 0 0 12px 4px;
+}
+
+// ---------------------------------------------
+// Datos personales
+// ---------------------------------------------
+.profile-card {
+  background: $card-bg;
+
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  //box-shadow: 0px 1px 0.5px 0.1px #cea764;
 
   padding: 20px;
 
@@ -103,7 +175,7 @@
 .field-group label {
   display: block;
 
-  color: #777;
+  color: $text-muted;
 
   font-size: 12px;
   font-weight: 600;
@@ -113,34 +185,90 @@
   margin-bottom: 8px;
 }
 
-.field-group input {
-  width: 100%;
+.input-wrapper {
+  position: relative;
 
-  height: 52px;
+  display: flex;
+  align-items: center;
 
-  background: #161616;
+  .field-icon {
+    position: absolute;
 
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px;
+    left: 16px;
 
-  padding: 0 16px;
+    width: 18px;
+    height: 18px;
 
-  color: white;
-  font-size: 15px;
+    color: rgba(255, 255, 255, .35);
+
+    pointer-events: none;
+
+    transition: color .18s ease;
+  }
+
+  input {
+    width: 100%;
+    height: 52px;
+
+    background: $input-bg;
+
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+
+    padding: 0 16px 0 46px;
+
+    color: $text-primary;
+    font-size: 15px;
+
+    transition: border-color .18s ease, background .18s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, .3);
+    }
+
+    &:focus {
+      outline: none;
+
+      border-color: $gold;
+      background: #1a1a1a;
+    }
+  }
+
+  &:focus-within .field-icon {
+    color: $gold;
+  }
+
+  // Estado de error — mismo rojo que se usa en toda la app
+  &.invalid {
+    input {
+      border-color: $danger;
+    }
+
+    .field-icon {
+      color: $danger;
+    }
+  }
 }
 
-.field-group input:focus {
-  outline: none;
+.field-error {
+  display: block;
 
-  border-color: #d9b44a;
+  margin-top: 6px;
+
+  color: $danger;
+
+  font-size: 12.5px;
 }
 
+// ---------------------------------------------
+// Acceso a cambio de contraseña
+// ---------------------------------------------
 .password-card {
   width: 100%;
 
-  background: #0f0f0f;
+  background: #1c1c1e;
 
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid $border;
   border-radius: 16px;
 
   padding: 18px;
@@ -149,11 +277,26 @@
   justify-content: space-between;
   align-items: center;
 
-  color: white;
+  color: $text-primary;
 
   margin-bottom: 32px;
 
   cursor: pointer;
+
+  transition: border-color .18s ease, transform .1s ease;
+
+  &:hover {
+    border-color: rgba(217, 180, 74, .35);
+  }
+
+  &:active {
+    transform: scale(.99);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
 }
 
 .password-content {
@@ -175,18 +318,60 @@
 }
 
 .arrow {
-  color: #888;
+  color: $text-secondary;
   font-size: 22px;
 }
 
+// ---------------------------------------------
+// Mensajes de estado — mismo par de colores que
+// el resto del flujo (éxito / error)
+// ---------------------------------------------
+.feedback-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 16px;
+  padding: 12px 14px;
+
+  border-radius: $radius-sm;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  svg {
+    width: 18px;
+    height: 18px;
+
+    flex-shrink: 0;
+  }
+
+  &.success {
+    color: $success;
+
+    background: rgba(70, 196, 111, .08);
+    border: 1px solid rgba(70, 196, 111, .25);
+  }
+
+  &.error {
+    color: $danger;
+
+    background: rgba(255, 95, 95, .08);
+    border: 1px solid rgba(255, 95, 95, .25);
+  }
+}
+
+// ---------------------------------------------
+// Acciones principales
+// ---------------------------------------------
 .save-button {
   width: 100%;
   height: 56px;
 
   border: none;
-  border-radius: 14px;
+  border-radius: $radius-md;
 
-  background: #d9b44a;
+  background: $gold;
 
   color: black;
 
@@ -195,40 +380,34 @@
   letter-spacing: 1px;
 
   cursor: pointer;
-}
 
-.success-message {
-  margin-top: 16px;
+  transition: opacity .18s ease, transform .1s ease;
 
-  color: #46c46f;
+  &:active:not(:disabled) {
+    transform: scale(.98);
+  }
 
-  font-size: 14px;
-  font-weight: 500;
+  &:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
 
-  text-align: center;
-}
-
-.error-message {
-  margin-top: 16px;
-
-  color: #ff5f5f;
-
-  font-size: 14px;
-  font-weight: 500;
-
-  text-align: center;
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 3px;
+  }
 }
 
 .logout-button {
   width: 100%;
   height: 56px;
 
-  border: 1px solid #ff5f5f;
-  border-radius: 14px;
+  border: 1px solid $danger;
+  border-radius: $radius-md;
 
   background: transparent;
 
-  color: #ff5f5f;
+  color: $danger;
 
   font-size: 15px;
   font-weight: 700;
@@ -237,4 +416,52 @@
   cursor: pointer;
 
   margin-top: 16px;
+
+  transition: background .18s ease, transform .1s ease;
+
+  &:hover {
+    background: rgba(255, 95, 95, .08);
+  }
+
+  &:active {
+    transform: scale(.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $danger;
+    outline-offset: 3px;
+  }
+}
+
+// ---------------------------------------------
+// Accesibilidad — respeta reduced-motion
+// ---------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+
+  .camera-button,
+  .password-card,
+  .save-button,
+  .logout-button,
+  .input-wrapper input,
+  .field-icon {
+    transition: none;
+  }
+}
+
+.fixed-bottom-action {
+  margin-top: auto;
+  padding: 2dvh 0 0 0;
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background-color: #FFFFFF;
+  color: #050505;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
 }
