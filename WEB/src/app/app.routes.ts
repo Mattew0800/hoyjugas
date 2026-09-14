@@ -22,6 +22,7 @@ import { StepTimeSelection } from './screens/step-time-selection/step-time-selec
 import {StepPaymentSelection} from './screens/step-payment-selection/step-payment-selection';
 import {BookingSuccess} from './screens/booking-success/booking-success';
 import {internalAuthGuard} from './auth/InternalAuthGuard';
+import {Contact} from './screens/contact/contact';
 
 
 export const routes: Routes = [
@@ -44,6 +45,7 @@ export const routes: Routes = [
   {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
+  {path: 'contact', component: Contact, canActivate: [authGuard]},
   {path:'**', component:Error}
 
 ];
