@@ -94,9 +94,7 @@ public class SpaceService {
     @Transactional
     public SpaceResponseDTO addPricing(Long spaceId, SpacePricingRequestDTO dto) {
         Space space = spaceRepository.findByIdWithPricings(spaceId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Espacio no encontrado"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         checkOverlapping(spaceId,dto,null);
         SpacePricing pricing = new SpacePricing();
         pricing.setSpace(space);

@@ -17,6 +17,7 @@ public class BookingResponseDTO {
     private Long clientId;
     private String clientName;
     private String clientPhone;
+    private String observations;
 
     private Long spaceId;
     private String spaceName;

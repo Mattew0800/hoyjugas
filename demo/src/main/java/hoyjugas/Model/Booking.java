@@ -92,6 +92,8 @@ public class Booking {
     @Column(nullable = false)
     private Integer slots = 1;
 
+    @Column(length = 1000)
+    private String observations;
     public boolean isRecurring() {
         return this.recurringBooking != null;
     }

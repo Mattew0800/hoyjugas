@@ -58,4 +58,6 @@ public interface SpacePricingRepository extends JpaRepository<SpacePricing, Long
             LocalTime startTime,
             LocalTime endTime
     );
+
+    List<SpacePricing> findBySpaceIdAndDayTypeOrderByStartTime(Long spaceId, DayType dayType);
 }
