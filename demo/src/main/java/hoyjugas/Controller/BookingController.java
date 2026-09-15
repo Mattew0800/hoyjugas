@@ -89,7 +89,7 @@ public class BookingController {
         ));
     }
 
-    @GetMapping("/my-bookings")
+    @PostMapping("/my-bookings")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<BookingListDTO>> getMyBookings(@Valid @RequestBody BookingFilterRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(bookingService.getBookings(
