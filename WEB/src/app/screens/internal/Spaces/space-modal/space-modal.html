@@ -96,12 +96,145 @@
 
           <div>
             <h3>
-              Configuraciones de disponibilidad y precio
+              Horarios
             </h3>
 
             <p class="space-config-description">
-              Agregá todas las franjas horarias que el espacio tendrá
-              disponibles. Podés tener varias configuraciones para el mismo día.
+              Definí los horarios en los que el espacio estará disponible para cada tipo de día.
+            </p>
+          </div>
+
+        </div>
+
+        @if (schedules.length === 0) {
+
+          <div class="space-empty-configurations">
+            <p>
+              No hay horarios cargados.
+            </p>
+
+            <p>
+              Agregá un horario para definir la disponibilidad del espacio.
+            </p>
+          </div>
+
+        }
+
+        @for (schedule of schedules; track $index) {
+
+          <div class="space-configuration">
+
+            <div class="space-configuration-header">
+
+              <span>
+                Horario {{ $index + 1 }}
+              </span>
+
+              <button
+                type="button"
+                class="space-delete-button"
+                (click)="removeSchedule($index)"
+                [disabled]="saving"
+                title="Eliminar horario">
+
+                🗑
+
+              </button>
+
+            </div>
+
+            <div class="space-configuration-fields">
+
+              <div class="space-form-group">
+
+                <label for="schedule-day-{{ $index }}">
+                  Día
+                </label>
+
+                <select
+                  id="schedule-day-{{ $index }}"
+                  [(ngModel)]="schedule.dayType"
+                  (ngModelChange)="onScheduleDayTypeChange(schedule)"
+                  [disabled]="saving">
+
+                  <option value="DIA_DE_SEMANA">
+                    Lunes a viernes
+                  </option>
+
+                  <option value="SABADO">
+                    Sábado
+                  </option>
+
+                  <option value="DOMINGO">
+                    Domingo
+                  </option>
+
+                </select>
+
+              </div>
+
+              <div class="space-form-group">
+
+                <label for="schedule-start-{{ $index }}">
+                  Desde
+                </label>
+
+                <input
+                  id="schedule-start-{{ $index }}"
+                  type="time"
+                  [(ngModel)]="schedule.openingTime"
+                  [disabled]="saving">
+
+              </div>
+
+              <div class="space-form-group">
+
+                <label for="schedule-end-{{ $index }}">
+                  Hasta
+                </label>
+
+                <input
+                  id="schedule-end-{{ $index }}"
+                  type="time"
+                  [(ngModel)]="schedule.closingTime"
+                  [disabled]="saving">
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+        <button
+          type="button"
+          class="space-add-configuration-button"
+          (click)="addSchedule()"
+          [disabled]="saving">
+
+          <span>+</span>
+
+          Agregar horario
+
+        </button>
+
+      </section>
+
+      <div class="space-divider"></div>
+
+      <section class="space-config-section">
+
+        <div class="space-config-header">
+
+          <div>
+            <h3>
+              Precios
+            </h3>
+
+            <p class="space-config-description">
+              Definí las franjas de precios dentro de los horarios disponibles.
+              Podés agregar varias franjas para un mismo día.
             </p>
           </div>
 
@@ -111,11 +244,11 @@
 
           <div class="space-empty-configurations">
             <p>
-              No hay configuraciones cargadas.
+              No hay precios cargados.
             </p>
 
             <p>
-              Agregá una configuración para definir los horarios y precios del espacio.
+              Agregá una configuración para definir los precios del espacio.
             </p>
           </div>
 
@@ -128,7 +261,7 @@
             <div class="space-configuration-header">
 
               <span>
-                Configuración {{ $index + 1 }}
+                Precio {{ $index + 1 }}
               </span>
 
               <button
@@ -136,7 +269,7 @@
                 class="space-delete-button"
                 (click)="removeConfiguration($index)"
                 [disabled]="saving"
-                title="Eliminar configuración">
+                title="Eliminar precio">
 
                 🗑
 
@@ -155,6 +288,7 @@
                 <select
                   id="config-day-{{ $index }}"
                   [(ngModel)]="config.dayType"
+                  (ngModelChange)="onDayTypeChange(config)"
                   [disabled]="saving">
 
                   <option value="DIA_DE_SEMANA">
@@ -231,7 +365,7 @@
 
           <span>+</span>
 
-          Agregar configuración
+          Agregar precio
 
         </button>
 
