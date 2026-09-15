@@ -58,7 +58,7 @@ public class BookingController {
     @PostMapping("/complete")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> completeBooking(@Valid @RequestBody CompleteBookingPaymentDTO dto) {
-        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin())));
+        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin()),dto.getObservations()));
     }
 
     @PostMapping("/cancel")
@@ -89,7 +89,7 @@ public class BookingController {
         ));
     }
 
-    @GetMapping("/my-bookings")
+    @PostMapping("/my-bookings")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<BookingListDTO>> getMyBookings(@Valid @RequestBody BookingFilterRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(bookingService.getBookings(
@@ -132,6 +132,13 @@ public class BookingController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
         return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    }
+
+    @PostMapping("/add-observation")
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    public ResponseEntity<?> addObservation(@Valid @RequestBody BookingObservationRequestDTO dto) {
+        bookingService.addObservations(dto.getBookingId(), dto.getContent());
+        return ResponseEntity.ok(Map.of("message", "Observación agregada correctamente"));
     }
 
     //endpoints publicos

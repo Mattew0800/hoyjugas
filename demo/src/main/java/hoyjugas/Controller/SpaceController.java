@@ -3,11 +3,13 @@ package hoyjugas.Controller;
 import hoyjugas.DTO.Space.*;
 import hoyjugas.DTO.SpacePricing.SpacePricingDeleteRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingParentRequestDTO;
+import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingUpdateRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleDeleteRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleParentRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleUpdateRequestDTO;
+import hoyjugas.Service.PricingService;
 import hoyjugas.Service.SpaceScheduleService;
 import hoyjugas.Service.SpaceService;
 import jakarta.validation.Valid;
@@ -16,8 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/spaces")
@@ -26,6 +30,7 @@ public class SpaceController {
 
     private final SpaceService spaceService;
     private final SpaceScheduleService spaceScheduleService;
+    private final PricingService pricingService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
@@ -64,6 +69,26 @@ public class SpaceController {
     public ResponseEntity<SpaceResponseDTO> addPricing(@Valid @RequestBody SpacePricingParentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(spaceService.addPricing(dto.getSpaceId(), dto.getPricing()));
+    }
+
+    @PostMapping("/validate-pricing")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> validatePricingCoverage(@Valid @RequestBody List<SpacePricingParentRequestDTO> dto) {
+        if (dto.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Debe enviar al menos una franja de precio");
+        }
+        Long spaceId = dto.get(0).getSpaceId();
+        boolean allSameSpace = dto.stream()
+                .allMatch(item -> item.getSpaceId().equals(spaceId));
+        if (!allSameSpace) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Todos los precios deben ser del mismo espacio");
+        }
+        List<SpacePricingRequestDTO> pricings = dto.stream()
+                .map(SpacePricingParentRequestDTO::getPricing)
+                .toList();
+        pricingService.validatePricingCoverage(spaceId, pricings);
+        return ResponseEntity.ok(Map.of("message", "Precios configurados correctamente"));
     }
 
     @PutMapping("/pricing/update")
