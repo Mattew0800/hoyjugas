@@ -27,6 +27,7 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
 
+
     @PostMapping("/register")
     public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request,HttpServletResponse response) {
         LoginResponseDTO result = authService.registerUser(request);
@@ -49,8 +50,8 @@ public class AuthController {
 
     @PostMapping("/edit-employee")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> updateEmployee(@Valid @RequestBody UpdateEmployeeRequestDTO dto) {
-        return ResponseEntity.ok(authService.updateEmployee(dto));
+    public ResponseEntity<UserResponseDTO> updateEmployee(@Valid @RequestBody UpdateEmployeeRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(authService.updateEmployee(dto,me.getId()));
     }
 
     @PostMapping("/promote-to-employee")

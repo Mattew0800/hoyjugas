@@ -3,6 +3,9 @@ package hoyjugas.Controller;
 import hoyjugas.Config.UserDetailsImpl;
 import hoyjugas.DTO.Login.UserResponseDTO;
 import hoyjugas.DTO.Login.UserUpdateDTO;
+import hoyjugas.DTO.User.AdminUpdateUserRequestDTO;
+import hoyjugas.DTO.User.ClientIdRequestDTO;
+import hoyjugas.DTO.User.UserDetailDTO;
 import hoyjugas.Service.AuthService;
 import hoyjugas.Service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,6 +42,18 @@ public class UserController {
             result.setToken(null);
         }
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/detail")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<UserDetailDTO> getUserDetail(@Valid @RequestBody ClientIdRequestDTO dto) {
+        return ResponseEntity.ok(userService.getUserDetail(dto.getId()));
+    }
+
+    @PostMapping("/admin/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponseDTO> adminUpdateUser(@Valid @RequestBody AdminUpdateUserRequestDTO dto) {
+        return ResponseEntity.ok(userService.adminUpdateUser(dto));
     }
 }
 
