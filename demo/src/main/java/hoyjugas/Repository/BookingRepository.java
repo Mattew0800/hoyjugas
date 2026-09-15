@@ -132,8 +132,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("now") LocalDateTime now,
             @Param("status") BookingStatus status
     );
-    List<Booking> findByRecurringBookingIdAndStartDatetimeGreaterThanEqualOrderByStartDatetimeAsc(
-            Long recurringBookingId, LocalDateTime datetime);
-
-    List<Booking> findByClientIdAndObservationIsNotNullOrderByStartDatetimeDesc(Long clientId);
 }
