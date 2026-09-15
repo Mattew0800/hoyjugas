@@ -13,6 +13,7 @@ import {
 
 import { EmployeeService } from '../../../../services/EmployeeService/employee-service';
 import { PinModal } from '../pin-modal/pin-modal';
+import {EmployeeUpdateModel} from '../../models/employee-modal';
 
 
 @Component({
@@ -49,6 +50,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
   selectedEmployee?: EmployeeModel;
 
+  private employeeDetailSubscription?: Subscription;
 
   employees: EmployeeModel[] = [];
 
@@ -101,6 +103,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   ngOnDestroy(): void {
 
     this.subscriptions.unsubscribe();
+    this.employeeDetailSubscription?.unsubscribe();
 
   }
 
@@ -208,11 +211,86 @@ export class EmployeesScreen implements OnInit, OnDestroy {
     employee: EmployeeModel
   ): void {
 
-    this.selectedEmployee = {
-      ...employee
+    this.employeeDetailSubscription?.unsubscribe();
+
+    this.employeeDetailSubscription =
+      this.employeeService
+        .getEmployeeDetail(employee.id)
+        .subscribe({
+
+          next: employeeDetail => {
+
+            this.selectedEmployee = employeeDetail;
+
+            this.showEmployeeModal = true;
+
+          },
+
+          error: error => {
+
+            console.error(
+              'ERROR AL OBTENER DETALLE DEL EMPLEADO:',
+              error
+            );
+
+          }
+
+        });
+
+  }
+
+  updateEmployee(
+    updatedEmployee: EmployeeUpdateModel
+  ): void {
+
+    if (!this.selectedEmployee) {
+      return;
+    }
+
+    const employeeId = this.selectedEmployee.id;
+
+    const employeeToUpdate: EmployeeUpdateModel = {
+
+      id: employeeId,
+
+      ...updatedEmployee
+
     };
 
-    this.showEmployeeModal = true;
+    this.employeeService
+      .updateEmployee(employeeToUpdate)
+      .subscribe({
+
+        next: updatedEmployeeResponse => {
+
+          const updatedIndex =
+            this.employees.findIndex(
+              employee => employee.id === employeeId
+            );
+
+          if (updatedIndex !== -1) {
+
+            this.employees[updatedIndex] = {
+              ...this.employees[updatedIndex],
+              ...updatedEmployeeResponse
+            };
+
+          }
+
+          this.closeEmployeeModal();
+
+        },
+
+        error: error => {
+
+          console.error(
+            'ERROR AL ACTUALIZAR EMPLEADO:',
+            error
+          );
+
+        }
+
+      });
 
   }
 
@@ -247,6 +325,8 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
               phone: response.phone,
 
+              dni: employee.dni,
+
               role: response.role,
 
               active: true
@@ -254,10 +334,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
             };
 
 
-            this.employees.push(
-              newEmployee
-            );
-
+            this.employees.push(newEmployee);
 
             this.closeEmployeeModal();
 

@@ -1,0 +1,212 @@
+<app-internal-side-bar></app-internal-side-bar>
+
+<div class="customers-container">
+
+  <app-internal-header
+    [title]="'Clientes'"
+    [subtitle]="'Administrá los clientes del complejo'">
+  </app-internal-header>
+
+  <div class="customers-page">
+
+    <div class="customers-toolbar">
+
+      <div class="search-container">
+
+        <span class="search-icon">⌕</span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Buscar cliente..."
+        />
+
+      </div>
+
+      <div class="status-filters">
+
+        <button
+          type="button"
+          [class.active]="statusFilter === 'all'"
+          (click)="changeStatusFilter('all')">
+          Todos
+        </button>
+
+        <button
+          type="button"
+          [class.active]="statusFilter === 'active'"
+          (click)="changeStatusFilter('active')">
+          Activos
+        </button>
+
+        <button
+          type="button"
+          [class.active]="statusFilter === 'inactive'"
+          (click)="changeStatusFilter('inactive')">
+          Inactivos
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="customers-card">
+
+      <div class="table-header">
+
+        <div>CLIENTE</div>
+        <div>EMAIL</div>
+        <div class="phone-column">TELÉFONO</div>
+        <div class="dni-column">DNI</div>
+
+        @if (isAdmin && statusFilter !== 'all') {
+          <div class="action-column">ACCIÓN</div>
+        }
+
+      </div>
+
+      @if (loading) {
+
+        <div class="empty-state">
+          Cargando clientes...
+        </div>
+
+      } @else if (errorMessage) {
+
+        <div class="empty-state error-state">
+          {{ errorMessage }}
+        </div>
+
+      } @else if (filteredCustomers.length === 0) {
+
+        <div class="empty-state">
+          No se encontraron clientes.
+        </div>
+
+      } @else {
+
+        @for (customer of filteredCustomers; track customer.id) {
+
+          <div class="customer-row">
+
+            <div class="customer-name">
+
+              <div class="customer-avatar">
+                {{ customer.name.charAt(0).toUpperCase() }}
+              </div>
+
+              <span>
+                {{ customer.name }}
+              </span>
+
+            </div>
+
+            <div class="customer-email">
+              {{ customer.email }}
+            </div>
+
+            <div class="phone-column">
+              {{ customer.phone || '-' }}
+            </div>
+
+            <div class="dni-column">
+              {{ customer.dni || '-' }}
+            </div>
+
+            @if (isAdmin && statusFilter !== 'all') {
+
+              <div class="customer-action action-column">
+
+                @if (statusFilter === 'active') {
+
+                  @if (
+                    confirmingAction === 'desactivate' &&
+                    confirmingCustomerId === customer.id
+                    ) {
+
+                    <div class="confirmation-container">
+
+                      <span>¿Dar de baja?</span>
+
+                      <button
+                        type="button"
+                        class="confirm-button"
+                        (click)="executeAction()">
+                        Sí
+                      </button>
+
+                      <button
+                        type="button"
+                        class="cancel-button"
+                        (click)="cancelAction()">
+                        No
+                      </button>
+
+                    </div>
+
+                  } @else {
+
+                    <button
+                      type="button"
+                      class="desactivate-button"
+                      (click)="confirmAction('desactivate', customer.id)">
+                      Dar de baja
+                    </button>
+
+                  }
+
+                } @else {
+
+                  @if (
+                    confirmingAction === 'activate' &&
+                    confirmingCustomerId === customer.id
+                    ) {
+
+                    <div class="confirmation-container">
+
+                      <span>¿Dar de alta?</span>
+
+                      <button
+                        type="button"
+                        class="confirm-button"
+                        (click)="executeAction()">
+                        Sí
+                      </button>
+
+                      <button
+                        type="button"
+                        class="cancel-button"
+                        (click)="cancelAction()">
+                        No
+                      </button>
+
+                    </div>
+
+                  } @else {
+
+                    <button
+                      type="button"
+                      class="activate-button"
+                      (click)="confirmAction('activate', customer.id)">
+                      Dar de alta
+                    </button>
+
+                  }
+
+                }
+
+              </div>
+
+            }
+
+          </div>
+
+        }
+
+      }
+
+    </div>
+
+  </div>
+
+</div>

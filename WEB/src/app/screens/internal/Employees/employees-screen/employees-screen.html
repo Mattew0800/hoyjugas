@@ -212,7 +212,8 @@
   <app-employee-modal
     [employee]="selectedEmployee"
     (close)="closeEmployeeModal()"
-    (saveEmployee)="saveEmployee($event)">
+    (saveEmployee)="saveEmployee($event)"
+    (updateEmployee)="updateEmployee($event)">
   </app-employee-modal>
 
 }
