@@ -120,6 +120,28 @@ export class SpaceModal implements OnInit {
     this.errorMessage = '';
   }
 
+  private buildPricingValidationRequest(
+    spaceId: number
+  ): any[] {
+    return this.days
+      .filter(day => day.enabled)
+      .map(day => ({
+        spaceId,
+        pricing: {
+          dayType: day.dayType,
+          startTime: day.openingTime,
+          endTime: day.closingTime,
+          price: day.price
+        }
+      }));
+  }
+
+  private validatePricing(spaceId: number): Observable<any> {
+    const requests = this.buildPricingValidationRequest(spaceId);
+
+    return this.spaceService.validatePricing(requests);
+  }
+
   removeConfiguration(index: number): void {
     if (this.saving) {
       return;
@@ -153,9 +175,20 @@ export class SpaceModal implements OnInit {
 
     if (this.spaceId === null) {
       this.createSpace();
-    } else {
-      this.updateExistingSpace();
+      return;
     }
+
+    this.saving = true;
+
+    this.validatePricing(this.spaceId).subscribe({
+      next: () => {
+        this.updateExistingSpace();
+      },
+      error: (error) => {
+        this.saving = false;
+        this.errorMessage = this.getErrorMessage(error);
+      }
+    });
   }
 
   private createSpace(): void {
