@@ -2,9 +2,12 @@ package hoyjugas.Service;
 
 import hoyjugas.DTO.Login.UserResponseDTO;
 import hoyjugas.DTO.Login.UserUpdateDTO;
+import hoyjugas.DTO.User.AdminUpdateUserRequestDTO;
 import hoyjugas.DTO.User.EmployeeCreatedDTO;
+import hoyjugas.DTO.User.UserDetailDTO;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
+import hoyjugas.Repository.BookingRepository;
 import hoyjugas.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -24,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final BookingRepository bookingRepository;
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -134,16 +139,51 @@ public class UserService {
                 ));
     }
 
-//    public List<BookingObservationDTO> getClientObservations(Long clientId) {
-//        return bookingRepository.findByClientIdAndObservationIsNotNullOrderByStartDatetimeDesc(clientId)
-//                .stream()
-//                .map(b -> new BookingObservationDTO(
-//                        b.getId(),
-//                        b.getStartDatetime(),
-//                        b.getObservation()
-//                ))
-//                .toList();
-//    }
+    public UserDetailDTO getUserDetail(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        List<String> observations = bookingRepository
+                .findByClientIdOrderByStartDatetimeDesc(userId)
+                .stream()
+                .filter(b -> b.getObservations() != null && !b.getObservations().isBlank())
+                .map(b -> b.getStartDatetime().format(
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
+                        " - " + b.getSpace().getName() +
+                        ": " + b.getObservations())
+                .toList();
+        return UserDetailDTO.fromEntity(user, observations);
+    }
+
+    @Transactional
+    public UserResponseDTO adminUpdateUser(AdminUpdateUserRequestDTO dto) {
+        User user = userRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        if(!user.getRole().equals(Role.USER)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El usuario no es un cliente");
+        }
+        if (dto.getName() != null) user.setName(dto.getName());
+        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
+            if (userRepository.existsByPhoneAndIdNot(dto.getPhone(), dto.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,  "Ya existe un usuario con ese teléfono");
+            }
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getDni() != null && !dto.getDni().equals(user.getDni())) {
+            if (userRepository.existsByDniAndIdNot(dto.getDni(), dto.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Ya existe un usuario con ese DNI");
+            }
+            user.setDni(dto.getDni());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(dto.getEmail(), dto.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Ya existe un usuario con ese email");
+            }
+            user.setEmail(dto.getEmail());
+        }
+        return UserResponseDTO.fromEntity(userRepository.save(user), true);
+    }
 }
 
 
