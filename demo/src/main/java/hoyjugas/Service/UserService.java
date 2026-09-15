@@ -133,6 +133,17 @@ public class UserService {
                         "Cliente no encontrado"
                 ));
     }
+
+//    public List<BookingObservationDTO> getClientObservations(Long clientId) {
+//        return bookingRepository.findByClientIdAndObservationIsNotNullOrderByStartDatetimeDesc(clientId)
+//                .stream()
+//                .map(b -> new BookingObservationDTO(
+//                        b.getId(),
+//                        b.getStartDatetime(),
+//                        b.getObservation()
+//                ))
+//                .toList();
+//    }
 }
 
 

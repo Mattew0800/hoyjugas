@@ -220,7 +220,7 @@ public class BookingService extends BaseBookingService {
     }
 
     @Transactional
-    public BookingResponseDTO completeBooking(Long bookingId, PaymentRequestDTO dto, User employee) {
+    public BookingResponseDTO completeBooking(Long bookingId, PaymentRequestDTO dto, User employee,String observations) {
         Booking booking = getBookingOrThrow(bookingId);
         if (!booking.getBookingStatus().equals(BookingStatus.CONFIRMADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está confirmado");
@@ -245,6 +245,7 @@ public class BookingService extends BaseBookingService {
         paymentRepository.save(payment);
         booking.setBookingStatus(BookingStatus.FINALIZADO);
         booking.setPaymentStatus(calculatePaymentStatus(bookingId, booking.getTotalAmount()));
+        booking.setObservations(observations);
         bookingRepository.save(booking);
         return buildBookingResponseDTO(booking);
     }
@@ -639,4 +640,14 @@ public class BookingService extends BaseBookingService {
         return spaceScheduleRepository
                 .findAllBySpaceIdAndDayType(spaceId, generalDay);
     }
+
+    @Transactional
+    public void addObservations(Long bookingId, String content) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
+        booking.setObservations(content);
+        bookingRepository.save(booking);
+    }
+
+
 }
