@@ -616,7 +616,7 @@ public class BookingService extends BaseBookingService {
                 .findNextBookingByClientId(clientId, LocalDateTime.now(), BookingStatus.CONFIRMADO)
                 .map(this::buildBookingResponseDTO)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
+                        HttpStatus.NO_CONTENT, "No tenés turnos próximos"));
     }
 
     private Optional<SpaceSchedule> resolveScheduleOptional(Long spaceId, DayOfWeek dayOfWeek) {

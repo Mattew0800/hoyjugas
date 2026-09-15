@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { getBookingApiUrl } from '../../config/api.config';
 
@@ -162,5 +163,22 @@ export class BookingService {
       withCredentials: true
     });
   }
+
+  getNextBooking(): Observable<BookingResponseModel | null> {
+    return this.http.get<BookingResponseModel>(`${this.bookingApiUrl}/next`, { withCredentials: true })
+      .pipe(
+        catchError((err) => {
+
+          if (err && err.status === 404) {
+            return of(null);
+          }
+          return throwError(() => err);
+        })
+      );
+  }
+
+
+
+
 
 }
