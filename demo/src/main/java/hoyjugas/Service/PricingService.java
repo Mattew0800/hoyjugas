@@ -58,12 +58,16 @@ public class PricingService {
 
     public void validatePricingCoverage(Long spaceId, List<SpacePricingRequestDTO> incomingPricings) {
         List<SpaceSchedule> schedules = spaceScheduleRepository.findBySpaceId(spaceId);
+
         if (schedules.isEmpty()) return;
+
         Map<DayType, List<SpaceSchedule>> schedulesByDayType = schedules.stream()
                 .collect(Collectors.groupingBy(SpaceSchedule::getDayType));
+
         for (Map.Entry<DayType, List<SpaceSchedule>> entry : schedulesByDayType.entrySet()) {
             DayType dayType = entry.getKey();
             List<SpaceSchedule> daySchedules = entry.getValue();
+
             List<SpacePricing> relevantPricings = incomingPricings.stream()
                     .filter(dto -> dto.getDayType() == dayType)
                     .sorted(Comparator.comparing(SpacePricingRequestDTO::getStartTime))
@@ -80,80 +84,85 @@ public class PricingService {
                         "Debe configurar al menos un precio para " + dayType);
             }
             for (SpaceSchedule schedule : daySchedules) {
-                validatePricingForSchedule(relevantPricings, schedule);
+                validatePricingForSchedule(relevantPricings, schedule, dayType);
             }
         }
     }
 
-    private void validatePricingForSchedule(List<SpacePricing> pricings, SpaceSchedule schedule) {
+    public void validatePricingForSchedule(List<SpacePricing> pricings, SpaceSchedule schedule, DayType dayType) {
         LocalTime opening = schedule.getOpeningTime();
         LocalTime closing = schedule.getClosingTime();
         boolean crossesMidnight = !closing.isAfter(opening);
         if (crossesMidnight) {
-            validateMidnightCrossing(pricings, opening, closing);
+            validateMidnightCrossing(pricings, opening, closing, dayType);
         } else {
-            validateNormalSchedule(pricings, opening, closing);
+            validateNormalSchedule(pricings, opening, closing, dayType);
         }
     }
 
-    private void validateNormalSchedule(List<SpacePricing> pricings, LocalTime opening, LocalTime closing) {
+    private void validateNormalSchedule(List<SpacePricing> pricings, LocalTime opening, LocalTime closing, DayType dayType) {
         List<SpacePricing> relevantPricings = pricings.stream()
                 .filter(p -> p.getStartTime().isBefore(closing) && p.getEndTime().isAfter(opening))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
         if (relevantPricings.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No hay precios configurados para el horario " + opening + " - " + closing);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay precios configurados para el horario " + opening + " - " + closing +  " del día " + dayType);
         }
         if (relevantPricings.get(0).getStartTime().isAfter(opening)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las " + opening +
-                            " hasta las " + relevantPricings.get(0).getStartTime());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falta configurar precio para " + dayType + " desde las " + opening + " hasta las " + relevantPricings.get(0).getStartTime());
         }
         for (int i = 0; i < relevantPricings.size() - 1; i++) {
             LocalTime endCurrent = relevantPricings.get(i).getEndTime();
             LocalTime startNext = relevantPricings.get(i + 1).getStartTime();
-
             if (endCurrent.isBefore(startNext)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Falta configurar precio entre las " + endCurrent +
-                                " y las " + startNext);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falta configurar precio para " + dayType +  " entre las " + endCurrent +  " y las " + startNext);
             }
         }
+
         LocalTime lastEnd = relevantPricings.get(relevantPricings.size() - 1).getEndTime();
         if (lastEnd.isBefore(closing)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las " + lastEnd +
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + lastEnd +
                             " hasta las " + closing);
         }
     }
 
-    private void validateMidnightCrossing(List<SpacePricing> pricings, LocalTime opening, LocalTime closing) {
+    private void validateMidnightCrossing(List<SpacePricing> pricings, LocalTime opening, LocalTime closing, DayType dayType) {
         List<SpacePricing> eveningPricings = pricings.stream()
                 .filter(p -> !p.getStartTime().isBefore(opening))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
+
         List<SpacePricing> morningPricings = pricings.stream()
                 .filter(p -> !p.getEndTime().isAfter(closing) || p.getEndTime().equals(LocalTime.MIDNIGHT))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
+
         if (eveningPricings.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las " + opening + " hasta las 00:00");
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + opening + " hasta las 00:00");
         }
+
         if (eveningPricings.get(0).getStartTime().isAfter(opening)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las " + opening +
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + opening +
                             " hasta las " + eveningPricings.get(0).getStartTime());
         }
+
         if (morningPricings.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las 00:00 hasta las " + closing);
+                    "Falta configurar precio para " + dayType +
+                            " desde las 00:00 hasta las " + closing);
         }
+
         LocalTime lastMorningEnd = morningPricings.get(morningPricings.size() - 1).getEndTime();
         if (lastMorningEnd.isBefore(closing)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio desde las " + lastMorningEnd +
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + lastMorningEnd +
                             " hasta las " + closing);
         }
     }

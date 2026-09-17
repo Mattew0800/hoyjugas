@@ -1,15 +1,14 @@
 package hoyjugas.Service;
 
+import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleRequestDTO;
 import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
 import hoyjugas.Enum.DayType;
 import hoyjugas.Model.Space;
+import hoyjugas.Model.SpacePricing;
 import hoyjugas.Model.SpaceSchedule;
 import hoyjugas.Model.SystemConfig;
-import hoyjugas.Repository.ComplexScheduleRepository;
-import hoyjugas.Repository.SpaceRepository;
-import hoyjugas.Repository.SpaceScheduleRepository;
-import hoyjugas.Repository.SystemConfigRepository;
+import hoyjugas.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,8 @@ public class SpaceScheduleService {
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final SpaceRepository spaceRepository;
     private final ComplexScheduleRepository complexScheduleRepository;
+    private final PricingService pricingService;
+    private final SpacePricingRepository spacePricingRepository;
 
     @Transactional
     public SpaceScheduleResponseDTO addSchedule(Long spaceId, SpaceScheduleRequestDTO dto) {
@@ -50,6 +51,76 @@ public class SpaceScheduleService {
         schedule.setOpeningTime(dto.getOpeningTime());
         schedule.setClosingTime(dto.getClosingTime());
         return SpaceScheduleResponseDTO.fromEntity(spaceScheduleRepository.save(schedule));
+    }
+
+    @Transactional
+    public SpaceScheduleResponseDTO addScheduleWithPricing(Long spaceId, SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+        Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+        if (spaceScheduleRepository.existsBySpaceIdAndDayType(spaceId, scheduleDto.getDayType())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un horario para ese día en este espacio");
+        }
+        validateSchedule(scheduleDto.getOpeningTime(), scheduleDto.getClosingTime(), scheduleDto.getDayType());
+        SpaceSchedule tempSchedule = buildTempSchedule(scheduleDto);
+        List<SpacePricing> pricingEntities = buildPricingEntities(pricings);
+        pricingService.validatePricingForSchedule(pricingEntities, tempSchedule, scheduleDto.getDayType());
+        SpaceSchedule schedule = new SpaceSchedule();
+        schedule.setSpace(space);
+        schedule.setDayType(scheduleDto.getDayType());
+        schedule.setOpeningTime(scheduleDto.getOpeningTime());
+        schedule.setClosingTime(scheduleDto.getClosingTime());
+        SpaceSchedule saved = spaceScheduleRepository.save(schedule);
+        setPricings(space, pricings);
+        return SpaceScheduleResponseDTO.fromEntity(saved);
+    }
+
+    @Transactional
+    public void setPricings(Space space, List<SpacePricingRequestDTO> pricings) {
+        List<SpacePricing> pricingEntities = pricings.stream()
+                .map(p -> {
+                    SpacePricing pricing = new SpacePricing();
+                    pricing.setSpace(space);
+                    pricing.setDayType(p.getDayType());
+                    pricing.setStartTime(p.getStartTime());
+                    pricing.setEndTime(p.getEndTime());
+                    pricing.setPrice(p.getPrice());
+                    return pricing;
+                })
+                .toList();
+        spacePricingRepository.saveAll(pricingEntities);
+    }
+
+    @Transactional
+    public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId,Long scheduleId,SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+        SpaceSchedule tempSchedule = buildTempSchedule(scheduleDto);
+        List<SpacePricing> pricingEntities = buildPricingEntities(pricings);
+        pricingService.validatePricingForSchedule(pricingEntities, tempSchedule, scheduleDto.getDayType());
+        SpaceScheduleResponseDTO updatedSchedule = updateSchedule(spaceId, scheduleId, scheduleDto);
+        spacePricingRepository.deleteBySpaceIdAndDayType(spaceId, scheduleDto.getDayType());
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+        setPricings(space, pricings);
+        return updatedSchedule;
+    }
+
+    private SpaceSchedule buildTempSchedule(SpaceScheduleRequestDTO dto) {
+        SpaceSchedule temp = new SpaceSchedule();
+        temp.setDayType(dto.getDayType());
+        temp.setOpeningTime(dto.getOpeningTime());
+        temp.setClosingTime(dto.getClosingTime());
+        return temp;
+    }
+
+    private List<SpacePricing> buildPricingEntities(List<SpacePricingRequestDTO> pricings) {
+        return pricings.stream()
+                .map(dto -> {
+                    SpacePricing p = new SpacePricing();
+                    p.setDayType(dto.getDayType());
+                    p.setStartTime(dto.getStartTime());
+                    p.setEndTime(dto.getEndTime());
+                    return p;
+                })
+                .toList();
     }
 
     @Transactional

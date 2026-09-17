@@ -5,10 +5,7 @@ import hoyjugas.DTO.SpacePricing.SpacePricingDeleteRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingParentRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
 import hoyjugas.DTO.SpacePricing.SpacePricingUpdateRequestDTO;
-import hoyjugas.DTO.SpaceSchedule.SpaceScheduleDeleteRequestDTO;
-import hoyjugas.DTO.SpaceSchedule.SpaceScheduleParentRequestDTO;
-import hoyjugas.DTO.SpaceSchedule.SpaceScheduleResponseDTO;
-import hoyjugas.DTO.SpaceSchedule.SpaceScheduleUpdateRequestDTO;
+import hoyjugas.DTO.SpaceSchedule.*;
 import hoyjugas.Service.PricingService;
 import hoyjugas.Service.SpaceScheduleService;
 import hoyjugas.Service.SpaceService;
@@ -75,8 +72,7 @@ public class SpaceController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> validatePricingCoverage(@Valid @RequestBody List<SpacePricingParentRequestDTO> dto) {
         if (dto.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Debe enviar al menos una franja de precio");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe enviar al menos una franja de precio");
         }
         Long spaceId = dto.get(0).getSpaceId();
         boolean allSameSpace = dto.stream()
@@ -89,6 +85,18 @@ public class SpaceController {
                 .toList();
         pricingService.validatePricingCoverage(spaceId, pricings);
         return ResponseEntity.ok(Map.of("message", "Precios configurados correctamente"));
+    }
+
+    @PutMapping("/schedule/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(@Valid @RequestBody SpaceScheduleUpdateWithPricingDTO dto) {
+        return ResponseEntity.ok(spaceScheduleService.updateScheduleWithPricing(dto.getSpaceId(), dto.getScheduleId(), dto.getSchedule(), dto.getPricings()));
+    }
+
+    @PostMapping("/schedule/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(@Valid @RequestBody SpaceScheduleWithPricingDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(spaceScheduleService.addScheduleWithPricing(dto.getSpaceId(), dto.getSchedule(),dto.getPricings()));
     }
 
     @PutMapping("/pricing/update")
@@ -109,19 +117,18 @@ public class SpaceController {
         return ResponseEntity.ok(spaceService.getAllSpacesActive());
     }
 
-    @PostMapping("/schedule/add")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(@Valid @RequestBody SpaceScheduleParentRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(spaceScheduleService.addSchedule(dto.getSpaceId(), dto.getSchedule()));
-    }
+//    @PostMapping("/schedule/add")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<SpaceScheduleResponseDTO> addSchedule(@Valid @RequestBody SpaceScheduleParentRequestDTO dto) {
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(spaceScheduleService.addSchedule(dto.getSpaceId(), dto.getSchedule()));
+//    }
 
-    @PutMapping("/schedule/update")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(@Valid @RequestBody SpaceScheduleUpdateRequestDTO dto) {
-        return ResponseEntity.ok(spaceScheduleService.updateSchedule(
-                dto.getSpaceId(), dto.getScheduleId(), dto.toScheduleRequestDTO()));
-    }
+//    @PutMapping("/schedule/update")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<SpaceScheduleResponseDTO> updateSchedule(@Valid @RequestBody SpaceScheduleUpdateRequestDTO dto) {
+//        return ResponseEntity.ok(spaceScheduleService.updateSchedule(dto.getSpaceId(), dto.getScheduleId(), dto.toScheduleRequestDTO()));
+//    }
 
     @DeleteMapping("/schedule/delete")
     @PreAuthorize("hasRole('ADMIN')")
