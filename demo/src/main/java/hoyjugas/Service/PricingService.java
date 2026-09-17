@@ -1,6 +1,7 @@
 package hoyjugas.Service;
 
 import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
+import hoyjugas.DTO.SpaceSchedule.SpaceScheduleRequestDTO;
 import hoyjugas.Enum.DayType;
 import hoyjugas.Model.Space;
 import hoyjugas.Model.SpacePricing;
@@ -18,10 +19,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,16 +56,12 @@ public class PricingService {
 
     public void validatePricingCoverage(Long spaceId, List<SpacePricingRequestDTO> incomingPricings) {
         List<SpaceSchedule> schedules = spaceScheduleRepository.findBySpaceId(spaceId);
-
         if (schedules.isEmpty()) return;
-
         Map<DayType, List<SpaceSchedule>> schedulesByDayType = schedules.stream()
                 .collect(Collectors.groupingBy(SpaceSchedule::getDayType));
-
         for (Map.Entry<DayType, List<SpaceSchedule>> entry : schedulesByDayType.entrySet()) {
             DayType dayType = entry.getKey();
             List<SpaceSchedule> daySchedules = entry.getValue();
-
             List<SpacePricing> relevantPricings = incomingPricings.stream()
                     .filter(dto -> dto.getDayType() == dayType)
                     .sorted(Comparator.comparing(SpacePricingRequestDTO::getStartTime))
@@ -87,6 +81,60 @@ public class PricingService {
                 validatePricingForSchedule(relevantPricings, schedule, dayType);
             }
         }
+    }
+    public void validatePricingForDayType(List<SpacePricingRequestDTO> pricings, SpaceScheduleRequestDTO scheduleDto) {
+        DayType scheduleDayType = scheduleDto.getDayType();
+        List<DayType> possibleDayTypes = getPossibleDayTypes(scheduleDayType);
+        SpaceSchedule tempSchedule = new SpaceSchedule();
+        tempSchedule.setDayType(scheduleDto.getDayType());
+        tempSchedule.setOpeningTime(scheduleDto.getOpeningTime());
+        tempSchedule.setClosingTime(scheduleDto.getClosingTime());
+        List<String> errors = new ArrayList<>();
+        for (DayType dayType : possibleDayTypes) {
+            List<SpacePricing> specificPricings = pricings.stream()
+                    .filter(dto -> dto.getDayType() == dayType)
+                    .sorted(Comparator.comparing(SpacePricingRequestDTO::getStartTime))
+                    .map(this::toPricingEntity)
+                    .toList();
+            if (specificPricings.isEmpty()) {
+                specificPricings = pricings.stream()
+                        .filter(dto -> dto.getDayType() == scheduleDayType)
+                        .sorted(Comparator.comparing(SpacePricingRequestDTO::getStartTime))
+                        .map(this::toPricingEntity)
+                        .toList();
+            }
+            if (specificPricings.isEmpty()) {
+                errors.add("Falta configurar precio para " + dayType);
+                continue;
+            }
+            try {
+                validatePricingForSchedule(specificPricings, tempSchedule, dayType);
+            } catch (ResponseStatusException e) {
+                errors.add(e.getReason());
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.join(" | ", errors));
+        }
+    }
+
+    private List<DayType> getPossibleDayTypes(DayType scheduleDayType) {
+        return switch (scheduleDayType) {
+            case DIA_DE_SEMANA -> List.of(
+                    DayType.LUNES, DayType.MARTES, DayType.MIERCOLES,
+                    DayType.JUEVES, DayType.VIERNES);
+            case FIN_DE_SEMANA -> List.of(DayType.SABADO, DayType.DOMINGO);
+            default -> List.of(scheduleDayType);
+        };
+    }
+
+    private SpacePricing toPricingEntity(SpacePricingRequestDTO dto) {
+        SpacePricing p = new SpacePricing();
+        p.setDayType(dto.getDayType());
+        p.setStartTime(dto.getStartTime());
+        p.setEndTime(dto.getEndTime());
+        return p;
     }
 
     public void validatePricingForSchedule(List<SpacePricing> pricings, SpaceSchedule schedule, DayType dayType) {
@@ -133,25 +181,21 @@ public class PricingService {
                 .filter(p -> !p.getStartTime().isBefore(opening))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
-
         List<SpacePricing> morningPricings = pricings.stream()
                 .filter(p -> !p.getEndTime().isAfter(closing) || p.getEndTime().equals(LocalTime.MIDNIGHT))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
-
         if (eveningPricings.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Falta configurar precio para " + dayType +
                             " desde las " + opening + " hasta las 00:00");
         }
-
         if (eveningPricings.get(0).getStartTime().isAfter(opening)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Falta configurar precio para " + dayType +
                             " desde las " + opening +
                             " hasta las " + eveningPricings.get(0).getStartTime());
         }
-
         if (morningPricings.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Falta configurar precio para " + dayType +

@@ -56,14 +56,14 @@ public class SpaceScheduleService {
     @Transactional
     public SpaceScheduleResponseDTO addScheduleWithPricing(Long spaceId, SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         if (spaceScheduleRepository.existsBySpaceIdAndDayType(spaceId, scheduleDto.getDayType())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un horario para ese día en este espacio");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya existe un horario para ese día en este espacio");
         }
         validateSchedule(scheduleDto.getOpeningTime(), scheduleDto.getClosingTime(), scheduleDto.getDayType());
-        SpaceSchedule tempSchedule = buildTempSchedule(scheduleDto);
-        List<SpacePricing> pricingEntities = buildPricingEntities(pricings);
-        pricingService.validatePricingForSchedule(pricingEntities, tempSchedule, scheduleDto.getDayType());
+        pricingService.validatePricingForDayType(pricings, scheduleDto);
         SpaceSchedule schedule = new SpaceSchedule();
         schedule.setSpace(space);
         schedule.setDayType(scheduleDto.getDayType());
@@ -75,7 +75,7 @@ public class SpaceScheduleService {
     }
 
     @Transactional
-    public void setPricings(Space space, List<SpacePricingRequestDTO> pricings) {
+    void setPricings(Space space, List<SpacePricingRequestDTO> pricings) {
         List<SpacePricing> pricingEntities = pricings.stream()
                 .map(p -> {
                     SpacePricing pricing = new SpacePricing();
@@ -91,19 +91,18 @@ public class SpaceScheduleService {
     }
 
     @Transactional
-    public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId,Long scheduleId,SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
-        SpaceSchedule tempSchedule = buildTempSchedule(scheduleDto);
-        List<SpacePricing> pricingEntities = buildPricingEntities(pricings);
-        pricingService.validatePricingForSchedule(pricingEntities, tempSchedule, scheduleDto.getDayType());
+    public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId, Long scheduleId, SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+        pricingService.validatePricingForDayType(pricings, scheduleDto);
         SpaceScheduleResponseDTO updatedSchedule = updateSchedule(spaceId, scheduleId, scheduleDto);
         spacePricingRepository.deleteBySpaceIdAndDayType(spaceId, scheduleDto.getDayType());
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         setPricings(space, pricings);
         return updatedSchedule;
     }
 
-    private SpaceSchedule buildTempSchedule(SpaceScheduleRequestDTO dto) {
+    public SpaceSchedule buildTempSchedule(SpaceScheduleRequestDTO dto) {
         SpaceSchedule temp = new SpaceSchedule();
         temp.setDayType(dto.getDayType());
         temp.setOpeningTime(dto.getOpeningTime());
@@ -166,8 +165,7 @@ public class SpaceScheduleService {
 
     private void validateSchedule(LocalTime openingTime, LocalTime closingTime, DayType dayType) {
         if (!openingTime.isBefore(closingTime)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El horario de apertura debe ser anterior al de cierre");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El horario de apertura debe ser anterior al de cierre");
         }
         complexScheduleRepository.findByDayType(dayType).ifPresent(complexSchedule -> {
             if (openingTime.isBefore(complexSchedule.getOpeningTime())) {
