@@ -713,10 +713,23 @@ export class Dashboard implements OnInit {
 
       occupiedSpaces: new Set(
         bookings
-          .filter(
-            booking =>
-              booking.status !== 'CANCELADO'
-          )
+          .filter(booking => {
+            if (booking.status === 'CANCELADO') {
+              return false;
+            }
+
+            const start = new Date(
+              booking.startDatetime
+            ).getTime();
+
+            const end = new Date(
+              booking.endDatetime
+            ).getTime();
+
+            const now = new Date().getTime();
+
+            return start <= now && now < end;
+          })
           .map(
             booking =>
               booking.spaceName
