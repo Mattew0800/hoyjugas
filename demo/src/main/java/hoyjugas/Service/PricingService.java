@@ -154,19 +154,32 @@ public class PricingService {
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
         if (relevantPricings.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay precios configurados para el horario " + opening + " - " + closing +  " del día " + dayType);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No hay precios configurados para el horario " + opening + " - " + closing +
+                            " del día " + dayType);
         }
         if (relevantPricings.get(0).getStartTime().isAfter(opening)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falta configurar precio para " + dayType + " desde las " + opening + " hasta las " + relevantPricings.get(0).getStartTime());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + opening +
+                            " hasta las " + relevantPricings.get(0).getStartTime());
         }
         for (int i = 0; i < relevantPricings.size() - 1; i++) {
             LocalTime endCurrent = relevantPricings.get(i).getEndTime();
             LocalTime startNext = relevantPricings.get(i + 1).getStartTime();
+            if (endCurrent.isAfter(startNext)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Los precios para " + dayType +
+                                " se superponen entre las " + startNext +
+                                " y las " + endCurrent);
+            }
             if (endCurrent.isBefore(startNext)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falta configurar precio para " + dayType +  " entre las " + endCurrent +  " y las " + startNext);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Falta configurar precio para " + dayType +
+                                " entre las " + endCurrent +
+                                " y las " + startNext);
             }
         }
-
         LocalTime lastEnd = relevantPricings.get(relevantPricings.size() - 1).getEndTime();
         if (lastEnd.isBefore(closing)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -181,33 +194,50 @@ public class PricingService {
                 .filter(p -> !p.getStartTime().isBefore(opening))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
+
         List<SpacePricing> morningPricings = pricings.stream()
                 .filter(p -> !p.getEndTime().isAfter(closing) || p.getEndTime().equals(LocalTime.MIDNIGHT))
                 .sorted(Comparator.comparing(SpacePricing::getStartTime))
                 .toList();
-        if (eveningPricings.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio para " + dayType +
-                            " desde las " + opening + " hasta las 00:00");
-        }
-        if (eveningPricings.get(0).getStartTime().isAfter(opening)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio para " + dayType +
-                            " desde las " + opening +
-                            " hasta las " + eveningPricings.get(0).getStartTime());
-        }
-        if (morningPricings.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Falta configurar precio para " + dayType +
-                            " desde las 00:00 hasta las " + closing);
-        }
 
-        LocalTime lastMorningEnd = morningPricings.get(morningPricings.size() - 1).getEndTime();
-        if (lastMorningEnd.isBefore(closing)) {
+        validateMidnightRange(eveningPricings, opening, LocalTime.MIDNIGHT, dayType);
+        validateMidnightRange(morningPricings, LocalTime.MIDNIGHT, closing, dayType);
+    }
+
+    private void validateMidnightRange(List<SpacePricing> pricings, LocalTime rangeStart, LocalTime rangeEnd, DayType dayType) {
+        if (pricings.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Falta configurar precio para " + dayType +
-                            " desde las " + lastMorningEnd +
-                            " hasta las " + closing);
+                            " desde las " + rangeStart + " hasta las " + rangeEnd);
+        }
+        if (pricings.get(0).getStartTime().isAfter(rangeStart)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + rangeStart +
+                            " hasta las " + pricings.get(0).getStartTime());
+        }
+        for (int i = 0; i < pricings.size() - 1; i++) {
+            LocalTime endCurrent = pricings.get(i).getEndTime();
+            LocalTime startNext = pricings.get(i + 1).getStartTime();
+            if (endCurrent.isAfter(startNext)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Los precios para " + dayType +
+                                " se superponen entre las " + startNext +
+                                " y las " + endCurrent);
+            }
+            if (endCurrent.isBefore(startNext)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Falta configurar precio para " + dayType +
+                                " entre las " + endCurrent +
+                                " y las " + startNext);
+            }
+        }
+        LocalTime lastEnd = pricings.get(pricings.size() - 1).getEndTime();
+        if (lastEnd.isBefore(rangeEnd)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Falta configurar precio para " + dayType +
+                            " desde las " + lastEnd +
+                            " hasta las " + rangeEnd);
         }
     }
 

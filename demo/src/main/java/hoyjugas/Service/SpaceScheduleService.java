@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -54,15 +55,23 @@ public class SpaceScheduleService {
     }
 
     @Transactional
-    public SpaceScheduleResponseDTO addScheduleWithPricing(Long spaceId, SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+    public SpaceScheduleResponseDTO addScheduleWithPricing(Long spaceId, SpaceScheduleRequestDTO scheduleDto,  List<SpacePricingRequestDTO> pricings) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Espacio no encontrado"));
-        if (spaceScheduleRepository.existsBySpaceIdAndDayType(spaceId, scheduleDto.getDayType())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un horario para ese día en este espacio");
-        }
         validateSchedule(scheduleDto.getOpeningTime(), scheduleDto.getClosingTime(), scheduleDto.getDayType());
+        List<SpaceSchedule> existingSchedules = spaceScheduleRepository
+                .findAllBySpaceIdAndDayType(spaceId, scheduleDto.getDayType());
+        for (SpaceSchedule existing : existingSchedules) {
+            if (schedulesOverlap(
+                    scheduleDto.getOpeningTime(), scheduleDto.getClosingTime(),
+                    existing.getOpeningTime(), existing.getClosingTime())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        String.format("El horario %s - %s se superpone con el existente %s - %s",
+                                scheduleDto.getOpeningTime(), scheduleDto.getClosingTime(),
+                                existing.getOpeningTime(), existing.getClosingTime()));
+            }
+        }
         pricingService.validatePricingForDayType(pricings, scheduleDto);
         SpaceSchedule schedule = new SpaceSchedule();
         schedule.setSpace(space);
@@ -91,15 +100,35 @@ public class SpaceScheduleService {
     }
 
     @Transactional
-    public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId, Long scheduleId, SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+    public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId, Long scheduleId,SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
+        SpaceSchedule oldSchedule = getScheduleOrThrow(scheduleId, spaceId);
+        DayType oldDayType = oldSchedule.getDayType();
         pricingService.validatePricingForDayType(pricings, scheduleDto);
         SpaceScheduleResponseDTO updatedSchedule = updateSchedule(spaceId, scheduleId, scheduleDto);
-        spacePricingRepository.deleteBySpaceIdAndDayType(spaceId, scheduleDto.getDayType());
+        deletePricingsForDayTypeCoverage(spaceId, oldDayType);
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         setPricings(space, pricings);
         return updatedSchedule;
+    }
+    private void deletePricingsForDayTypeCoverage(Long spaceId, DayType dayType) {
+        List<DayType> dayTypesToDelete = getPossibleDayTypes(dayType);
+        if (!dayTypesToDelete.contains(dayType)) {
+            dayTypesToDelete = new ArrayList<>(dayTypesToDelete);
+            dayTypesToDelete.add(dayType);
+        }
+        spacePricingRepository.deleteBySpaceIdAndDayTypeIn(spaceId, dayTypesToDelete);
+    }
+
+    private List<DayType> getPossibleDayTypes(DayType scheduleDayType) {
+        return switch (scheduleDayType) {
+            case DIA_DE_SEMANA -> new ArrayList<>(List.of(
+                    DayType.LUNES, DayType.MARTES, DayType.MIERCOLES,
+                    DayType.JUEVES, DayType.VIERNES));
+            case FIN_DE_SEMANA -> new ArrayList<>(List.of(DayType.SABADO, DayType.DOMINGO));
+            default -> new ArrayList<>(List.of(scheduleDayType));
+        };
     }
 
     public SpaceSchedule buildTempSchedule(SpaceScheduleRequestDTO dto) {

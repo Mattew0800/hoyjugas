@@ -142,6 +142,9 @@ public class UserService {
     public UserDetailDTO getUserDetail(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        if (!user.getRole().equals(Role.USER)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No podes ver a este usuario");
+        }
         List<String> observations = bookingRepository
                 .findByClientIdOrderByStartDatetimeDesc(userId)
                 .stream()
@@ -162,11 +165,12 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El usuario no es un cliente");
         }
         if (dto.getName() != null) user.setName(dto.getName());
-        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
-            if (userRepository.existsByPhoneAndIdNot(dto.getPhone(), dto.getId())) {
+        String formattedPhone = dto.getPhone() == null ? null : "+549" + dto.getPhone();
+        if (formattedPhone != null && !formattedPhone.equals(user.getPhone())) {
+            if (userRepository.existsByPhoneAndIdNot(formattedPhone, dto.getId())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,  "Ya existe un usuario con ese teléfono");
             }
-            user.setPhone(dto.getPhone());
+            user.setPhone(formattedPhone);
         }
         if (dto.getDni() != null && !dto.getDni().equals(user.getDni())) {
             if (userRepository.existsByDniAndIdNot(dto.getDni(), dto.getId())) {
