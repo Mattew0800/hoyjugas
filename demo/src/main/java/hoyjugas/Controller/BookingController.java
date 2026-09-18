@@ -166,4 +166,9 @@ public class BookingController {
     public ResponseEntity<SpaceCardDTO> getSpace(@Valid @RequestBody SpaceIdRequestDTO dto) {
         return ResponseEntity.ok(spaceService.getSpaceCard(dto.getSpaceId()));
     }
+
+    @GetMapping("/availability-next-30-days")
+    public ResponseEntity<AvailabilitySummaryDTO> getAvailabilityNext30Days() {
+        return ResponseEntity.ok(bookingService.getAvailabilityNext30Days());
+    }
 }
