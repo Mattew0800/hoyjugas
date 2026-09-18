@@ -2,94 +2,84 @@
 
 <div class="history-container">
 
-  <div class="page-header">
-    <h1 class="title">Mis Turnos</h1>
-    <p class="subtitle">Revisá tus próximas fechas y el historial de partidos.</p>
+  <div class="page-header-row">
+    <div class="page-header">
+      <h1 class="title">{{ screenTitle }}</h1>
+      <p class="subtitle">{{ screenSubtitle }}</p>
+    </div>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" *ngIf="!selectionMode">
     <button class="tab-button" [class.active]="activeTab === 'upcoming'" (click)="selectTab('upcoming')">
       PRÓXIMOS
     </button>
     <button class="tab-button" [class.active]="activeTab === 'past'" (click)="selectTab('past')">
-      PASADOS
+      HISTORIAL
     </button>
   </div>
 
   <div class="bookings-list">
-
-    <div class="booking-card" *ngFor="let booking of filteredBookings">
-
-      <!-- Accent stripe lateral -->
+    <div
+      *ngFor="let booking of filteredBookings"
+      class="booking-card"
+      [class.is-cancelled]="isCancelledBooking(booking)"
+      [class.selection-mode]="selectionMode"
+      [class.selected]="selectionMode && selectedBookingId === booking.id"
+      (click)="selectionMode ? toggleBookingSelection(booking.id) : null"
+    >
       <div class="card-stripe" [class.stripe--paid]="getPaymentClass(booking) === 'paid'"
         [class.stripe--deposit]="getPaymentClass(booking) === 'deposit'"
         [class.stripe--pending]="getPaymentClass(booking) === 'pending'">
       </div>
 
       <div class="card-body">
-
-        <!-- HEADER: date + info + badge -->
         <div class="card-header">
-
           <div class="date-box">
             <span class="month">{{ booking.startDatetime | date:'MMM' | uppercase }}</span>
             <span class="day">{{ booking.startDatetime | date:'d' }}</span>
           </div>
 
           <div class="booking-info">
-            <h3 class="space-name">{{ booking.spaceName }}</h3>
-            <div class="time-row">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="#CEA764" stroke-width="2" />
-                <path d="M12 7v5l3 3" stroke="#CEA764" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              <span class="time">
-                {{ booking.startDatetime | date:'HH:mm' }} – {{ booking.endDatetime | date:'HH:mm' }}
+            <div class="primary-line">
+              <span class="space-name">{{ booking.spaceName }}</span>
+              <span
+                class="status-badge"
+                [class.badge--cancelled]="isCancelledBooking(booking)"
+                [class.badge--paid]="!isCancelledBooking(booking) && getPaymentClass(booking) === 'paid'"
+                [class.badge--deposit]="!isCancelledBooking(booking) && getPaymentClass(booking) === 'deposit'"
+                [class.badge--pending]="!isCancelledBooking(booking) && getPaymentClass(booking) === 'pending'"
+              >
+                {{ getPaymentText(booking) }}
+              </span>
+            </div>
+
+            <div class="secondary-line">
+              <span class="time-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="#CEA764" stroke-width="2" />
+                  <path d="M12 7v5l3 3" stroke="#CEA764" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span class="time">
+                  {{ booking.startDatetime | date:'HH:mm' }} – {{ booking.endDatetime | date:'HH:mm' }}
+                </span>
+              </span>
+              <span class="price-separator">•</span>
+              <span class="booking-price">
+                {{ booking.totalAmount | currency:'ARS':'symbol':'1.0-0' }}
               </span>
             </div>
           </div>
 
-          <div class="status-badge" [class.badge--paid]="getPaymentClass(booking) === 'paid'"
-            [class.badge--deposit]="getPaymentClass(booking) === 'deposit'"
-            [class.badge--pending]="getPaymentClass(booking) === 'pending'">
-            {{ getPaymentText(booking) }}
-          </div>
-
-        </div>
-
-        <!-- DETAILS ROW -->
-        <div class="details-row">
-          <div class="detail-chip">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#8a8a8a" />
+          <div class="chevron-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 6l6 6-6 6"></path>
             </svg>
-            <span>{{ booking.status }}</span>
-          </div>
-          <div class="detail-chip">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="6" width="18" height="13" rx="2" stroke="#8a8a8a" stroke-width="2" />
-              <path d="M3 10h18" stroke="#8a8a8a" stroke-width="2" />
-              <path d="M8 3v3M16 3v3" stroke="#8a8a8a" stroke-width="2" stroke-linecap="round" />
-            </svg>
-            <span>{{ booking.totalAmount | currency:'ARS':'symbol':'1.0-0' }}</span>
           </div>
         </div>
-
-        <!-- FOOTER -->
-        <div class="card-footer">
-          <span class="ref-number"># {{ booking.bookingNumber }}</span>
-          <button class="details-button" (click)="viewDetails(booking.id)">
-            Ver detalles
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18l6-6-6-6" stroke="#CEA764" stroke-width="2.5" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-
       </div>
-    </div>
 
+      <span *ngIf="selectionMode && selectedBookingId === booking.id" class="selection-indicator">✓</span>
+    </div>
   </div>
 
   <div class="empty-state" *ngIf="filteredBookings.length === 0">
@@ -99,6 +89,26 @@
       <path d="M8 2v3M16 2v3" stroke="#2a2a2a" stroke-width="1.5" stroke-linecap="round" />
     </svg>
     <p>No hay turnos para mostrar.</p>
+  </div>
+
+  <div class="cancel-bar" *ngIf="selectionMode">
+    <button type="button" class="cancel-primary-button" (click)="openCancelConfirmation()" [disabled]="cancelInProgress || !hasSelectedBooking">
+      {{ cancelInProgress ? 'Cancelando...' : 'Cancelar reserva' }}
+    </button>
+  </div>
+
+  <div class="confirm-modal-backdrop" *ngIf="showCancelConfirmModal" (click)="closeCancelConfirmation()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h2>¿Cancelar reserva?</h2>
+      <p>Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-secondary" (click)="closeCancelConfirmation()">Volver</button>
+        <button type="button" class="modal-primary" (click)="confirmCancelBooking()" [disabled]="cancelInProgress">
+          {{ cancelInProgress ? 'Cancelando...' : 'Confirmar cancelación' }}
+        </button>
+      </div>
+      <p class="modal-error" *ngIf="cancelError">{{ cancelError }}</p>
+    </div>
   </div>
 
 </div>

@@ -29,25 +29,25 @@
   margin: 0;
   border: none;
   background: transparent;
-  
 
-  color: rgba(255, 255, 255, 0.75); 
-  font-size: 13px; 
-  font-weight: 600; 
-  letter-spacing: 0.8px; 
-  text-transform: uppercase; 
+
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 
 
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 2; 
+  z-index: 2;
   transition: color 0.2s ease-out;
 
   &.active {
-    color: #000000; 
-  
+    color: #000000;
+
   }
 
 }
@@ -70,6 +70,15 @@
   padding: 0 16px;
 }
 
+.section-title {
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: left;
+  text-align: center;
+  margin: 1rem 0 auto 0;
+}
+
 .field-card {
   background: #111;
   width: 100%;
@@ -77,12 +86,12 @@
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(201, 161, 92, 0.15), 0 4px 8px rgba(0,0,0,0.4);
   }
-  
+
   &:active {
     transform: translateY(-1px);
     box-shadow: 0 6px 12px rgba(201, 161, 92, 0.1), 0 2px 4px rgba(0,0,0,0.4);
@@ -103,7 +112,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
   color: rgba(201, 161, 92, 0.3);
-  
+
   svg {
     width: 64px;
     height: 64px;
@@ -168,21 +177,21 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  
-  
+
+
   svg {
     width: 64px;
     height: 64px;
     color: rgba(255, 255, 255, 0.15);
     margin-bottom: 1rem;
   }
-  
+
   h3 {
     font-size: 20px;
     margin: 0 0 8px 0;
     color: #e0e0e0;
   }
-  
+
   p {
     font-size: 15px;
     color: #888;

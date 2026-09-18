@@ -37,8 +37,16 @@ $radius-badge:  10px;
 
 // --- Page Header ---
 
-.page-header {
+.page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.page-header {
+  flex: 1;
 }
 
 .title {
@@ -55,6 +63,18 @@ $radius-badge:  10px;
   line-height: 1.5;
 }
 
+.secondary-action {
+  border: 1px solid rgba($accent, 0.4);
+  background: rgba($accent, 0.12);
+  color: $accent;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+}
+
 // --- Tabs ---
 
 .tabs {
@@ -63,7 +83,7 @@ $radius-badge:  10px;
   border: 1px solid $border;
   border-radius: 16px;
   padding: 4px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   gap: 4px;
 }
 
@@ -91,6 +111,19 @@ $radius-badge:  10px;
   }
 }
 
+.selection-hint {
+  color: $text-primary;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  background: rgba($bg-elevated, 0.7);
+  border: 1px solid rgba($border, 0.9);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
 // --- Bookings List ---
 
 .bookings-list {
@@ -102,49 +135,81 @@ $radius-badge:  10px;
 // --- Booking Card ---
 
 .booking-card {
+  position: relative;
   display: flex;
-  background: $bg-surface;
-  border: 1px solid $border;
+  flex: 1;
+  background: rgba($bg-surface, 0.9);
+  border: 1px solid rgba($border, 0.8);
   border-radius: $radius-card;
   overflow: hidden;
-  transition: border-color 0.2s ease, transform 0.15s ease;
+  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  opacity: 0.96;
+
+  &.is-cancelled {
+    opacity: 0.6;
+  }
+
+  &.selection-mode {
+    cursor: pointer;
+  }
+
+  &.selected {
+    border-color: rgba($accent, 0.9);
+    box-shadow: 0 0 0 2px rgba($accent, 0.14), 0 8px 18px rgba(0, 0, 0, 0.2);
+    background: rgba($bg-surface, 1);
+  }
 
   &:active {
     transform: scale(0.99);
   }
 }
 
+.selection-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $accent;
+  color: $bg-base;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px rgba($accent, 0.18);
+}
+
 // Stripe lateral de acento (status visual)
 .card-stripe {
-  width: 4px;
+  width: 0;
   flex-shrink: 0;
-  border-radius: 0; // flush con el card
+  border-radius: 0;
 
-  &.stripe--paid    { background: $success; }
-  &.stripe--deposit { background: $accent; }
-  &.stripe--pending { background: $text-muted; }
+  &.stripe--paid    { background: transparent; }
+  &.stripe--deposit { background: transparent; }
+  &.stripe--pending { background: transparent; }
 }
 
 .card-body {
   flex: 1;
-  padding: 16px 16px 14px;
-  min-width: 0; // evita overflow en flex
+  padding: 14px 14px 12px;
+  min-width: 0;
 }
-
-// --- Card Header ---
 
 .card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
 }
 
 .date-box {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: $radius-inner;
   background: $bg-elevated;
-  border: 1px solid $border;
+  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -154,7 +219,7 @@ $radius-badge:  10px;
 
 .month {
   color: $text-secondary;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.8px;
 }
@@ -169,119 +234,121 @@ $radius-badge:  10px;
 .booking-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.primary-line,
+.secondary-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .space-name {
   color: $text-primary;
   font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 5px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .time-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  color: rgba($text-secondary, 0.9);
 
   svg {
     flex-shrink: 0;
+    opacity: 0.7;
   }
 }
 
 .time {
-  color: $accent;
   font-size: 13px;
+  font-weight: 600;
+  color: rgba($text-secondary, 0.9);
+}
+
+.price-separator {
+  color: rgba($text-secondary, 0.65);
+  font-size: 12px;
+}
+
+.booking-price {
+  color: rgba($text-secondary, 0.9);
+  font-size: 12px;
   font-weight: 600;
 }
 
-// --- Status Badge ---
-
 .status-badge {
-  padding: 5px 9px;
-  border-radius: $radius-badge;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
+  line-height: 1;
   white-space: nowrap;
-  letter-spacing: 0.3px;
+  color: $text-secondary;
   flex-shrink: 0;
 
+  &::before {
+    content: '•';
+    font-size: 14px;
+    line-height: 1;
+  }
+
   &.badge--paid {
-    background: $success-dim;
-    color: $success;
+    color: $text-secondary;
+
+    &::before {
+      color: $success;
+    }
   }
 
   &.badge--deposit {
-    background: $accent-dim;
-    color: $accent;
+    color: $text-secondary;
+
+    &::before {
+      color: $accent;
+    }
   }
 
   &.badge--pending {
-    background: rgba(255, 255, 255, 0.05);
     color: $text-secondary;
+
+    &::before {
+      color: $text-muted;
+    }
+  }
+
+  &.badge--cancelled {
+    color: $text-secondary;
+
+    &::before {
+      color: #e05c5c;
+    }
   }
 }
 
-// --- Details Row ---
-
-.details-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.detail-chip {
+.chevron-box {
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: $bg-elevated;
-  border: 1px solid $border;
-  border-radius: 8px;
-  padding: 5px 9px;
+  justify-content: center;
+  color: #4a4a4a;
+  flex-shrink: 0;
 
-  span {
-    color: $text-secondary;
-    font-size: 12px;
-    font-weight: 500;
-  }
-}
-
-// --- Card Footer ---
-
-.card-footer {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid $border-soft;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ref-number {
-  color: $text-muted;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.details-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: $accent;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 0.75;
+  svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
@@ -300,4 +367,98 @@ $radius-badge:  10px;
     color: $text-muted;
     font-size: 14px;
   }
+}
+
+.cancel-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 88px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cancel-primary-button {
+  pointer-events: auto;
+  width: min(100%, 420px);
+  height: 52px;
+  border: none;
+  background: linear-gradient(135deg, #d0a75d, #b98b36);
+  color: #1b150d;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(206, 167, 100, 0.26);
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+}
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.confirm-modal {
+  width: min(100%, 420px);
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: 22px;
+  padding: 24px 20px 18px;
+  color: $text-primary;
+
+  h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+  }
+
+  p {
+    margin: 0;
+    color: $text-secondary;
+    line-height: 1.5;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-secondary,
+.modal-primary {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-secondary {
+  background: $bg-elevated;
+  color: $text-primary;
+}
+
+.modal-primary {
+  background: $accent;
+  color: #1b150d;
+}
+
+.modal-error {
+  margin-top: 16px !important;
+  color: #ff8f8f !important;
+  font-size: 13px;
 }

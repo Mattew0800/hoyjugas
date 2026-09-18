@@ -70,6 +70,12 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
+  goToCancelBookings(): void {
+    this.router.navigate(['/my-bookings'], {
+      state: { selectedTab: 'upcoming', cancelMode: true }
+    });
+  }
+
   getAvailableSlotsToday() {
     return this.bService.getAvailableSlotsToday().subscribe({
       next: (r) => {
