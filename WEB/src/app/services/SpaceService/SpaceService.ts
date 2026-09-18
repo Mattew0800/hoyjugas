@@ -103,6 +103,16 @@ export class SpaceService {
     );
   }
 
+  validatePricing(requests: any[]): Observable<any> {
+    return this.http.post(
+      `${this.adminSpaceApiUrl}/validate-pricing`,
+      requests,
+      {
+        withCredentials: true
+      }
+    );
+  }
+
   updateSchedule(request: any): Observable<any> {
     return this.http.put(
       `${this.adminSpaceApiUrl}/schedule/update`,

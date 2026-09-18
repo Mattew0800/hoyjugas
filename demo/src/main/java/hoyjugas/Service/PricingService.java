@@ -82,6 +82,7 @@ public class PricingService {
             }
         }
     }
+  
     public void validatePricingForDayType(List<SpacePricingRequestDTO> pricings, SpaceScheduleRequestDTO scheduleDto) {
         DayType scheduleDayType = scheduleDto.getDayType();
         List<DayType> possibleDayTypes = getPossibleDayTypes(scheduleDayType);
@@ -180,6 +181,7 @@ public class PricingService {
                                 " y las " + startNext);
             }
         }
+
         LocalTime lastEnd = relevantPricings.get(relevantPricings.size() - 1).getEndTime();
         if (lastEnd.isBefore(closing)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
