@@ -52,14 +52,12 @@ public class BookingService extends BaseBookingService {
         this.complexScheduleRepository = complexScheduleRepository;
     }
 
-
     public List<SpaceAvailabilityDTO> getAvailability(Long spaceId, LocalDate date) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         List<SpaceSchedule> schedules = resolveSchedules(spaceId, date.getDayOfWeek());
         if (schedules.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No hay horario configurado para ese espacio y día");
+            return List.of();
         }
         List<Booking> occupiedBookings = bookingRepository.findBySpaceAndDate(
                 spaceId,
