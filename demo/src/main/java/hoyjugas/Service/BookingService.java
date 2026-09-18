@@ -573,19 +573,17 @@ public class BookingService extends BaseBookingService {
         };
     }
 
-    public Integer countAvailableSlotsToday() {
-        LocalDate today = LocalDate.now();
+    private Integer countAvailableSlotsForDate(LocalDate date) {
         List<Space> spaces = spaceRepository.findByIsActiveTrue();
         int totalAvailable = 0;
         for (Space space : spaces) {
-            List<SpaceSchedule> schedules = resolveSchedules(space.getId(), today.getDayOfWeek());
+            List<SpaceSchedule> schedules = resolveSchedules(space.getId(), date.getDayOfWeek());
             if (schedules.isEmpty()) continue;
             List<Booking> occupied = bookingRepository.findBySpaceAndDate(
                     space.getId(),
-                    today.atStartOfDay(),
-                    today.plusDays(1).atStartOfDay(),
-                    BookingStatus.CANCELADO
-            );
+                    date.atStartOfDay(),
+                    date.plusDays(1).atStartOfDay(),
+                    BookingStatus.CANCELADO);
             long totalMinutes = 0;
             for (SpaceSchedule schedule : schedules) {
                 LocalTime openingTime = schedule.getOpeningTime();
@@ -609,6 +607,10 @@ public class BookingService extends BaseBookingService {
             totalAvailable += (totalMinutes - occupiedMinutes) / space.getSlotDuration();
         }
         return totalAvailable;
+    }
+
+    public Integer countAvailableSlotsToday() {
+        return countAvailableSlotsForDate(LocalDate.now());
     }
 
     public BookingResponseDTO getNextBooking(Long clientId) {
@@ -648,5 +650,16 @@ public class BookingService extends BaseBookingService {
         bookingRepository.save(booking);
     }
 
-
+    public AvailabilitySummaryDTO getAvailabilityNext30Days() {
+        LocalDate today = LocalDate.now();
+        List<DailyAvailabilityDTO> days = new ArrayList<>();
+        int total = 0;
+        for (int i = 0; i < 30; i++) {
+            LocalDate date = today.plusDays(i);
+            int slots = countAvailableSlotsForDate(date);
+            days.add(new DailyAvailabilityDTO(date, slots));
+            total += slots;
+        }
+        return new AvailabilitySummaryDTO(days, total);
+    }
 }
