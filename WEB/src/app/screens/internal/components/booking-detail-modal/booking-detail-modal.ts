@@ -1,10 +1,20 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { BookingListModel } from '../../models/booking-list.model';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { BookingService } from '../../../../services/BookingService/booking-service';
-import {ClientProfileModal} from '../client-profile-modal/client-profile-modal';
-import {BookingDetailModel} from '../../models/booking-detail-model';
+import { BookingListModel } from '../../models/booking-list.model';
+import { BookingResponseModel } from '../../models/booking-response.model';
+
+import { ClientProfileModal } from '../client-profile-modal/client-profile-modal';
 
 @Component({
   selector: 'app-booking-detail-modal',
@@ -17,19 +27,25 @@ import {BookingDetailModel} from '../../models/booking-detail-model';
   templateUrl: './booking-detail-modal.html',
   styleUrl: './booking-detail-modal.scss'
 })
-export class BookingDetailModal {
+export class BookingDetailModal implements OnChanges {
 
-  @Input({ required: true })
-  booking!: BookingListModel;
+  @Input()
+  booking?: BookingListModel;
 
   @Output()
   close = new EventEmitter<void>();
 
   @Output()
-  confirmPayment = new EventEmitter<BookingListModel>();
+  canceled = new EventEmitter<void>();
 
   @Output()
-  bookingCancelled = new EventEmitter<void>();
+  paymentConfirmed = new EventEmitter<BookingListModel>();
+
+  bookingDetail?: BookingResponseModel;
+
+  loading = false;
+
+  errorMessage = '';
 
   showCancelForm = false;
 
@@ -43,184 +59,353 @@ export class BookingDetailModal {
 
   showClientProfile = false;
 
+  selectedClient: any = null;
+
   clientProfileLoading = false;
 
   clientProfileError = '';
 
-  selectedClient: {
-    id: number;
-    name: string;
-    phone: string;
-  } | null = null;
+  selectedPaymentMethod = 'EFECTIVO';
+
+  receivedAmount = 0;
+
+  internalObservation = '';
 
   constructor(
     private bookingService: BookingService
   ) {}
 
-  get durationMinutes(): number {
-
-    const start = new Date(this.booking.startDatetime);
-    const end = new Date(this.booking.endDatetime);
-
-    return Math.round(
-      (end.getTime() - start.getTime()) / 60000
-    );
-
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['booking'] && this.booking) {
+      this.resetModalState();
+      this.loadBookingDetail();
+    }
   }
 
-  closeModal(): void {
+  private resetModalState(): void {
+    this.bookingDetail = undefined;
+    this.loading = false;
+    this.errorMessage = '';
 
-    this.close.emit();
+    this.showCancelForm = false;
+    this.cancellationReason = '';
+    this.employeePin = '';
+    this.cancellationError = '';
+    this.cancellationLoading = false;
 
+    this.showClientProfile = false;
+    this.selectedClient = null;
+    this.clientProfileLoading = false;
+    this.clientProfileError = '';
+
+    this.selectedPaymentMethod = 'EFECTIVO';
+    this.receivedAmount = 0;
+    this.internalObservation = '';
+  }
+
+  private loadBookingDetail(): void {
+    if (!this.booking) {
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.bookingService
+      .getBookingDetail({
+        bookingId: this.booking.id
+      })
+      .subscribe({
+        next: response => {
+          this.bookingDetail = response;
+          this.receivedAmount = this.remainingAmount;
+          this.loading = false;
+        },
+        error: error => {
+          this.loading = false;
+          this.errorMessage =
+            error?.error ||
+            'No se pudo cargar el detalle del turno.';
+        }
+      });
+  }
+
+  get currentBooking(): BookingResponseModel | undefined {
+    return this.bookingDetail;
+  }
+
+  get displayBooking(): BookingListModel | BookingResponseModel | undefined {
+    return this.bookingDetail ?? this.booking;
+  }
+
+  get totalAmount(): number {
+    return Number(this.bookingDetail?.totalAmount ?? 0);
+  }
+
+  get depositAmount(): number {
+    return Number(this.bookingDetail?.depositAmount ?? 0);
+  }
+
+  get remainingAmount(): number {
+    return Number(this.bookingDetail?.remainingAmount ?? 0);
+  }
+
+  get paymentStatus(): string {
+    return this.bookingDetail?.paymentStatus ?? '';
+  }
+
+  get bookingStatus(): string {
+    return this.bookingDetail?.status ?? '';
+  }
+
+  get durationMinutes(): number {
+    const startDatetime = this.bookingDetail?.startDatetime;
+    const endDatetime = this.bookingDetail?.endDatetime;
+
+    if (!startDatetime || !endDatetime) {
+      return 0;
+    }
+
+    const start = new Date(startDatetime).getTime();
+    const end = new Date(endDatetime).getTime();
+
+    if (Number.isNaN(start) || Number.isNaN(end)) {
+      return 0;
+    }
+
+    return Math.max(
+      0,
+      Math.round((end - start) / 60000)
+    );
+  }
+
+  get paymentStatusClass(): string {
+    if (this.paymentStatus === 'PAGADO') {
+      return 'paid';
+    }
+
+    if (
+      this.depositAmount > 0 &&
+      this.remainingAmount > 0
+    ) {
+      return 'partial';
+    }
+
+    return 'pending';
+  }
+
+  get paymentStatusTitle(): string {
+    if (this.paymentStatus === 'PAGADO') {
+      return 'Pago completo';
+    }
+
+    if (
+      this.depositAmount > 0 &&
+      this.remainingAmount > 0
+    ) {
+      return 'Seña abonada';
+    }
+
+    return 'Pago pendiente';
+  }
+
+  get paymentStatusDescription(): string {
+    if (this.paymentStatus === 'PAGADO') {
+      return 'El turno fue abonado en su totalidad.';
+    }
+
+    if (
+      this.depositAmount > 0 &&
+      this.remainingAmount > 0
+    ) {
+      return 'El turno tiene una seña abonada y un saldo pendiente.';
+    }
+
+    return 'El turno todavía no registra un pago completo.';
+  }
+
+  get paymentLabel(): string {
+    if (this.paymentStatus === 'PAGADO') {
+      return 'Pago completo';
+    }
+
+    if (
+      this.depositAmount > 0 &&
+      this.remainingAmount > 0
+    ) {
+      return 'Seña abonada';
+    }
+
+    return 'Pago pendiente';
+  }
+
+  get isPaid(): boolean {
+    return this.paymentStatus === 'PAGADO';
+  }
+
+  get isPartiallyPaid(): boolean {
+    return (
+      this.depositAmount > 0 &&
+      this.remainingAmount > 0
+    );
+  }
+
+  get isUnpaid(): boolean {
+    return (
+      this.depositAmount <= 0 &&
+      this.remainingAmount > 0
+    );
+  }
+
+  get canConfirmPayment(): boolean {
+    return (
+      !!this.bookingDetail &&
+      !this.loading &&
+      !this.cancellationLoading &&
+      this.remainingAmount > 0 &&
+      this.paymentStatus !== 'PAGADO'
+    );
+  }
+
+  get changeAmount(): number {
+    const received = Number(this.receivedAmount);
+
+    if (
+      !Number.isFinite(received) ||
+      received <= this.remainingAmount
+    ) {
+      return 0;
+    }
+
+    return received - this.remainingAmount;
+  }
+
+  confirmPayment(): void {
+    if (!this.bookingDetail) {
+      return;
+    }
+
+    if (!this.canConfirmPayment) {
+      return;
+    }
+
+    if (this.receivedAmount < this.remainingAmount) {
+      return;
+    }
+
+    if (!this.booking) {
+      return;
+    }
+
+    this.paymentConfirmed.emit(this.booking);
   }
 
   onConfirmPayment(): void {
-
-    this.confirmPayment.emit(this.booking);
-
+    this.confirmPayment();
   }
 
   openCancelForm(): void {
-
-    this.showCancelForm = true;
-
-    this.cancellationReason = '';
-
-    this.employeePin = '';
+    if (
+      this.loading ||
+      this.cancellationLoading ||
+      this.isPaid
+    ) {
+      return;
+    }
 
     this.cancellationError = '';
-
+    this.cancellationReason = '';
+    this.employeePin = '';
+    this.showCancelForm = true;
   }
 
   closeCancelForm(): void {
+    if (this.cancellationLoading) {
+      return;
+    }
 
     this.showCancelForm = false;
-
     this.cancellationError = '';
-
+    this.cancellationReason = '';
+    this.employeePin = '';
   }
 
   cancelBooking(): void {
+    if (!this.bookingDetail) {
+      return;
+    }
+
+    this.cancellationError = '';
 
     if (!this.cancellationReason.trim()) {
-
       this.cancellationError =
         'Ingresá el motivo de cancelación.';
-
       return;
-
     }
 
     if (!this.employeePin.trim()) {
-
       this.cancellationError =
         'Ingresá el PIN del empleado.';
-
       return;
-
     }
 
     this.cancellationLoading = true;
 
-    this.cancellationError = '';
+    this.bookingService
+      .cancelBooking({
+        bookingId: this.bookingDetail.id,
+        cancellationReason:
+          this.cancellationReason.trim(),
+        employeePin: this.employeePin.trim()
+      })
+      .subscribe({
+        next: () => {
+          this.cancellationLoading = false;
+          this.showCancelForm = false;
+          this.canceled.emit();
+          this.close.emit();
+        },
+        error: error => {
+          this.cancellationLoading = false;
 
-    const request = {
-
-      bookingId: this.booking.id,
-
-      cancellationReason:
-        this.cancellationReason.trim(),
-
-      employeePin:
-        this.employeePin.trim()
-
-    };
-
-    this.bookingService.cancelBooking(request).subscribe({
-
-      next: () => {
-
-        this.cancellationLoading = false;
-
-        this.bookingCancelled.emit();
-
-        this.close.emit();
-
-      },
-
-      error: error => {
-
-        console.error(
-          'ERROR AL CANCELAR TURNO:',
-          error
-        );
-
-        this.cancellationLoading = false;
-
-        this.cancellationError =
-          error?.error || 'No se pudo cancelar el turno.';
-
-      }
-
-    });
-
+          this.cancellationError =
+            error?.error ||
+            'No se pudo cancelar el turno.';
+        }
+      });
   }
 
   openClientProfile(): void {
-
-    this.clientProfileError = '';
+    if (!this.bookingDetail) {
+      return;
+    }
 
     this.clientProfileLoading = true;
+    this.clientProfileError = '';
 
-    this.bookingService.getBookingDetail({
-      bookingId: this.booking.id
-    }).subscribe({
+    this.selectedClient = {
+      id: this.bookingDetail.clientId,
+      name: this.bookingDetail.clientName,
+      phone: this.bookingDetail.clientPhone
+    };
 
-      next: (response: BookingDetailModel) => {
-
-        this.selectedClient = {
-
-          id: response.clientId,
-
-          name: response.clientName,
-
-          phone: response.clientPhone
-
-        };
-
-        this.clientProfileLoading = false;
-
-        this.showClientProfile = true;
-
-      },
-
-      error: error => {
-
-        console.error(
-          'ERROR AL OBTENER PERFIL DEL CLIENTE:',
-          error
-        );
-
-        this.clientProfileLoading = false;
-
-        this.clientProfileError =
-          error?.error ||
-          'No se pudo obtener la información del cliente.';
-
-      }
-
-    });
-
+    this.clientProfileLoading = false;
+    this.showClientProfile = true;
   }
 
   closeClientProfile(): void {
-
     this.showClientProfile = false;
-
     this.selectedClient = null;
-
-    this.clientProfileError = '';
-
   }
 
+  closeModal(): void {
+    if (
+      this.loading ||
+      this.cancellationLoading
+    ) {
+      return;
+    }
+
+    this.close.emit();
+  }
 }

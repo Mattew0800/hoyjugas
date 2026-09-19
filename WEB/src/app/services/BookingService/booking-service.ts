@@ -140,9 +140,11 @@ export class BookingService {
 
   }
 
-  getBookingDetail(request: {
-    bookingId: number;
-  }): Observable<BookingResponseModel> {
+  getBookingDetail(
+    request: {
+      bookingId: number;
+    }
+  ): Observable<BookingResponseModel> {
 
     return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/detail`,

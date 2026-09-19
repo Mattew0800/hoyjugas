@@ -129,9 +129,9 @@
 
       (close)="closeBookingModal()"
 
-      (confirmPayment)="confirmPayment($event)"
+      (paymentConfirmed)="confirmPayment($event)"
 
-      (bookingCancelled)="onBookingCanceled()">
+      (canceled)="onBookingCanceled()">
     </app-booking-detail-modal>
 
   }
