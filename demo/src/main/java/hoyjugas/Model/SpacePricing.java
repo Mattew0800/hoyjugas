@@ -36,5 +36,9 @@ public class SpacePricing {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id")
+    private SpaceSchedule schedule;
+
 }
 

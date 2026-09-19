@@ -132,4 +132,22 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("now") LocalDateTime now,
             @Param("status") BookingStatus status
     );
+
+    @Query("SELECT b FROM Booking b WHERE b.space.id IN :spaceIds " +
+            "AND b.startDatetime < :endDate AND b.endDatetime > :startDate " +
+            "AND b.bookingStatus != :excludedStatus")
+    List<Booking> findBySpaceIdInAndDateRange(
+            @Param("spaceIds") List<Long> spaceIds,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("excludedStatus") BookingStatus excludedStatus);
+
+    @Query("SELECT b FROM Booking b WHERE b.space.id = :spaceId " +
+            "AND b.startDatetime >= :startDate AND b.startDatetime < :endDate " +
+            "AND b.bookingStatus != :excludedStatus")
+    List<Booking> findBySpaceAndDateRange(
+            @Param("spaceId") Long spaceId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("excludedStatus") BookingStatus excludedStatus);
 }

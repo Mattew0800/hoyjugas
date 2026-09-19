@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "space_schedule")
@@ -28,4 +30,7 @@ public class SpaceSchedule {
 
     private LocalTime openingTime;
     private LocalTime closingTime;
+
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SpacePricing> pricings = new ArrayList<>();
 }

@@ -13,4 +13,5 @@ public interface SpaceScheduleRepository extends JpaRepository<SpaceSchedule, Lo
 
     boolean existsBySpaceIdAndDayType(Long spaceId, DayType dayType);
     List<SpaceSchedule> findAllBySpaceIdAndDayType(Long spaceId, DayType dayType);
+    List<SpaceSchedule> findBySpaceIdIn(List<Long> spaceIds);
 }
