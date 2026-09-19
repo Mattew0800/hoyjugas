@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BookingService } from '../../../../services/BookingService/booking-service';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
+
 import { BookingListModel } from '../../models/booking-list.model';
 import { BookingResponseModel } from '../../models/booking-response.model';
 
@@ -72,7 +74,8 @@ export class BookingDetailModal implements OnChanges {
   internalObservation = '';
 
   constructor(
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -123,9 +126,7 @@ export class BookingDetailModal implements OnChanges {
         },
         error: error => {
           this.loading = false;
-          this.errorMessage =
-            error?.error ||
-            'No se pudo cargar el detalle del turno.';
+          this.errorMessage = this.errorHandler.getMessage(error);
         }
       });
   }
@@ -354,8 +355,7 @@ export class BookingDetailModal implements OnChanges {
     this.bookingService
       .cancelBooking({
         bookingId: this.bookingDetail.id,
-        cancellationReason:
-          this.cancellationReason.trim(),
+        cancellationReason: this.cancellationReason.trim(),
         employeePin: this.employeePin.trim()
       })
       .subscribe({
@@ -367,10 +367,8 @@ export class BookingDetailModal implements OnChanges {
         },
         error: error => {
           this.cancellationLoading = false;
-
           this.cancellationError =
-            error?.error ||
-            'No se pudo cancelar el turno.';
+            this.errorHandler.getMessage(error);
         }
       });
   }

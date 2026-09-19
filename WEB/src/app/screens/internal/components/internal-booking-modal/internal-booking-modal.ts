@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { BookingService } from '../../../../services/BookingService/booking-service';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
 
 import { InternalBookingRequestModel } from '../../models/internal-booking-request.model';
@@ -23,37 +24,69 @@ import { RecurringBookingRequestModel } from '../../models/recurring-booking-req
   styleUrl: './internal-booking-modal.scss'
 })
 export class InternalBookingModal {
+
   @Input() selectedDate!: Date;
+
   @Output() close = new EventEmitter<void>();
+
   @Output() bookingCreated = new EventEmitter<void>();
 
   form: FormGroup;
+
   errorMessage = '';
+
   loading = false;
+
   bookingType: 'single' | 'recurring' = 'single';
+
   paymentType: 'deposit' | 'full' = 'deposit';
+
   previewLoading = false;
+
   previewVisible = false;
+
   previewConfirmed = false;
+
   preview: RecurringBookingPreviewModel | null = null;
 
   constructor(
     private bookingService: BookingService,
+    private errorHandler: ErrorHandlerService,
     private recurringBookingService: RecurringBookingService
   ) {
     this.form = new FormGroup({
-      clientId: new FormControl<number | null>(null, [Validators.required]),
-      spaceId: new FormControl<number | null>(null, [Validators.required]),
-      startDatetime: new FormControl('', [Validators.required]),
-      startDate: new FormControl('', [Validators.required]),
-      startTime: new FormControl('', [Validators.required]),
-      intervalWeeks: new FormControl(1, [Validators.required]),
-      endDate: new FormControl('', [Validators.required]),
-      paymentMethod: new FormControl('', [Validators.required]),
+      clientId: new FormControl<number | null>(null, [
+        Validators.required
+      ]),
+      spaceId: new FormControl<number | null>(null, [
+        Validators.required
+      ]),
+      startDatetime: new FormControl('', [
+        Validators.required
+      ]),
+      startDate: new FormControl('', [
+        Validators.required
+      ]),
+      startTime: new FormControl('', [
+        Validators.required
+      ]),
+      intervalWeeks: new FormControl(1, [
+        Validators.required
+      ]),
+      endDate: new FormControl('', [
+        Validators.required
+      ]),
+      paymentMethod: new FormControl('', [
+        Validators.required
+      ]),
       depositAmount: new FormControl<number | null>(null),
       transactionId: new FormControl(''),
-      employeePin: new FormControl('', [Validators.required]),
-      termsAccepted: new FormControl(false, [Validators.requiredTrue])
+      employeePin: new FormControl('', [
+        Validators.required
+      ]),
+      termsAccepted: new FormControl(false, [
+        Validators.requiredTrue
+      ])
     });
 
     this.setBookingType('single');
@@ -64,7 +97,9 @@ export class InternalBookingModal {
   }
 
   private initializeStartDate(): void {
-    if (!this.selectedDate) return;
+    if (!this.selectedDate) {
+      return;
+    }
 
     const date = new Date(this.selectedDate);
     const year = date.getFullYear();
@@ -77,36 +112,64 @@ export class InternalBookingModal {
   }
 
   closeModal(): void {
-    if (this.loading || this.previewLoading) return;
+    if (this.loading || this.previewLoading) {
+      return;
+    }
 
     this.close.emit();
   }
 
-  setBookingType(type: 'single' | 'recurring'): void {
+  setBookingType(
+    type: 'single' | 'recurring'
+  ): void {
     this.bookingType = type;
     this.errorMessage = '';
     this.previewVisible = false;
     this.previewConfirmed = false;
     this.preview = null;
 
-    const startDatetime = this.form.get('startDatetime');
-    const startDate = this.form.get('startDate');
-    const startTime = this.form.get('startTime');
-    const intervalWeeks = this.form.get('intervalWeeks');
-    const endDate = this.form.get('endDate');
+    const startDatetime =
+      this.form.get('startDatetime');
+
+    const startDate =
+      this.form.get('startDate');
+
+    const startTime =
+      this.form.get('startTime');
+
+    const intervalWeeks =
+      this.form.get('intervalWeeks');
+
+    const endDate =
+      this.form.get('endDate');
 
     if (type === 'single') {
-      startDatetime?.setValidators([Validators.required]);
+      startDatetime?.setValidators([
+        Validators.required
+      ]);
+
       startDate?.clearValidators();
       startTime?.clearValidators();
       intervalWeeks?.clearValidators();
       endDate?.clearValidators();
     } else {
       startDatetime?.clearValidators();
-      startDate?.setValidators([Validators.required]);
-      startTime?.setValidators([Validators.required]);
-      intervalWeeks?.setValidators([Validators.required]);
-      endDate?.setValidators([Validators.required]);
+
+      startDate?.setValidators([
+        Validators.required
+      ]);
+
+      startTime?.setValidators([
+        Validators.required
+      ]);
+
+      intervalWeeks?.setValidators([
+        Validators.required
+      ]);
+
+      endDate?.setValidators([
+        Validators.required
+      ]);
     }
 
     startDatetime?.updateValueAndValidity();
@@ -116,7 +179,9 @@ export class InternalBookingModal {
     endDate?.updateValueAndValidity();
   }
 
-  setPaymentType(type: 'deposit' | 'full'): void {
+  setPaymentType(
+    type: 'deposit' | 'full'
+  ): void {
     this.paymentType = type;
     this.errorMessage = '';
   }
@@ -133,7 +198,9 @@ export class InternalBookingModal {
   }
 
   private saveSingleBooking(): void {
-    if (!this.validateSingleBookingForm()) return;
+    if (!this.validateSingleBookingForm()) {
+      return;
+    }
 
     this.errorMessage = '';
     this.loading = true;
@@ -150,41 +217,56 @@ export class InternalBookingModal {
       error: error => {
         this.loading = false;
         this.errorMessage =
-          error?.message || 'No se pudo determinar el precio del turno.';
+          this.errorHandler.getMessage(error);
       }
     });
   }
 
   private getSingleBookingPrice(): Observable<number> {
-    const spaceId = this.form.get('spaceId')?.value;
-    const startDatetime = this.form.get('startDatetime')?.value;
+    const spaceId =
+      this.form.get('spaceId')?.value;
+
+    const startDatetime =
+      this.form.get('startDatetime')?.value;
 
     if (!spaceId || !startDatetime) {
-      throw new Error('No se pudo determinar la cancha o el horario.');
+      throw new Error(
+        'No se pudo determinar la cancha o el horario.'
+      );
     }
 
-    const date = startDatetime.substring(0, 10);
+    const date =
+      startDatetime.substring(0, 10);
 
-    return this.bookingService.getAvailability(spaceId, date).pipe(
-      map(slots => {
-        const slot = slots.find(
-          item => item.startDatetime === startDatetime
-        );
+    return this.bookingService
+      .getAvailability(spaceId, date)
+      .pipe(
+        map(slots => {
+          const slot = slots.find(
+            item =>
+              item.startDatetime === startDatetime
+          );
 
-        if (!slot) {
-          throw new Error('No se encontró el horario seleccionado.');
-        }
+          if (!slot) {
+            throw new Error(
+              'No se encontró el horario seleccionado.'
+            );
+          }
 
-        if (!slot.available) {
-          throw new Error('El horario seleccionado ya no está disponible.');
-        }
+          if (!slot.available) {
+            throw new Error(
+              'El horario seleccionado ya no está disponible.'
+            );
+          }
 
-        return slot.price;
-      })
-    );
+          return slot.price;
+        })
+      );
   }
 
-  private createSingleBooking(depositAmount: number | null): void {
+  private createSingleBooking(
+    depositAmount: number | null
+  ): void {
     const formValue = this.form.value;
 
     const request: InternalBookingRequestModel = {
@@ -193,22 +275,26 @@ export class InternalBookingModal {
       startDatetime: formValue.startDatetime,
       paymentMethod: formValue.paymentMethod,
       depositAmount,
-      transactionId: formValue.transactionId || null,
+      transactionId:
+        formValue.transactionId || null,
       employeePin: formValue.employeePin,
       termsAccepted: formValue.termsAccepted
     };
 
-    this.bookingService.createInternalBooking(request).subscribe({
-      next: () => {
-        this.loading = false;
-        this.bookingCreated.emit();
-        this.close.emit();
-      },
-      error: error => {
-        this.loading = false;
-        this.errorMessage = error?.error || 'No se pudo crear el turno.';
-      }
-    });
+    this.bookingService
+      .createInternalBooking(request)
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.bookingCreated.emit();
+          this.close.emit();
+        },
+        error: error => {
+          this.loading = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
   }
 
   private buildRecurringBookingRequest(
@@ -221,42 +307,54 @@ export class InternalBookingModal {
       spaceId: formValue.spaceId,
       startDate: formValue.startDate,
       startTime: formValue.startTime,
-      intervalWeeks: Number(formValue.intervalWeeks),
+      intervalWeeks:
+        Number(formValue.intervalWeeks),
       endDate: formValue.endDate,
-      termsAccepted: formValue.termsAccepted,
-      depositAmount: depositAmount ?? formValue.depositAmount,
-      paymentMethod: formValue.paymentMethod,
-      transactionId: formValue.transactionId || null,
-      employeePin: formValue.employeePin
+      termsAccepted:
+      formValue.termsAccepted,
+      depositAmount:
+        depositAmount ?? formValue.depositAmount,
+      paymentMethod:
+      formValue.paymentMethod,
+      transactionId:
+        formValue.transactionId || null,
+      employeePin:
+      formValue.employeePin
     };
   }
 
   private previewRecurringBooking(): void {
-    if (!this.validateRecurringForm()) return;
+    if (!this.validateRecurringForm()) {
+      return;
+    }
 
     this.errorMessage = '';
     this.previewLoading = true;
 
-    const request = this.buildRecurringBookingRequest();
+    const request =
+      this.buildRecurringBookingRequest();
 
-    this.recurringBookingService.previewRecurringBooking(request).subscribe({
-      next: response => {
-        this.previewLoading = false;
-        this.preview = response;
-        this.previewVisible = true;
-        this.previewConfirmed = false;
-      },
-      error: error => {
-        this.previewLoading = false;
-        this.errorMessage =
-          error?.error ||
-          'No se pudo obtener la disponibilidad del turno fijo.';
-      }
-    });
+    this.recurringBookingService
+      .previewRecurringBooking(request)
+      .subscribe({
+        next: response => {
+          this.previewLoading = false;
+          this.preview = response;
+          this.previewVisible = true;
+          this.previewConfirmed = false;
+        },
+        error: error => {
+          this.previewLoading = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
   }
 
   confirmRecurringBooking(): void {
-    if (!this.preview) return;
+    if (!this.preview) {
+      return;
+    }
 
     if (this.getPreviewConflictCount() > 0) {
       this.errorMessage =
@@ -271,12 +369,21 @@ export class InternalBookingModal {
   }
 
   private createRecurringBooking(): void {
-    if (!this.validateRecurringForm()) return;
-    if (!this.preview) return;
+    if (!this.validateRecurringForm()) {
+      return;
+    }
 
-    const requiredDeposit = this.preview.firstDepositAmount;
+    if (!this.preview) {
+      return;
+    }
 
-    if (requiredDeposit === null || requiredDeposit === undefined) {
+    const requiredDeposit =
+      this.preview.firstDepositAmount;
+
+    if (
+      requiredDeposit === null ||
+      requiredDeposit === undefined
+    ) {
       this.errorMessage =
         'No se pudo determinar el monto de la seña necesaria.';
       return;
@@ -285,21 +392,26 @@ export class InternalBookingModal {
     this.errorMessage = '';
     this.loading = true;
 
-    const request = this.buildRecurringBookingRequest(requiredDeposit);
+    const request =
+      this.buildRecurringBookingRequest(
+        requiredDeposit
+      );
 
-    this.recurringBookingService.createRecurringBooking(request).subscribe({
-      next: () => {
-        this.loading = false;
-        this.bookingCreated.emit();
-        this.close.emit();
-      },
-      error: error => {
-        this.loading = false;
-        this.previewConfirmed = false;
-        this.errorMessage =
-          error?.error || 'No se pudo crear el turno fijo.';
-      }
-    });
+    this.recurringBookingService
+      .createRecurringBooking(request)
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.bookingCreated.emit();
+          this.close.emit();
+        },
+        error: error => {
+          this.loading = false;
+          this.previewConfirmed = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
   }
 
   private validateSingleBookingForm(): boolean {
@@ -312,7 +424,9 @@ export class InternalBookingModal {
       'termsAccepted'
     ];
 
-    return this.validateFields(requiredFields);
+    return this.validateFields(
+      requiredFields
+    );
   }
 
   private validateRecurringForm(): boolean {
@@ -328,12 +442,21 @@ export class InternalBookingModal {
       'termsAccepted'
     ];
 
-    if (!this.validateFields(requiredFields)) return false;
+    if (!this.validateFields(requiredFields)) {
+      return false;
+    }
 
-    const startDate = this.form.get('startDate')?.value;
-    const endDate = this.form.get('endDate')?.value;
+    const startDate =
+      this.form.get('startDate')?.value;
 
-    if (startDate && endDate && endDate <= startDate) {
+    const endDate =
+      this.form.get('endDate')?.value;
+
+    if (
+      startDate &&
+      endDate &&
+      endDate <= startDate
+    ) {
       this.errorMessage =
         'La fecha de finalización debe ser posterior a la fecha de inicio.';
       return false;
@@ -342,7 +465,9 @@ export class InternalBookingModal {
     return true;
   }
 
-  private validateFields(fields: string[]): boolean {
+  private validateFields(
+    fields: string[]
+  ): boolean {
     const invalidFields: string[] = [];
 
     const fieldNames: Record<string, string> = {
@@ -359,13 +484,16 @@ export class InternalBookingModal {
     };
 
     for (const field of fields) {
-      const control = this.form.get(field);
+      const control =
+        this.form.get(field);
 
       control?.markAsTouched();
       control?.updateValueAndValidity();
 
       if (control?.invalid) {
-        invalidFields.push(fieldNames[field] ?? field);
+        invalidFields.push(
+          fieldNames[field] ?? field
+        );
       }
     }
 
