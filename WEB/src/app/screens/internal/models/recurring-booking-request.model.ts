@@ -14,7 +14,7 @@ export interface RecurringBookingRequestModel {
 
   termsAccepted: boolean;
 
-  depositAmount: number;
+  depositAmount: number | null;
 
   paymentMethod: string;
 
