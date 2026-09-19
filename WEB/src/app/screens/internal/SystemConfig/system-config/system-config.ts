@@ -6,6 +6,7 @@ import { InternalSideBar } from '../../components/internal-side-bar/internal-sid
 
 import { SystemConfigModel } from '../../models/system-config.model';
 import { SystemConfigService } from '../../../../services/SystemConfigService/system-config-service';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 @Component({
   selector: 'app-system-config-screen',
@@ -39,7 +40,8 @@ export class SystemConfigScreen implements OnInit {
   successMessage = '';
 
   constructor(
-    private systemConfigService: SystemConfigService
+    private systemConfigService: SystemConfigService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
@@ -48,28 +50,24 @@ export class SystemConfigScreen implements OnInit {
 
   loadConfig(): void {
     this.loading = true;
-    this.configLoaded=false;
+    this.configLoaded = false;
     this.errorMessage = '';
-    this.successMessage='';
+    this.successMessage = '';
 
     this.systemConfigService
       .getConfig()
       .subscribe({
         next: config => {
           this.config = config;
-          this.configLoaded=true;
+          this.configLoaded = true;
           this.loading = false;
         },
-        error: error => {
-          console.error(
-            'ERROR AL OBTENER CONFIGURACIÓN:',
-            error
-          );
 
+        error: error => {
           this.loading = false;
-          this.configLoaded=false;
+          this.configLoaded = false;
           this.errorMessage =
-            'No se pudo cargar la configuración.';
+            this.errorHandler.getMessage(error);
         }
       });
   }
@@ -92,15 +90,11 @@ export class SystemConfigScreen implements OnInit {
           this.successMessage =
             'La configuración se guardó correctamente.';
         },
-        error: error => {
-          console.error(
-            'ERROR AL GUARDAR CONFIGURACIÓN:',
-            error
-          );
 
+        error: error => {
           this.saving = false;
           this.errorMessage =
-            'No se pudo guardar la configuración.';
+            this.errorHandler.getMessage(error);
         }
       });
   }

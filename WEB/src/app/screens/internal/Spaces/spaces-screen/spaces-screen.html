@@ -37,10 +37,15 @@
 
     </div>
 
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
 
     <div class="spaces-list">
 
-      @for(space of spaces; track space.id){
+      @for (space of spaces; track space.id) {
 
         <app-space-list-item
           [space]="space"
@@ -52,7 +57,8 @@
     </div>
 
   </main>
-  @if(showModal){
+
+  @if (showModal) {
 
     <app-space-modal
       [spaceId]="selectedSpaceId"
@@ -60,4 +66,5 @@
     </app-space-modal>
 
   }
+
 </div>

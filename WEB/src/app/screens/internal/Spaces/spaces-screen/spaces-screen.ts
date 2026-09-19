@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
 import { SpaceListItem } from '../../components/space-list-item/space-list-item';
-import {SpaceModal} from '../space-modal/space-modal';
+import { SpaceModal } from '../space-modal/space-modal';
 import { SpaceListModel } from '../../models/space-list-model';
 
 import { SpaceService } from '../../../../services/SpaceService/SpaceService';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 @Component({
   selector: 'app-spaces-screen',
@@ -30,33 +31,32 @@ export class SpacesScreen implements OnInit {
 
   spaces: SpaceListModel[] = [];
 
+  selectedSpaceId: number | null = null;
+
+  errorMessage = '';
+
   constructor(
-    private spaceService: SpaceService
+    private spaceService: SpaceService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
-
     this.loadSpaces();
-
   }
 
-  selectedSpaceId: number | null = null;
-
-
   private loadSpaces(): void {
+
+    this.errorMessage = '';
 
     this.spaceService.getAllSpaces().subscribe({
 
       next: spaces => {
-
         this.spaces = spaces;
-
       },
 
-      error: err => {
-
-        console.error(err);
-
+      error: error => {
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
       }
 
     });

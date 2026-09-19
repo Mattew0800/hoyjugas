@@ -9,6 +9,12 @@
 
   <main class="dashboard-content">
 
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
     <div class="stats-container">
 
       <app-stat-card
@@ -45,7 +51,6 @@
         Cargar turno
       </button>
 
-
     </div>
 
     <div class="dashboard-body">
@@ -71,9 +76,9 @@
                   class="timeline-row"
                   [style.height.px]="pixelsPerHalfHour">
 
-        <span>
-          {{ formatTimelineTime(time) }}
-        </span>
+                  <span>
+                    {{ formatTimelineTime(time) }}
+                  </span>
 
                 </div>
 
@@ -109,6 +114,7 @@
         </div>
 
       </div>
+
       <div class="dashboard-right">
 
         <app-mini-calendar
@@ -119,29 +125,27 @@
 
     </div>
 
-
   </main>
 
-  @if(showBookingModal && selectedBooking){
+  @if (showBookingModal && selectedBooking) {
 
     <app-booking-detail-modal
       [booking]="selectedBooking"
-
       (close)="closeBookingModal()"
-
       (paymentConfirmed)="confirmPayment($event)"
-
       (canceled)="onBookingCanceled()">
     </app-booking-detail-modal>
 
   }
 
   @if (showInternalBookingModal) {
+
     <app-internal-booking-modal
       [selectedDate]="selectedDate"
       (close)="closeInternalBookingModal()"
       (bookingCreated)="onBookingCreated()">
     </app-internal-booking-modal>
+
   }
 
 </div>

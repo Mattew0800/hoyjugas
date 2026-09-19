@@ -3,32 +3,47 @@ import { FormsModule } from '@angular/forms';
 
 import { UserService } from '../../../../services/UserService/user-service';
 import { RoleService } from '../../../../services/RoleService/role-service';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
+
 import { CustomerModel } from '../../models/user-response';
+
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
-import {Subscription} from 'rxjs';
+
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-customers-screen',
   standalone: true,
-  imports: [FormsModule, InternalHeader, InternalSideBar],
+  imports: [
+    FormsModule,
+    InternalHeader,
+    InternalSideBar
+  ],
   templateUrl: './customers-screen.html',
   styleUrl: './customers-screen.scss'
 })
 export class CustomersScreen implements OnInit {
+
   customers: CustomerModel[] = [];
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   loading = false;
   isAdmin = false;
-  confirmingAction: 'desactivate' | 'activate' | null = null;
+
+  confirmingAction:
+    'desactivate' | 'activate' | null = null;
+
   confirmingCustomerId: number | null = null;
+
   errorMessage: string | null = null;
+
   private customersSubscription?: Subscription;
 
   constructor(
     private userService: UserService,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
@@ -52,17 +67,18 @@ export class CustomersScreen implements OnInit {
       enabled = false;
     }
 
-    this.customersSubscription= this.userService.getClients(enabled).subscribe({
-      next: customers => {
-        this.customers = customers;
-        this.loading = false;
-      },
-      error: error => {
-        console.error('ERROR AL OBTENER CLIENTES:', error);
-        this.loading = false;
-        this.errorMessage = 'No se pudieron cargar los clientes.';
-      }
-    });
+    this.customersSubscription =
+      this.userService.getClients(enabled).subscribe({
+        next: customers => {
+          this.customers = customers;
+          this.loading = false;
+        },
+        error: error => {
+          this.loading = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
   }
 
   changeStatusFilter(
@@ -78,7 +94,8 @@ export class CustomersScreen implements OnInit {
         this.loadCustomers();
       },
       error: error => {
-        console.error('ERROR AL DAR DE BAJA CLIENTE:', error);
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
       }
     });
   }
@@ -89,7 +106,8 @@ export class CustomersScreen implements OnInit {
         this.loadCustomers();
       },
       error: error => {
-        console.error('ERROR AL DAR DE ALTA CLIENTE:', error);
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
       }
     });
   }
@@ -139,9 +157,9 @@ export class CustomersScreen implements OnInit {
           this.loadCustomers();
         },
         error: error => {
-          console.error('ERROR AL DAR DE BAJA CLIENTE:', error);
           this.cancelAction();
-          this.errorMessage = 'No se pudo dar de baja al cliente.';
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
         }
       });
 
@@ -154,9 +172,9 @@ export class CustomersScreen implements OnInit {
         this.loadCustomers();
       },
       error: error => {
-        console.error('ERROR AL DAR DE ALTA CLIENTE:', error);
         this.cancelAction();
-        this.errorMessage = 'No se pudo dar de alta al cliente.';
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
       }
     });
   }

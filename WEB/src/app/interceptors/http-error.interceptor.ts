@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
-import {ErrorHandlerService} from '../services/ErrorHandlerService/error-handler.service.ts';
+import { ErrorHandlerService } from '../services/ErrorHandlerService/error-handler.service';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorHandler = inject(ErrorHandlerService);
@@ -12,7 +12,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
 
-      if (error.status === 401) {
+      if (
+        error.status === 401 &&
+        !req.url.endsWith('/login')
+      ) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         sessionStorage.clear();

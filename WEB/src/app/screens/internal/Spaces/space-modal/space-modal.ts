@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, Observable } from 'rxjs';
 
 import { SpaceService } from '../../../../services/SpaceService/SpaceService';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 interface DaySchedule {
   id?: number;
@@ -68,7 +69,8 @@ export class SpaceModal implements OnInit {
   private originalSchedules: DaySchedule[] = [];
 
   constructor(
-    private spaceService: SpaceService
+    private spaceService: SpaceService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
@@ -140,14 +142,9 @@ export class SpaceModal implements OnInit {
         }
       },
 
-      error: err => {
-        console.error(
-          'ERROR AL CARGAR ESPACIO:',
-          err
-        );
-
+      error: error => {
         this.errorMessage =
-          this.getErrorMessage(err);
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -301,16 +298,11 @@ export class SpaceModal implements OnInit {
         );
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL CREAR ESPACIO:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -383,30 +375,20 @@ export class SpaceModal implements OnInit {
             this.close.emit(true);
           },
 
-          error: err => {
+          error: error => {
             this.saving = false;
 
             this.errorMessage =
-              this.getErrorMessage(err);
-
-            console.error(
-              'ERROR AL CREAR HORARIOS Y PRECIOS:',
-              err
-            );
+              this.getSpaceErrorMessage(error);
           }
         });
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL VALIDAR PRECIOS:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -428,30 +410,20 @@ export class SpaceModal implements OnInit {
             this.updateSchedules();
           },
 
-          error: err => {
+          error: error => {
             this.saving = false;
 
             this.errorMessage =
-              this.getErrorMessage(err);
-
-            console.error(
-              'ERROR AL ACTUALIZAR ESPACIO:',
-              err
-            );
+              this.getSpaceErrorMessage(error);
           }
         });
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL VALIDAR PRECIOS:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -541,16 +513,11 @@ export class SpaceModal implements OnInit {
         this.close.emit(true);
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL ACTUALIZAR HORARIOS Y PRECIOS:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -804,17 +771,11 @@ export class SpaceModal implements OnInit {
     return time.substring(0, 5);
   }
 
-  getErrorMessage(
+  private getSpaceErrorMessage(
     error: any
   ): string {
     const backendMessage =
-      typeof error?.error?.message === 'string'
-        ? error.error.message
-        : typeof error?.error === 'string'
-          ? error.error
-          : typeof error?.message === 'string'
-            ? error.message
-            : 'Ocurrió un error inesperado.';
+      this.errorHandler.getMessage(error);
 
     const missingPriceMatch =
       backendMessage.match(
@@ -832,13 +793,9 @@ export class SpaceModal implements OnInit {
             day.closingTime === startTime
         );
 
-      if (
-        relatedConfigIndex !== -1
-      ) {
+      if (relatedConfigIndex !== -1) {
         const relatedConfig =
-          this.days[
-            relatedConfigIndex
-            ];
+          this.days[relatedConfigIndex];
 
         const configurationNumber =
           relatedConfigIndex + 1;
