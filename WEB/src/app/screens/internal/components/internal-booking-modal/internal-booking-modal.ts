@@ -187,6 +187,10 @@ export class InternalBookingModal {
   }
 
   save(): void {
+    if (this.loading || this.previewLoading) {
+      return;
+    }
+
     this.errorMessage = '';
 
     if (this.bookingType === 'single') {
@@ -424,9 +428,78 @@ export class InternalBookingModal {
       'termsAccepted'
     ];
 
-    return this.validateFields(
-      requiredFields
-    );
+    if (!this.validateFields(requiredFields)) {
+      return false;
+    }
+
+    const clientId = this.form.get('clientId')?.value;
+    const spaceId = this.form.get('spaceId')?.value;
+    const startDatetime = this.form.get('startDatetime')?.value;
+    const paymentMethod = this.form.get('paymentMethod')?.value;
+    const employeePin = this.form.get('employeePin')?.value;
+    const termsAccepted = this.form.get('termsAccepted')?.value;
+
+    if (
+      !Number.isInteger(clientId) ||
+      clientId <= 0
+    ) {
+      this.errorMessage =
+        'El ID del cliente debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (
+      !Number.isInteger(spaceId) ||
+      spaceId <= 0
+    ) {
+      this.errorMessage =
+        'El ID de la cancha debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (!this.isValidDateTime(startDatetime)) {
+      this.errorMessage =
+        'Ingresá una fecha y hora válidas.';
+      return false;
+    }
+
+    if (
+      new Date(startDatetime).getTime() <=
+      new Date().getTime()
+    ) {
+      this.errorMessage =
+        'El turno debe comenzar en una fecha y hora futuras.';
+      return false;
+    }
+
+    if (
+      ![
+        'EFECTIVO',
+        'TRANSFERENCIA',
+        'MERCADOPAGO'
+      ].includes(paymentMethod)
+    ) {
+      this.errorMessage =
+        'Seleccioná un método de pago válido.';
+      return false;
+    }
+
+    if (
+      typeof employeePin !== 'string' ||
+      !employeePin.trim()
+    ) {
+      this.errorMessage =
+        'Ingresá el PIN del empleado.';
+      return false;
+    }
+
+    if (termsAccepted !== true) {
+      this.errorMessage =
+        'El cliente debe aceptar los términos y condiciones.';
+      return false;
+    }
+
+    return true;
   }
 
   private validateRecurringForm(): boolean {
@@ -446,24 +519,147 @@ export class InternalBookingModal {
       return false;
     }
 
-    const startDate =
-      this.form.get('startDate')?.value;
-
-    const endDate =
-      this.form.get('endDate')?.value;
+    const clientId = this.form.get('clientId')?.value;
+    const spaceId = this.form.get('spaceId')?.value;
+    const startDate = this.form.get('startDate')?.value;
+    const startTime = this.form.get('startTime')?.value;
+    const intervalWeeks =
+      Number(this.form.get('intervalWeeks')?.value);
+    const endDate = this.form.get('endDate')?.value;
+    const paymentMethod =
+      this.form.get('paymentMethod')?.value;
+    const employeePin =
+      this.form.get('employeePin')?.value;
+    const termsAccepted =
+      this.form.get('termsAccepted')?.value;
 
     if (
-      startDate &&
-      endDate &&
-      endDate <= startDate
+      !Number.isInteger(clientId) ||
+      clientId <= 0
     ) {
+      this.errorMessage =
+        'El ID del cliente debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (
+      !Number.isInteger(spaceId) ||
+      spaceId <= 0
+    ) {
+      this.errorMessage =
+        'El ID de la cancha debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (!this.isValidDate(startDate)) {
+      this.errorMessage =
+        'Ingresá una fecha de inicio válida.';
+      return false;
+    }
+
+    if (!this.isValidTime(startTime)) {
+      this.errorMessage =
+        'Ingresá un horario válido.';
+      return false;
+    }
+
+    if (![1, 2].includes(intervalWeeks)) {
+      this.errorMessage =
+        'La frecuencia seleccionada no es válida.';
+      return false;
+    }
+
+    if (!this.isValidDate(endDate)) {
+      this.errorMessage =
+        'Ingresá una fecha de finalización válida.';
+      return false;
+    }
+
+    if (endDate <= startDate) {
       this.errorMessage =
         'La fecha de finalización debe ser posterior a la fecha de inicio.';
       return false;
     }
 
+    if (
+      ![
+        'EFECTIVO',
+        'TRANSFERENCIA',
+        'MERCADOPAGO'
+      ].includes(paymentMethod)
+    ) {
+      this.errorMessage =
+        'Seleccioná un método de pago válido.';
+      return false;
+    }
+
+    if (
+      typeof employeePin !== 'string' ||
+      !employeePin.trim()
+    ) {
+      this.errorMessage =
+        'Ingresá el PIN del empleado.';
+      return false;
+    }
+
+    if (termsAccepted !== true) {
+      this.errorMessage =
+        'El cliente debe aceptar los términos y condiciones.';
+      return false;
+    }
+
     return true;
   }
+
+  private isValidDate(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+
+    return !Number.isNaN(date.getTime());
+  }
+
+  private isValidTime(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{2}:\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const [hours, minutes] = value
+      .split(':')
+      .map(Number);
+
+    return (
+      hours >= 0 &&
+      hours <= 23 &&
+      minutes >= 0 &&
+      minutes <= 59
+    );
+  }
+
+  private isValidDateTime(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const [datePart, timePart] = value.split('T');
+
+    return (
+      this.isValidDate(datePart) &&
+      this.isValidTime(timePart)
+    );
+  }
+
 
   private validateFields(
     fields: string[]

@@ -548,3 +548,18 @@
   background: rgba(81,207,102,.16);
 
 }
+
+.error-message {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+
+  border: 1px solid rgba(220, 80, 80, .25);
+  border-radius: 10px;
+
+  background: rgba(220, 80, 80, .08);
+
+  color: #e8a0a0;
+
+  font-size: 13px;
+  line-height: 1.4;
+}

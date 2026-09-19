@@ -285,7 +285,7 @@
                     Método de pago
                   </label>
 
-                  <select>
+                  <select [(ngModel)]="selectedPaymentMethod">
                     <option value="EFECTIVO">
                       Efectivo
                     </option>
@@ -460,8 +460,9 @@
           <textarea
             [(ngModel)]="cancellationReason"
             rows="4"
+            maxlength="500"
             placeholder="Ingresá el motivo...">
-          </textarea>
+</textarea>
 
         </div>
 

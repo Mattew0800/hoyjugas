@@ -38,6 +38,8 @@ export class CustomersScreen implements OnInit {
 
   errorMessage: string | null = null;
 
+  processingAction = false;
+
   private customersSubscription?: Subscription;
 
   constructor(
@@ -131,11 +133,16 @@ export class CustomersScreen implements OnInit {
     action: 'desactivate' | 'activate',
     customerId: number
   ): void {
+    this.errorMessage = null;
     this.confirmingAction = action;
     this.confirmingCustomerId = customerId;
   }
 
   cancelAction(): void {
+    if (this.processingAction) {
+      return;
+    }
+
     this.confirmingAction = null;
     this.confirmingCustomerId = null;
   }
@@ -143,35 +150,31 @@ export class CustomersScreen implements OnInit {
   executeAction(): void {
     if (
       this.confirmingCustomerId === null ||
-      this.confirmingAction === null
+      this.confirmingAction === null ||
+      this.processingAction
     ) {
       return;
     }
 
     const customerId = this.confirmingCustomerId;
+    const action = this.confirmingAction;
 
-    if (this.confirmingAction === 'desactivate') {
-      this.userService.desactivateUser(customerId).subscribe({
-        next: () => {
-          this.cancelAction();
-          this.loadCustomers();
-        },
-        error: error => {
-          this.cancelAction();
-          this.errorMessage =
-            this.errorHandler.getMessage(error);
-        }
-      });
+    this.processingAction = true;
+    this.errorMessage = null;
 
-      return;
-    }
+    const request =
+      action === 'desactivate'
+        ? this.userService.desactivateUser(customerId)
+        : this.userService.activateUser(customerId);
 
-    this.userService.activateUser(customerId).subscribe({
+    request.subscribe({
       next: () => {
+        this.processingAction = false;
         this.cancelAction();
         this.loadCustomers();
       },
       error: error => {
+        this.processingAction = false;
         this.cancelAction();
         this.errorMessage =
           this.errorHandler.getMessage(error);

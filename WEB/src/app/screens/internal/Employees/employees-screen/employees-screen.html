@@ -70,6 +70,12 @@
 
   </div>
 
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
+
   <div class="employees-card">
 
     <div class="table-header">

@@ -1,7 +1,6 @@
 <div class="modal-header">
 
   <div>
-
     <h2>
       {{ title }}
     </h2>
@@ -13,25 +12,20 @@
           : 'Completá los datos del nuevo empleado'
       }}
     </p>
-
   </div>
 
   <button
     type="button"
     class="close-button"
     (click)="closeModal()">
-
     ×
-
   </button>
 
 </div>
 
-
 <form
   class="employee-form"
   (ngSubmit)="save()">
-
 
   <div class="form-row">
 
@@ -46,10 +40,15 @@
         name="name"
         [(ngModel)]="name"
         placeholder="Juan Pérez"
-        required>
+        [class.input-error]="nameError">
+
+      @if (nameError) {
+        <span class="field-error">
+          {{ nameError }}
+        </span>
+      }
 
     </div>
-
 
     <div class="form-group">
 
@@ -62,12 +61,17 @@
         name="dni"
         [(ngModel)]="dni"
         placeholder="40123456"
-        required>
+        [class.input-error]="dniError">
+
+      @if (dniError) {
+        <span class="field-error">
+          {{ dniError }}
+        </span>
+      }
 
     </div>
 
   </div>
-
 
   <div class="form-group">
 
@@ -80,10 +84,15 @@
       name="email"
       [(ngModel)]="email"
       placeholder="empleado@email.com"
-      required>
+      [class.input-error]="emailError">
+
+    @if (emailError) {
+      <span class="field-error">
+        {{ emailError }}
+      </span>
+    }
 
   </div>
-
 
   <div class="form-group">
 
@@ -96,10 +105,15 @@
       name="phone"
       [(ngModel)]="phone"
       placeholder="2235123456"
-      required>
+      [class.input-error]="phoneError">
+
+    @if (phoneError) {
+      <span class="field-error">
+        {{ phoneError }}
+      </span>
+    }
 
   </div>
-
 
   <div class="form-row">
 
@@ -114,10 +128,15 @@
         name="password"
         [(ngModel)]="password"
         placeholder="Mínimo 6 caracteres"
-        [required]="!isEditing">
+        [class.input-error]="passwordError">
+
+      @if (passwordError) {
+        <span class="field-error">
+          {{ passwordError }}
+        </span>
+      }
 
     </div>
-
 
     <div class="form-group">
 
@@ -130,34 +149,25 @@
         name="confirmPassword"
         [(ngModel)]="confirmPassword"
         placeholder="Repetí la contraseña"
-        [required]="!isEditing">
+        [class.input-error]="confirmPasswordError">
+
+      @if (confirmPasswordError) {
+        <span class="field-error">
+          {{ confirmPasswordError }}
+        </span>
+      }
 
     </div>
 
   </div>
 
-
   @if (isEditing) {
 
     <p class="password-hint">
-
       Dejá estos campos vacíos si no querés cambiar la contraseña.
-
     </p>
 
   }
-
-
-  @if (passwordError) {
-
-    <div class="password-error">
-
-      {{ passwordError }}
-
-    </div>
-
-  }
-
 
   <div class="modal-footer">
 
@@ -169,7 +179,6 @@
       Cancelar
 
     </button>
-
 
     <button
       type="submit"

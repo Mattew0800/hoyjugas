@@ -154,6 +154,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   }
 
   openNewEmployee(): void {
+    this.errorMessage = '';
     this.selectedEmployee = undefined;
     this.showEmployeeModal = true;
   }
@@ -161,6 +162,9 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   editEmployee(
     employee: EmployeeModel
   ): void {
+
+    this.errorMessage = '';
+
 
     this.employeeDetailSubscription?.unsubscribe();
 
@@ -185,6 +189,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   ): void {
 
     if (!this.selectedEmployee) {
+      this.errorMessage = 'No se pudo identificar el empleado a modificar.';
       return;
     }
 
@@ -275,6 +280,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   }): void {
 
     if (!this.selectedEmployeeForPin) {
+      this.pinError = 'No se pudo identificar el empleado.';
       return;
     }
 

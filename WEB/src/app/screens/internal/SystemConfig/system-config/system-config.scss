@@ -156,6 +156,16 @@
   color: #777;
 }
 
+.field-error {
+  margin-top: -2px;
+  color: #d88;
+  font-size: 12px;
+}
+
+.input-error {
+  border-color: rgba(180, 60, 60, .65) !important;
+}
+
 @media (max-width: 800px) {
   .config-page {
     padding: 24px;
@@ -175,5 +185,4 @@
     padding: 20px;
   }
 }
-
 

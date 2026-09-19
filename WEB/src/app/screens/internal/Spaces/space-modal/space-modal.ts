@@ -523,44 +523,54 @@ export class SpaceModal implements OnInit {
   }
 
   private validateForm(): boolean {
-    if (
-      !this.space.name ||
-      !this.space.name.trim()
-    ) {
-      this.errorMessage =
-        'El nombre es obligatorio.';
+    const name = this.space.name?.trim() ?? '';
 
+    if (!name) {
+      this.errorMessage = 'El nombre del espacio es obligatorio.';
+      return false;
+    }
+
+    if (name.length < 3) {
+      this.errorMessage =
+        'El nombre del espacio debe tener al menos 3 caracteres.';
+      return false;
+    }
+
+    if (name.length > 100) {
+      this.errorMessage =
+        'El nombre del espacio no puede superar los 100 caracteres.';
       return false;
     }
 
     if (
-      this.space.fixedDeposit === null ||
-      this.space.fixedDeposit === undefined ||
+      !Number.isFinite(this.space.fixedDeposit) ||
       this.space.fixedDeposit <= 0
     ) {
       this.errorMessage =
-        'La seña fija debe ser mayor a 0.';
-
+        'La seña fija debe ser un número mayor a 0.';
       return false;
     }
 
-    const schedules =
-      this.schedules.filter(
-        schedule => schedule.enabled
-      );
+    const schedules = this.schedules.filter(
+      schedule => schedule.enabled
+    );
 
     if (schedules.length === 0) {
       this.errorMessage =
         'Debés agregar al menos un horario.';
-
       return false;
     }
 
     for (const schedule of schedules) {
-      if (!schedule.dayType) {
+      if (
+        ![
+          'DIA_DE_SEMANA',
+          'SABADO',
+          'DOMINGO'
+        ].includes(schedule.dayType)
+      ) {
         this.errorMessage =
-          'Seleccioná el tipo de día del horario.';
-
+          'Seleccioná un tipo de día válido para el horario.';
         return false;
       }
 
@@ -570,7 +580,15 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `Completá el horario de ${schedule.label}.`;
+        return false;
+      }
 
+      if (
+        !/^\d{2}:\d{2}$/.test(schedule.openingTime) ||
+        !/^\d{2}:\d{2}$/.test(schedule.closingTime)
+      ) {
+        this.errorMessage =
+          `Ingresá horarios válidos para ${schedule.label}.`;
         return false;
       }
 
@@ -580,50 +598,43 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `El horario de cierre debe ser posterior al de apertura en ${schedule.label}.`;
-
         return false;
       }
     }
 
-    for (
-      let i = 0;
-      i < schedules.length;
-      i++
-    ) {
-      for (
-        let j = i + 1;
-        j < schedules.length;
-        j++
-      ) {
+    for (let i = 0; i < schedules.length; i++) {
+      for (let j = i + 1; j < schedules.length; j++) {
         if (
           schedules[i].dayType ===
           schedules[j].dayType
         ) {
           this.errorMessage =
             `Ya existe un horario configurado para ${schedules[i].label}.`;
-
           return false;
         }
       }
     }
 
-    const configurations =
-      this.days.filter(
-        day => day.enabled
-      );
+    const configurations = this.days.filter(
+      day => day.enabled
+    );
 
     if (configurations.length === 0) {
       this.errorMessage =
-        'Debés agregar al menos una configuración.';
-
+        'Debés agregar al menos una configuración de precio.';
       return false;
     }
 
     for (const config of configurations) {
-      if (!config.dayType) {
+      if (
+        ![
+          'DIA_DE_SEMANA',
+          'SABADO',
+          'DOMINGO'
+        ].includes(config.dayType)
+      ) {
         this.errorMessage =
-          'Seleccioná el tipo de día.';
-
+          'Seleccioná un tipo de día válido para cada precio.';
         return false;
       }
 
@@ -633,7 +644,15 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `Completá el horario de ${config.label}.`;
+        return false;
+      }
 
+      if (
+        !/^\d{2}:\d{2}$/.test(config.openingTime) ||
+        !/^\d{2}:\d{2}$/.test(config.closingTime)
+      ) {
+        this.errorMessage =
+          `Ingresá horarios válidos para ${config.label}.`;
         return false;
       }
 
@@ -643,41 +662,26 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `El horario de cierre debe ser posterior al de apertura en ${config.label}.`;
-
         return false;
       }
 
       if (
-        config.price === null ||
-        config.price === undefined ||
+        !Number.isFinite(config.price) ||
         config.price <= 0
       ) {
         this.errorMessage =
-          `El precio de ${config.label} debe ser mayor a 0.`;
-
+          `El precio de ${config.label} debe ser un número mayor a 0.`;
         return false;
       }
     }
 
-    for (
-      let i = 0;
-      i < configurations.length;
-      i++
-    ) {
-      for (
-        let j = i + 1;
-        j < configurations.length;
-        j++
-      ) {
-        const first =
-          configurations[i];
-
-        const second =
-          configurations[j];
+    for (let i = 0; i < configurations.length; i++) {
+      for (let j = i + 1; j < configurations.length; j++) {
+        const first = configurations[i];
+        const second = configurations[j];
 
         if (
-          first.dayType !==
-          second.dayType
+          first.dayType !== second.dayType
         ) {
           continue;
         }
@@ -701,17 +705,15 @@ export class SpaceModal implements OnInit {
     }
 
     for (const config of configurations) {
-      const schedule =
-        schedules.find(
-          item =>
-            item.dayType ===
-            config.dayType
-        );
+      const schedule = this.schedules.find(
+        item =>
+          item.dayType === config.dayType &&
+          item.enabled
+      );
 
       if (!schedule) {
         this.errorMessage =
           `No hay un horario configurado para ${config.label}.`;
-
         return false;
       }
 

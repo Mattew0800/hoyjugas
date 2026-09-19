@@ -290,13 +290,44 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    if (this.receivedAmount < this.remainingAmount) {
+    const receivedAmount = Number(this.receivedAmount);
+
+    if (
+      !Number.isFinite(receivedAmount) ||
+      receivedAmount <= 0
+    ) {
+      this.errorMessage =
+        'Ingresá un importe recibido válido.';
+      return;
+    }
+
+    if (receivedAmount < this.remainingAmount) {
+      this.errorMessage =
+        `El importe recibido debe ser igual o mayor al saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`;
+      return;
+    }
+
+    const validPaymentMethods = [
+      'EFECTIVO',
+      'TRANSFERENCIA',
+      'MERCADO_PAGO',
+      'DEBITO',
+      'CREDITO'
+    ];
+
+    if (!validPaymentMethods.includes(this.selectedPaymentMethod)) {
+      this.errorMessage =
+        'Seleccioná un método de pago válido.';
       return;
     }
 
     if (!this.booking) {
+      this.errorMessage =
+        'No se pudo identificar el turno.';
       return;
     }
+
+    this.errorMessage = '';
 
     this.paymentConfirmed.emit(this.booking);
   }
@@ -338,15 +369,40 @@ export class BookingDetailModal implements OnChanges {
 
     this.cancellationError = '';
 
-    if (!this.cancellationReason.trim()) {
+    const reason = this.cancellationReason.trim();
+    const pin = this.employeePin.trim();
+
+    if (!reason) {
       this.cancellationError =
         'Ingresá el motivo de cancelación.';
       return;
     }
 
-    if (!this.employeePin.trim()) {
+    if (reason.length < 3) {
       this.cancellationError =
-        'Ingresá el PIN del empleado.';
+        'El motivo de cancelación debe tener al menos 3 caracteres.';
+      return;
+    }
+
+    if (reason.length > 500) {
+      this.cancellationError =
+        'El motivo de cancelación no puede superar los 500 caracteres.';
+      return;
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      this.cancellationError =
+        'El PIN del empleado debe tener exactamente 4 números.';
+      return;
+    }
+
+    if (this.bookingDetail.status === 'CANCELADO') {
+      this.cancellationError =
+        'El turno ya está cancelado.';
+      return;
+    }
+
+    if (this.cancellationLoading) {
       return;
     }
 
@@ -355,8 +411,8 @@ export class BookingDetailModal implements OnChanges {
     this.bookingService
       .cancelBooking({
         bookingId: this.bookingDetail.id,
-        cancellationReason: this.cancellationReason.trim(),
-        employeePin: this.employeePin.trim()
+        cancellationReason: reason,
+        employeePin: pin
       })
       .subscribe({
         next: () => {

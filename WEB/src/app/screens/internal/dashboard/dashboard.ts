@@ -836,10 +836,7 @@ export class Dashboard implements OnInit {
   openInternalBookingModal(
     slot?: SpaceSlotModel
   ): void {
-
-    console.log(
-      'ABRIENDO MODAL DE TURNO'
-    );
+    this.errorMessage = '';
 
     if (slot?.booking) {
 
@@ -894,12 +891,6 @@ export class Dashboard implements OnInit {
   confirmPayment(
     booking: BookingListModel
   ): void {
-
-    console.log(
-      'Pago confirmado',
-      booking
-    );
-
     this.closeBookingModal();
 
   }

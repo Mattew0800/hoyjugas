@@ -45,11 +45,9 @@ export class SpacesScreen implements OnInit {
   }
 
   private loadSpaces(): void {
-
     this.errorMessage = '';
 
     this.spaceService.getAllSpaces().subscribe({
-
       next: spaces => {
         this.spaces = spaces;
       },
@@ -58,37 +56,38 @@ export class SpacesScreen implements OnInit {
         this.errorMessage =
           this.errorHandler.getMessage(error);
       }
-
     });
+  }
 
+  get filteredSpaces(): SpaceListModel[] {
+    const search = this.search.trim().toLowerCase();
+
+    if (!search) {
+      return this.spaces;
+    }
+
+    return this.spaces.filter(space =>
+      space.name?.toLowerCase().includes(search)
+    );
   }
 
   newSpace(): void {
-
+    this.errorMessage = '';
     this.selectedSpaceId = null;
-
     this.showModal = true;
-
   }
 
   closeModal(created: boolean): void {
-
     this.showModal = false;
 
     if (created) {
-
       this.loadSpaces();
-
     }
-
   }
 
   editSpace(spaceId: number): void {
-
+    this.errorMessage = '';
     this.selectedSpaceId = spaceId;
-
     this.showModal = true;
-
   }
-
 }
