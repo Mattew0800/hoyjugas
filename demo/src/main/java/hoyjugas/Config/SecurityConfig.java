@@ -79,7 +79,8 @@ public class SecurityConfig {
                                 "/complex-schedule/get-all",
                                 "/bookings/spaces-card",
                                 "/bookings/space-card",
-                                "/bookings/availability"
+                                "/bookings/availability",
+                                "/bookings/availability-next-30-days"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
