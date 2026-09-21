@@ -26,6 +26,11 @@ export function getAdminSpaceApiUrl(): string {
 
 }
 
+export function getAdminConfigApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/admin/config`;
+}
+
 export function getRecurringBookingApiUrl(): string {
   const host = window.location.hostname;
   return `http://${host}:8080/hoyjugas/recurring-bookings`;

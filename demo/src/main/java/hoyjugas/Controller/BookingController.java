@@ -58,7 +58,7 @@ public class BookingController {
     @PostMapping("/complete")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BookingResponseDTO> completeBooking(@Valid @RequestBody CompleteBookingPaymentDTO dto) {
-        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin())));
+        return ResponseEntity.ok(bookingService.completeBooking(dto.getBookingId(), dto, userService.validateStaffPin(dto.getEmployeePin()),dto.getObservations()));
     }
 
     @PostMapping("/cancel")
@@ -89,7 +89,7 @@ public class BookingController {
         ));
     }
 
-    @GetMapping("/my-bookings")
+    @PostMapping("/my-bookings")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<BookingListDTO>> getMyBookings(
             @Valid @ModelAttribute BookingFilterRequestDTO dto,
@@ -136,6 +136,13 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
     }
 
+    @PostMapping("/add-observation")
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    public ResponseEntity<?> addObservation(@Valid @RequestBody BookingObservationRequestDTO dto) {
+        bookingService.addObservations(dto.getBookingId(), dto.getContent());
+        return ResponseEntity.ok(Map.of("message", "Observación agregada correctamente"));
+    }
+
     //endpoints publicos
     @GetMapping("/available-slots-today")
     public ResponseEntity<?> getAvailableSlotsToday() {
@@ -160,5 +167,10 @@ public class BookingController {
     @PostMapping("/space-card")
     public ResponseEntity<SpaceCardDTO> getSpace(@Valid @RequestBody SpaceIdRequestDTO dto) {
         return ResponseEntity.ok(spaceService.getSpaceCard(dto.getSpaceId()));
+    }
+
+    @GetMapping("/availability-next-30-days")
+    public ResponseEntity<AvailabilitySummaryDTO> getAvailabilityNext30Days() {
+        return ResponseEntity.ok(bookingService.getAvailabilityNext30Days());
     }
 }

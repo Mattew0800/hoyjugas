@@ -1,6 +1,7 @@
 package hoyjugas.Controller;
 
 import hoyjugas.DTO.System.SystemConfigCreateDTO;
+import hoyjugas.DTO.System.SystemConfigResponseDTO;
 import hoyjugas.DTO.System.SystemConfigUpdateDTO;
 import hoyjugas.Model.SystemConfig;
 import hoyjugas.Service.SystemConfigService;
@@ -20,20 +21,19 @@ public class SystemConfigController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SystemConfig> addSystemConfig(
-            @Valid @RequestBody SystemConfigCreateDTO dto
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(systemConfigService.createConfig(dto));
+    public ResponseEntity<SystemConfig> addSystemConfig(@Valid @RequestBody SystemConfigCreateDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(systemConfigService.createConfig(dto));
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SystemConfig> updateSystemConfig(
-            @Valid @RequestBody SystemConfigUpdateDTO dto
-    ) {
-        return ResponseEntity.ok(
-                systemConfigService.updateConfig(dto)
-        );
+    public ResponseEntity<SystemConfig> updateSystemConfig(@Valid @RequestBody SystemConfigUpdateDTO dto) {
+        return ResponseEntity.ok(systemConfigService.updateConfig(dto));
+    }
+
+    @GetMapping("/get")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SystemConfigResponseDTO> getConfig() {
+        return ResponseEntity.ok(systemConfigService.getConfig());
     }
 }

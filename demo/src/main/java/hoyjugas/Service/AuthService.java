@@ -119,7 +119,7 @@ public class AuthService {
             userRepository.save(employee);
         } else if(!employee.isEnabled()){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Este empleado ya ha sido dado de baja");
-        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este empleado");
+        }else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podes dar de baja a este empleado debido a que es un admin");
     }
 
     @Transactional
@@ -244,11 +244,13 @@ public class AuthService {
     }
 
     @Transactional
-    public UserResponseDTO updateEmployee(UpdateEmployeeRequestDTO dto) {
+    public UserResponseDTO updateEmployee(UpdateEmployeeRequestDTO dto,Long requesterId) {
         User employee = userRepository.findById(dto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
-        if (!employee.getRole().equals(Role.EMPLOYEE)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no es un empleado");
+        User requester =userRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado"));
+        if (!employee.getRole().equals(Role.EMPLOYEE) && !requester.getId().equals(employee.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés editar los datos de este usuario");
         }
         String password=dto.getPassword();
         if(password!=null) {

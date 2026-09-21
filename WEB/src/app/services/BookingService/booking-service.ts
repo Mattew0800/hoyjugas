@@ -1,27 +1,19 @@
-import { Injectable } from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
 import { getBookingApiUrl } from '../../config/api.config';
-
 import { SpaceCardDTO } from '../../models/SpaceCardDTO';
 import { AvailableSlotsResponse } from '../../models/AvailableSlotsResponse';
-
 import { BookingFilterModel }
   from '../../screens/internal/models/booking-filter.model';
-
 import { PageResponse }
   from '../../screens/internal/models/page-response.model';
-
 import { BookingListModel }
   from '../../screens/internal/models/booking-list.model';
-
 import { SpaceAvailabilityModel }
   from '../../screens/internal/models/space-availability.model';
-
 import {InternalBookingRequestModel} from '../../screens/internal/models/internal-booking-request.model';
-
 import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
 import {AuthService} from '../AuthService/auth-service';
 import {BookingListDTO, Page} from '../../models/booking.model';
@@ -32,10 +24,9 @@ import {BookingListDTO, Page} from '../../models/booking.model';
 export class BookingService {
 
   private readonly bookingApiUrl = getBookingApiUrl();
-
+  private authService = inject(AuthService);
   constructor(
-    private http: HttpClient,
-    private authService: AuthService
+    private http: HttpClient
   ) {}
 
   getBookings(

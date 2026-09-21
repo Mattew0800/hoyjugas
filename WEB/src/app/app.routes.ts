@@ -23,7 +23,8 @@ import {StepPaymentSelection} from './screens/step-payment-selection/step-paymen
 import {BookingSuccess} from './screens/booking-success/booking-success';
 import {internalAuthGuard} from './auth/InternalAuthGuard';
 import {Contact} from './screens/contact/contact';
-
+import {CustomersScreen} from './screens/internal/Customers/customers-screen/customers-screen';
+import {SystemConfigScreen} from './screens/internal/SystemConfig/system-config/system-config';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -46,6 +47,10 @@ export const routes: Routes = [
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
   {path: 'contact', component: Contact, canActivate: [authGuard]},
+  {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
+  {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
+  {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},
+  {path:'internal/config', component:SystemConfigScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN']}},
   {path:'**', component:Error}
 
 ];
