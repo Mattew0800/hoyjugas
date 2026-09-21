@@ -1,374 +1,402 @@
 <app-internal-side-bar></app-internal-side-bar>
+
 <div class="employees-container">
-<app-internal-header
-  [title]="'Empleados'"
-  [subtitle]="'Administrá los empleados del complejo'">
-</app-internal-header>
 
+  <app-internal-header
+    [title]="'Empleados'"
+    [subtitle]="'Administrá los empleados del complejo'">
+  </app-internal-header>
 
-<main class="employees-page">
+  <main class="employees-page">
 
-  <div class="employees-toolbar">
+    <div class="employees-toolbar">
 
-    <div class="search-container">
+      <div class="search-container">
 
-      <span class="search-icon">
-        ⌕
-      </span>
+        <span class="search-icon">
+          ⌕
+        </span>
 
-      <input
-        type="text"
-        placeholder="Buscar empleado..."
-        [(ngModel)]="searchTerm">
+        <input
+          type="text"
+          placeholder="Buscar empleado..."
+          [(ngModel)]="searchTerm">
 
-    </div>
+      </div>
 
-    <div class="toolbar-actions">
+      <div class="toolbar-actions">
 
-      @if (showingHistory) {
+        @if (showingHistory) {
 
-        <button
-          type="button"
-          class="history-button"
-          (click)="closeHistory()">
+          <button
+            type="button"
+            class="history-button"
+            (click)="closeHistory()">
 
-          Empleados activos
+            Empleados activos
 
-        </button>
+          </button>
 
-      } @else {
+        } @else {
 
-        <button
-          type="button"
-          class="history-button"
-          (click)="openHistory()">
+          <button
+            type="button"
+            class="history-button"
+            (click)="openHistory()">
 
-          Historial
+            Historial
 
-        </button>
+          </button>
 
-      }
+        }
 
-      @if (!showingHistory) {
+        @if (!showingHistory) {
 
-        <button
-          type="button"
-          class="create-button"
-          (click)="openNewEmployee()">
+          <button
+            type="button"
+            class="create-button"
+            (click)="openNewEmployee()">
 
-          <span class="plus-icon">
-            +
-          </span>
+            <span class="plus-icon">
+              +
+            </span>
 
-          Nuevo empleado
+            Nuevo empleado
 
-        </button>
+          </button>
 
-      }
+        }
 
-    </div>
-
-  </div>
-
-  <div class="employees-card">
-
-    <div class="table-header">
-
-      <span>
-        EMPLEADO
-      </span>
-
-      <span>
-        EMAIL
-      </span>
-
-      <span>
-        TELÉFONO
-      </span>
-
-      <span>
-        ESTADO
-      </span>
-
-      <span>
-        ACCIONES
-      </span>
+      </div>
 
     </div>
 
-    @for (employee of filteredEmployees; track employee.id) {
+    @if (errorMessage) {
 
-      <div class="employee-row">
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
 
-        <div class="employee-name">
+    }
 
-          <div class="employee-avatar">
+    <div class="employees-card">
 
-            {{ employee.name.charAt(0) }}
+      <div class="table-header">
+
+        <span>
+          EMPLEADO
+        </span>
+
+        <span>
+          EMAIL
+        </span>
+
+        <span>
+          TELÉFONO
+        </span>
+
+        <span>
+          ESTADO
+        </span>
+
+        <span>
+          ACCIONES
+        </span>
+
+      </div>
+
+      @for (employee of filteredEmployees; track employee.id) {
+
+        <div class="employee-row">
+
+          <div class="employee-name">
+
+            <div class="employee-avatar">
+
+              {{ employee.name.charAt(0) }}
+
+            </div>
+
+            <span>
+              {{ employee.name }}
+            </span>
 
           </div>
 
+          <span class="employee-email">
+
+            {{ employee.email }}
+
+          </span>
+
           <span>
-            {{ employee.name }}
-          </span>
 
-        </div>
-
-        <span class="employee-email">
-
-          {{ employee.email }}
-
-        </span>
-
-        <span>
-
-          {{ employee.phone }}
-
-        </span>
-
-        <span>
-
-          <span
-            class="status"
-            [class.status-active]="employee.active"
-            [class.status-inactive]="!employee.active">
-
-            {{ employee.active ? 'Activo' : 'Inactivo' }}
+            {{ employee.phone }}
 
           </span>
 
-        </span>
+          <span>
 
-        <div class="actions">
+            <span
+              class="status"
+              [class.status-active]="employee.active"
+              [class.status-inactive]="!employee.active">
 
-          @if (!showingHistory) {
+              {{ employee.active ? 'Activo' : 'Inactivo' }}
 
-            <button
-              type="button"
-              class="action-button"
-              title="Editar"
-              (click)="editEmployee(employee)">
+            </span>
 
-              ✎
+          </span>
 
-            </button>
+          <div class="actions">
 
-            <button
-              type="button"
-              class="action-button"
-              title="Cambiar PIN"
-              (click)="resetPin(employee)">
+            @if (!showingHistory) {
 
-              🔑
+              <button
+                type="button"
+                class="action-button"
+                title="Editar"
+                (click)="editEmployee(employee)">
 
-            </button>
+                ✎
 
-            <button
-              type="button"
-              class="action-button"
-              title="Dar de baja"
-              (click)="toggleEmployeeStatus(employee)">
+              </button>
 
-              ×
+              <button
+                type="button"
+                class="action-button"
+                title="Cambiar PIN"
+                (click)="resetPin(employee)">
 
-            </button>
+                🔑
 
-          } @else {
+              </button>
 
-            <button
-              type="button"
-              class="rehire-button"
-              title="Reactivar empleado"
-              (click)="openRehireConfirmation(employee)">
+              <button
+                type="button"
+                class="action-button"
+                title="Dar de baja"
+                (click)="toggleEmployeeStatus(employee)">
 
-              Reactivar
+                ×
 
-            </button>
+              </button>
 
-          }
+            } @else {
+
+              <button
+                type="button"
+                class="rehire-button"
+                title="Reactivar empleado"
+                (click)="openRehireConfirmation(employee)">
+
+                Reactivar
+
+              </button>
+
+            }
+
+          </div>
 
         </div>
 
-      </div>
+      }
 
-    }
+      @if (filteredEmployees.length === 0) {
 
-    @if (filteredEmployees.length === 0) {
+        <div class="empty-state">
 
-      <div class="empty-state">
+          No se encontraron empleados.
 
-        No se encontraron empleados.
+        </div>
 
-      </div>
+      }
 
-    }
+    </div>
 
-  </div>
+  </main>
 
-</main>
+  @if (showEmployeeModal) {
 
-@if (showEmployeeModal) {
+    <app-employee-modal
+      [employee]="selectedEmployee"
+      [saving]="savingEmployee"
+      [errorMessage]="employeeModalError"
+      (close)="closeEmployeeModal()"
+      (saveEmployee)="saveEmployee($event)"
+      (updateEmployee)="updateEmployee($event)">
+    </app-employee-modal>
 
-  <app-employee-modal
-    [employee]="selectedEmployee"
-    (close)="closeEmployeeModal()"
-    (saveEmployee)="saveEmployee($event)"
-    (updateEmployee)="updateEmployee($event)">
-  </app-employee-modal>
+  }
 
-}
+  @if (showPinModal && selectedEmployeeForPin) {
 
-@if (showPinModal && selectedEmployeeForPin) {
+    <app-pin-modal
+      [employeeName]="selectedEmployeeForPin.name"
+      (close)="closePinModal()"
+      (confirm)="confirmResetPin($event)">
+    </app-pin-modal>
 
-  <app-pin-modal
-    [employeeName]="selectedEmployeeForPin.name"
-    (close)="closePinModal()"
-    (confirm)="confirmResetPin($event)">
-  </app-pin-modal>
+  }
 
-}
-
-@if (
-  showDismissConfirmation &&
-  selectedEmployeeForDismiss
-  ) {
-
-  <div
-    class="dismiss-overlay"
-    (click)="closeDismissConfirmation()">
+  @if (
+    showDismissConfirmation &&
+    selectedEmployeeForDismiss
+    ) {
 
     <div
-      class="dismiss-modal"
-      (click)="$event.stopPropagation()">
+      class="dismiss-overlay"
+      (click)="closeDismissConfirmation()">
 
-      <div class="dismiss-icon">
-        !
-      </div>
+      <div
+        class="dismiss-modal"
+        (click)="$event.stopPropagation()">
 
-      <h2>
-        Dar de baja empleado
-      </h2>
+        <div class="dismiss-icon">
+          !
+        </div>
 
-      <p>
+        <h2>
+          Dar de baja empleado
+        </h2>
 
-        ¿Estás seguro de que querés dar de baja a
+        <p>
 
-        <strong>
-          {{ selectedEmployeeForDismiss.name }}
-        </strong>?
+          ¿Estás seguro de que querés dar de baja a
 
-      </p>
+          <strong>
+            {{ selectedEmployeeForDismiss.name }}
+          </strong>?
 
-      <span class="dismiss-description">
+        </p>
 
-        El empleado dejará de tener acceso al sistema.
-        Podrás reactivarlo más adelante desde el historial.
+        @if (dismissError) {
 
-      </span>
+          <div class="error-message">
+            {{ dismissError }}
+          </div>
 
-      <div class="dismiss-actions">
+        }
 
-        <button
-          type="button"
-          class="dismiss-cancel-button"
-          (click)="closeDismissConfirmation()"
-          [disabled]="dismissingEmployee">
+        <span class="dismiss-description">
 
-          Cancelar
+          El empleado dejará de tener acceso al sistema.
+          Podrás reactivarlo más adelante desde el historial.
 
-        </button>
+        </span>
 
-        <button
-          type="button"
-          class="dismiss-confirm-button"
-          (click)="confirmDismissEmployee()"
-          [disabled]="dismissingEmployee">
+        <div class="dismiss-actions">
 
-          {{
-            dismissingEmployee
-              ? 'Dando de baja...'
-              : 'Dar de baja'
-          }}
+          <button
+            type="button"
+            class="dismiss-cancel-button"
+            (click)="closeDismissConfirmation()"
+            [disabled]="dismissingEmployee">
 
-        </button>
+            Cancelar
+
+          </button>
+
+          <button
+            type="button"
+            class="dismiss-confirm-button"
+            (click)="confirmDismissEmployee()"
+            [disabled]="dismissingEmployee">
+
+            {{
+              dismissingEmployee
+                ? 'Dando de baja...'
+                : 'Dar de baja'
+            }}
+
+          </button>
+
+        </div>
 
       </div>
 
     </div>
 
-  </div>
+  }
 
-}
-
-@if (
-  showRehireConfirmation &&
-  selectedEmployeeForRehire
-  ) {
-
-  <div
-    class="dismiss-overlay"
-    (click)="closeRehireConfirmation()">
+  @if (
+    showRehireConfirmation &&
+    selectedEmployeeForRehire
+    ) {
 
     <div
-      class="dismiss-modal"
-      (click)="$event.stopPropagation()">
+      class="dismiss-overlay"
+      (click)="closeRehireConfirmation()">
 
-      <div class="dismiss-icon">
-        ✓
-      </div>
+      <div
+        class="dismiss-modal"
+        (click)="$event.stopPropagation()">
 
-      <h2>
-        Reactivar empleado
-      </h2>
+        <div class="dismiss-icon">
+          ✓
+        </div>
 
-      <p>
+        <h2>
+          Reactivar empleado
+        </h2>
 
-        ¿Estás seguro de que querés reactivar a
+        <p>
 
-        <strong>
-          {{ selectedEmployeeForRehire.name }}
-        </strong>?
+          ¿Estás seguro de que querés reactivar a
 
-      </p>
+          <strong>
+            {{ selectedEmployeeForRehire.name }}
+          </strong>?
 
-      <span class="dismiss-description">
+        </p>
 
-        El empleado volverá a tener acceso al sistema
-        y aparecerá nuevamente entre los empleados activos.
+        @if (rehireError) {
 
-      </span>
+          <div class="error-message">
+            {{ rehireError }}
+          </div>
 
-      <div class="dismiss-actions">
+        }
 
-        <button
-          type="button"
-          class="dismiss-cancel-button"
-          (click)="closeRehireConfirmation()"
-          [disabled]="rehiringEmployee">
+        <span class="dismiss-description">
 
-          Cancelar
+          El empleado volverá a tener acceso al sistema
+          y aparecerá nuevamente entre los empleados activos.
 
-        </button>
+        </span>
 
-        <button
-          type="button"
-          class="confirm-rehire-button"
-          (click)="confirmRehireEmployee()"
-          [disabled]="rehiringEmployee">
+        <div class="dismiss-actions">
 
-          {{
-            rehiringEmployee
-              ? 'Reactivando...'
-              : 'Reactivar'
-          }}
+          <button
+            type="button"
+            class="dismiss-cancel-button"
+            (click)="closeRehireConfirmation()"
+            [disabled]="rehiringEmployee">
 
-        </button>
+            Cancelar
+
+          </button>
+
+          <button
+            type="button"
+            class="confirm-rehire-button"
+            (click)="confirmRehireEmployee()"
+            [disabled]="rehiringEmployee">
+
+            {{
+              rehiringEmployee
+                ? 'Reactivando...'
+                : 'Reactivar'
+            }}
+
+          </button>
+
+        </div>
 
       </div>
 
     </div>
 
-  </div>
+  }
 
-}
 </div>

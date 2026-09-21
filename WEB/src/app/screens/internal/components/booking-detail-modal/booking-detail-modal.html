@@ -1,4 +1,6 @@
-<div class="modal-overlay" (click)="closeModal()">
+<div
+  class="modal-overlay"
+  (click)="closeModal()">
 
   <div
     class="modal-container"
@@ -6,7 +8,9 @@
 
     <div class="modal-header">
 
-      <h2>Detalle del turno</h2>
+      <h2>
+        Detalle del turno
+      </h2>
 
       <button
         type="button"
@@ -21,367 +25,411 @@
 
     <div class="modal-body">
 
-      <div class="left-column">
+      @if (loading) {
 
-        <section class="section-card">
+        <div class="booking-detail-loading">
+          Cargando detalle...
+        </div>
 
-          <div class="section-header">
-            <h3>Cliente</h3>
-          </div>
+      } @else if (errorMessage) {
 
-          <div class="client-info">
+        <div class="booking-detail-error">
+          {{ errorMessage }}
+        </div>
 
-            <div class="client-avatar">
-              {{ booking.clientName.charAt(0) }}
+      } @else if (bookingDetail) {
+
+        <div class="left-column">
+
+          <section class="section-card">
+
+            <div class="section-header">
+
+              <h3>
+                Cliente
+              </h3>
+
             </div>
 
-            <div class="client-data">
+            <div class="client-info">
 
-              <h4>
-                {{ booking.clientName }}
-              </h4>
+              <div class="client-avatar">
+                {{ bookingDetail.clientName.charAt(0) }}
+              </div>
 
-              <span>
-                {{ booking.clientPhone }}
-              </span>
+              <div class="client-data">
+
+                <h4>
+                  {{ bookingDetail.clientName }}
+                </h4>
+
+                <span>
+                  {{ bookingDetail.clientPhone }}
+                </span>
+
+              </div>
+
+              <button
+                type="button"
+                class="profile-button"
+                [disabled]="clientProfileLoading"
+                (click)="openClientProfile()">
+
+                @if (clientProfileLoading) {
+
+                  Cargando...
+
+                } @else {
+
+                  Ver perfil
+
+                }
+
+              </button>
 
             </div>
 
-            <button
-              type="button"
-              class="profile-button"
-              [disabled]="clientProfileLoading"
-              (click)="openClientProfile()">
+            @if (clientProfileError) {
 
-              @if (clientProfileLoading) {
+              <div class="cancel-error">
+                {{ clientProfileError }}
+              </div>
 
-                Cargando...
+            }
 
-              } @else {
+          </section>
 
-                Ver perfil
+          <section class="section-card">
+
+            <div class="section-header">
+
+              <h3>
+                Información del turno
+              </h3>
+
+            </div>
+
+            <div class="section-content">
+
+              <div class="info-row">
+
+                <span class="info-label">
+                  Cancha
+                </span>
+
+                <span class="info-value">
+                  {{ bookingDetail.spaceName }}
+                </span>
+
+              </div>
+
+              <div class="info-row">
+
+                <span class="info-label">
+                  Fecha
+                </span>
+
+                <span class="info-value">
+                  {{ bookingDetail.startDatetime | date:'dd/MM/yyyy' }}
+                </span>
+
+              </div>
+
+              <div class="info-row">
+
+                <span class="info-label">
+                  Horario
+                </span>
+
+                <span class="info-value">
+
+                  {{ bookingDetail.startDatetime | date:'HH:mm' }}
+
+                  -
+
+                  {{ bookingDetail.endDatetime | date:'HH:mm' }}
+
+                </span>
+
+              </div>
+
+              <div class="info-row">
+
+                <span class="info-label">
+                  Duración
+                </span>
+
+                <span class="info-value">
+                  {{ durationMinutes }} minutos
+                </span>
+
+              </div>
+
+            </div>
+
+          </section>
+
+          <section class="section-card">
+
+            <div class="section-header">
+
+              <h3>
+                Estado
+              </h3>
+
+            </div>
+
+            <div class="section-content">
+
+              <div class="status-card">
+
+                <div
+                  class="status-indicator"
+                  [class.paid]="bookingDetail.paymentStatus === 'PAGADO'">
+                </div>
+
+                <div class="status-info">
+
+                  <span class="status-title">
+                    {{ paymentLabel }}
+                  </span>
+
+                  <span class="status-description">
+
+                    @if (isPaid) {
+
+                      El turno fue abonado en su totalidad.
+
+                    } @else if (isPartiallyPaid) {
+
+                      El cliente tiene un saldo pendiente.
+
+                    } @else {
+
+                      El turno todavía no registra pagos.
+
+                    }
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </div>
+
+        <div class="right-column">
+
+          <section class="section-card">
+
+            <div class="section-header">
+
+              <h3>
+                Cobro
+              </h3>
+
+            </div>
+
+            <div class="section-content">
+
+              <div class="payment-summary">
+
+                <div class="payment-row">
+
+                  <span class="payment-label">
+                    Total del turno
+                  </span>
+
+                  <span class="payment-value">
+                    ${{ totalAmount | number:'1.0-0' }}
+                  </span>
+
+                </div>
+
+                <div class="payment-row">
+
+                  <span class="payment-label">
+                    Seña abonada
+                  </span>
+
+                  <span class="payment-value">
+
+                    @if (depositAmount > 0) {
+
+                      ${{ depositAmount | number:'1.0-0' }}
+
+                    } @else {
+
+                      —
+
+                    }
+
+                  </span>
+
+                </div>
+
+                <div class="payment-row remaining">
+
+                  <span class="payment-label">
+                    Saldo pendiente
+                  </span>
+
+                  <span class="payment-value">
+                    ${{ remainingAmount | number:'1.0-0' }}
+                  </span>
+
+                </div>
+
+              </div>
+
+              @if (!isPaid) {
+
+                <div class="divider"></div>
+
+                <div class="payment-method">
+
+                  <label>
+                    Método de pago
+                  </label>
+
+                  <select [(ngModel)]="selectedPaymentMethod">
+
+                    <option value="EFECTIVO">
+                      Efectivo
+                    </option>
+
+                    <option value="TRANSFERENCIA">
+                      Transferencia
+                    </option>
+
+                    <option value="MERCADO_PAGO">
+                      Mercado Pago
+                    </option>
+
+                    <option value="DEBITO">
+                      Débito
+                    </option>
+
+                    <option value="CREDITO">
+                      Crédito
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div class="payment-input">
+
+                  <label>
+                    Importe recibido
+                  </label>
+
+                  <input
+                    type="number"
+                    [(ngModel)]="receivedAmount"
+                    [min]="remainingAmount"
+                    [placeholder]="remainingAmount.toString()">
+
+                </div>
+
+                @if (paymentError) {
+
+                  <div class="payment-error">
+                    {{ paymentError }}
+                  </div>
+
+                }
+
+                <div class="payment-input">
+
+                  <label>
+                    Vuelto
+                  </label>
+
+                  <input
+                    type="text"
+                    [value]="'$' + changeAmount.toLocaleString('es-AR')"
+                    disabled>
+
+                </div>
 
               }
 
-            </button>
-
-          </div>
-
-          @if (clientProfileError) {
-
-            <div class="cancel-error">
-
-              {{ clientProfileError }}
-
             </div>
 
-          }
+          </section>
 
-        </section>
+          <section class="section-card">
 
+            <div class="section-content">
 
-        <section class="section-card">
-
-          <div class="section-header">
-            <h3>Información del turno</h3>
-          </div>
-
-          <div class="section-content">
-
-            <div class="info-row">
-
-              <span class="info-label">
-                Cancha
-              </span>
-
-              <span class="info-value">
-                {{ booking.spaceName }}
-              </span>
-
-            </div>
-
-            <div class="info-row">
-
-              <span class="info-label">
-                Fecha
-              </span>
-
-              <span class="info-value">
-                {{ booking.startDatetime | date:'dd/MM/yyyy' }}
-              </span>
-
-            </div>
-
-            <div class="info-row">
-
-              <span class="info-label">
-                Horario
-              </span>
-
-              <span class="info-value">
-
-                {{ booking.startDatetime | date:'HH:mm' }}
-
-                -
-
-                {{ booking.endDatetime | date:'HH:mm' }}
-
-              </span>
-
-            </div>
-
-            <div class="info-row">
-
-              <span class="info-label">
-                Duración
-              </span>
-
-              <span class="info-value">
-                {{ durationMinutes }} minutos
-              </span>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <section class="section-card">
-
-          <div class="section-header">
-            <h3>Estado</h3>
-          </div>
-
-          <div class="section-content">
-
-            <div class="status-card">
-
-              <div
-                class="status-indicator"
-                [class.paid]="booking.paymentStatus === 'PAGADO'">
-              </div>
-
-              <div class="status-info">
-
-                <span class="status-title">
-
-                  {{
-                    booking.paymentStatus === 'PAGADO'
-                      ? 'Pago completo'
-                      : 'Pago pendiente'
-                  }}
-
-                </span>
-
-                <span class="status-description">
-
-                  {{
-                    booking.paymentStatus === 'PAGADO'
-                      ? 'El turno fue abonado en su totalidad.'
-                      : 'El cliente todavía tiene un saldo pendiente.'
-                  }}
-
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-      </div>
-
-
-      <div class="right-column">
-
-        <section class="section-card">
-
-          <div class="section-header">
-            <h3>Cobro</h3>
-          </div>
-
-          <div class="section-content">
-
-            <div class="payment-summary">
-
-              <div class="payment-row">
-
-                <span class="payment-label">
-                  Total del turno
-                </span>
-
-                <span class="payment-value">
-
-                  ${{ booking.totalAmount | number:'1.0-0' }}
-
-                </span>
-
-              </div>
-
-              <div class="payment-row">
-
-                <span class="payment-label">
-                  Seña abonada
-                </span>
-
-                <span class="payment-value">
-                  —
-                </span>
-
-              </div>
-
-              <div class="payment-row remaining">
-
-                <span class="payment-label">
-                  Saldo pendiente
-                </span>
-
-                <span class="payment-value">
-
-                  @if (booking.remainingAmount !== undefined) {
-
-                    ${{ booking.remainingAmount | number:'1.0-0' }}
-
-                  } @else {
-
-                    —
-
-                  }
-
-                </span>
-
-              </div>
-
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="payment-method">
-
-              <label>
-                Método de pago
+              <label class="observation-label">
+                Observaciones internas
               </label>
 
-              <select>
-
-                <option>
-                  Efectivo
-                </option>
-
-                <option>
-                  Transferencia
-                </option>
-
-                <option>
-                  Mercado Pago
-                </option>
-
-                <option>
-                  Débito
-                </option>
-
-                <option>
-                  Crédito
-                </option>
-
-              </select>
+              <textarea
+                rows="6"
+                [value]="bookingDetail.observations ?? ''"
+                placeholder="Agregar una observación...">
+              </textarea>
 
             </div>
 
-            <div class="payment-input">
+          </section>
 
-              <label>
-                Importe recibido
-              </label>
-
-              <input
-                type="text"
-                [placeholder]="'$' + (booking.remainingAmount ?? 0)">
-
-            </div>
-
-            <div class="payment-input">
-
-              <label>
-                Vuelto
-              </label>
-
-              <input
-                type="text"
-                value="$0"
-                disabled>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <section class="section-card">
-
-          <div class="section-content">
-
-            <label class="observation-label">
-              Observaciones internas
-            </label>
-
-            <textarea
-              rows="6"
-              placeholder="Agregar una observación...">
-            </textarea>
-
-          </div>
-
-        </section>
-
-
-        <div class="modal-footer">
-
-          <button
-            type="button"
-            class="cancel-booking-button"
-            (click)="openCancelForm()">
-
-            Cancelar turno
-
-          </button>
-
-          <div class="footer-actions">
+          <div class="modal-footer">
 
             <button
               type="button"
-              class="secondary-button"
-              (click)="closeModal()">
+              class="cancel-booking-button"
+              [disabled]="bookingDetail.status === 'CANCELADO'"
+              (click)="openCancelForm()">
 
-              Cerrar
-
-            </button>
-
-            <button
-              type="button"
-              class="primary-button"
-              (click)="onConfirmPayment()">
-
-              Cobrar turno
+              Cancelar turno
 
             </button>
+
+            <div class="footer-actions">
+
+              <button
+                type="button"
+                class="secondary-button"
+                (click)="closeModal()">
+
+                Cerrar
+
+              </button>
+
+              @if (!isPaid && remainingAmount > 0) {
+
+                <button
+                  type="button"
+                  class="primary-button"
+                  (click)="onConfirmPayment()">
+
+                  Cobrar turno
+
+                </button>
+
+              }
+
+            </div>
 
           </div>
 
         </div>
 
-      </div>
+      }
 
     </div>
 
   </div>
 
 </div>
-
 
 @if (showCancelForm) {
 
@@ -418,7 +466,6 @@
 
       </div>
 
-
       <div class="cancel-modal-body">
 
         <div class="cancel-input">
@@ -430,11 +477,11 @@
           <textarea
             [(ngModel)]="cancellationReason"
             rows="4"
+            maxlength="500"
             placeholder="Ingresá el motivo...">
           </textarea>
 
         </div>
-
 
         <div class="cancel-input">
 
@@ -451,19 +498,15 @@
 
         </div>
 
-
         @if (cancellationError) {
 
           <div class="cancel-error">
-
             {{ cancellationError }}
-
           </div>
 
         }
 
       </div>
-
 
       <div class="cancel-modal-footer">
 
@@ -501,7 +544,6 @@
   </div>
 
 }
-
 
 @if (showClientProfile && selectedClient) {
 

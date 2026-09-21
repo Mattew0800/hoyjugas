@@ -5,33 +5,31 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { BookingService } from '../../../../services/BookingService/booking-service';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
 
 import { InternalBookingRequestModel } from '../../models/internal-booking-request.model';
-import {RecurringBookingPreviewModel} from '../../models/recurring-booking-preview.model';
-import {RecurringBookingRequestModel} from '../../models/recurring-booking-request.model';
+import { RecurringBookingPreviewModel } from '../../models/recurring-booking-preview.model';
+import { RecurringBookingRequestModel } from '../../models/recurring-booking-request.model';
 
 @Component({
   selector: 'app-internal-booking-modal',
   standalone: true,
-  imports: [
-    ReactiveFormsModule
-  ],
+  imports: [ReactiveFormsModule],
   templateUrl: './internal-booking-modal.html',
   styleUrl: './internal-booking-modal.scss'
 })
 export class InternalBookingModal {
 
-  @Input()
-  selectedDate!: Date;
+  @Input() selectedDate!: Date;
 
-  @Output()
-  close = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
 
-  @Output()
-  bookingCreated = new EventEmitter<void>();
+  @Output() bookingCreated = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -41,6 +39,8 @@ export class InternalBookingModal {
 
   bookingType: 'single' | 'recurring' = 'single';
 
+  paymentType: 'deposit' | 'full' = 'deposit';
+
   previewLoading = false;
 
   previewVisible = false;
@@ -49,160 +49,83 @@ export class InternalBookingModal {
 
   preview: RecurringBookingPreviewModel | null = null;
 
-
   constructor(
     private bookingService: BookingService,
+    private errorHandler: ErrorHandlerService,
     private recurringBookingService: RecurringBookingService
   ) {
-
     this.form = new FormGroup({
-
-      clientId: new FormControl<number | null>(
-        null,
-        [
-          Validators.required
-        ]
-      ),
-
-      spaceId: new FormControl<number | null>(
-        null,
-        [
-          Validators.required
-        ]
-      ),
-
-      startDatetime: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      startDate: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      startTime: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      intervalWeeks: new FormControl(
-        1,
-        [
-          Validators.required
-        ]
-      ),
-
-      endDate: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      paymentMethod: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      depositAmount: new FormControl<number | null>(
-        null,
-        [
-          Validators.required,
-          Validators.min(0.01)
-        ]
-      ),
-
-      transactionId: new FormControl(
-        ''
-      ),
-
-      employeePin: new FormControl(
-        '',
-        [
-          Validators.required
-        ]
-      ),
-
-      termsAccepted: new FormControl(
-        false,
-        [
-          Validators.requiredTrue
-        ]
-      )
-
+      clientId: new FormControl<number | null>(null, [
+        Validators.required
+      ]),
+      spaceId: new FormControl<number | null>(null, [
+        Validators.required
+      ]),
+      startDatetime: new FormControl('', [
+        Validators.required
+      ]),
+      startDate: new FormControl('', [
+        Validators.required
+      ]),
+      startTime: new FormControl('', [
+        Validators.required
+      ]),
+      intervalWeeks: new FormControl(1, [
+        Validators.required
+      ]),
+      endDate: new FormControl('', [
+        Validators.required
+      ]),
+      paymentMethod: new FormControl('', [
+        Validators.required
+      ]),
+      depositAmount: new FormControl<number | null>(null),
+      transactionId: new FormControl(''),
+      employeePin: new FormControl('', [
+        Validators.required
+      ]),
+      termsAccepted: new FormControl(false, [
+        Validators.requiredTrue
+      ])
     });
 
     this.setBookingType('single');
-
   }
 
   ngOnInit(): void {
-
     this.initializeStartDate();
-
   }
 
   private initializeStartDate(): void {
-
     if (!this.selectedDate) {
       return;
     }
 
     const date = new Date(this.selectedDate);
-
     const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
-    const month = String(
-      date.getMonth() + 1
-    ).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
 
-    const day = String(
-      date.getDate()
-    ).padStart(2, '0');
-
-    const formattedDate =
-      `${year}-${month}-${day}`;
-
-    this.form
-      .get('startDate')
-      ?.setValue(formattedDate);
-
+    this.form.get('startDate')?.setValue(formattedDate);
   }
 
   closeModal(): void {
-
-    if (
-      this.loading ||
-      this.previewLoading
-    ) {
+    if (this.loading || this.previewLoading) {
       return;
     }
 
     this.close.emit();
-
   }
 
   setBookingType(
     type: 'single' | 'recurring'
   ): void {
-
     this.bookingType = type;
-
     this.errorMessage = '';
-
     this.previewVisible = false;
-
     this.previewConfirmed = false;
-
     this.preview = null;
 
     const startDatetime =
@@ -221,21 +144,15 @@ export class InternalBookingModal {
       this.form.get('endDate');
 
     if (type === 'single') {
-
       startDatetime?.setValidators([
         Validators.required
       ]);
 
       startDate?.clearValidators();
-
       startTime?.clearValidators();
-
       intervalWeeks?.clearValidators();
-
       endDate?.clearValidators();
-
     } else {
-
       startDatetime?.clearValidators();
 
       startDate?.setValidators([
@@ -253,142 +170,169 @@ export class InternalBookingModal {
       endDate?.setValidators([
         Validators.required
       ]);
-
     }
 
     startDatetime?.updateValueAndValidity();
-
     startDate?.updateValueAndValidity();
-
     startTime?.updateValueAndValidity();
-
     intervalWeeks?.updateValueAndValidity();
-
     endDate?.updateValueAndValidity();
+  }
 
+  setPaymentType(
+    type: 'deposit' | 'full'
+  ): void {
+    this.paymentType = type;
+    this.errorMessage = '';
   }
 
   save(): void {
+    if (this.loading || this.previewLoading) {
+      return;
+    }
 
     this.errorMessage = '';
 
     if (this.bookingType === 'single') {
-
       this.saveSingleBooking();
-
       return;
-
     }
 
     this.previewRecurringBooking();
-
   }
 
   private saveSingleBooking(): void {
-
     if (!this.validateSingleBookingForm()) {
       return;
     }
 
     this.errorMessage = '';
-
     this.loading = true;
 
+    if (this.paymentType === 'deposit') {
+      this.createSingleBooking(null);
+      return;
+    }
+
+    this.getSingleBookingPrice().subscribe({
+      next: price => {
+        this.createSingleBooking(price);
+      },
+      error: error => {
+        this.loading = false;
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
+      }
+    });
+  }
+
+  private getSingleBookingPrice(): Observable<number> {
+    const spaceId =
+      this.form.get('spaceId')?.value;
+
+    const startDatetime =
+      this.form.get('startDatetime')?.value;
+
+    if (!spaceId || !startDatetime) {
+      throw new Error(
+        'No se pudo determinar la cancha o el horario.'
+      );
+    }
+
+    const date =
+      startDatetime.substring(0, 10);
+
+    return this.bookingService
+      .getAvailability(spaceId, date)
+      .pipe(
+        map(slots => {
+          const slot = slots.find(
+            item =>
+              item.startDatetime === startDatetime
+          );
+
+          if (!slot) {
+            throw new Error(
+              'No se encontró el horario seleccionado.'
+            );
+          }
+
+          if (!slot.available) {
+            throw new Error(
+              'El horario seleccionado ya no está disponible.'
+            );
+          }
+
+          return slot.price;
+        })
+      );
+  }
+
+  private createSingleBooking(
+    depositAmount: number | null
+  ): void {
     const formValue = this.form.value;
 
     const request: InternalBookingRequestModel = {
-
       clientId: formValue.clientId,
-
       spaceId: formValue.spaceId,
-
       startDatetime: formValue.startDatetime,
-
       paymentMethod: formValue.paymentMethod,
-
-      depositAmount: formValue.depositAmount,
-
+      depositAmount,
       transactionId:
         formValue.transactionId || null,
-
       employeePin: formValue.employeePin,
-
       termsAccepted: formValue.termsAccepted
-
     };
 
     this.bookingService
       .createInternalBooking(request)
       .subscribe({
-
         next: () => {
-
           this.loading = false;
-
           this.bookingCreated.emit();
-
           this.close.emit();
-
         },
-
         error: error => {
-
           this.loading = false;
-
           this.errorMessage =
-            error?.error ||
-            'No se pudo crear el turno.';
-
+            this.errorHandler.getMessage(error);
         }
-
       });
-
   }
 
   private buildRecurringBookingRequest(
     depositAmount?: number
   ): RecurringBookingRequestModel {
-
     const formValue = this.form.value;
 
     return {
-
       clientId: formValue.clientId,
-
       spaceId: formValue.spaceId,
-
       startDate: formValue.startDate,
-
       startTime: formValue.startTime,
-
-      intervalWeeks: Number(formValue.intervalWeeks),
-
+      intervalWeeks:
+        Number(formValue.intervalWeeks),
       endDate: formValue.endDate,
-
-      termsAccepted: formValue.termsAccepted,
-
+      termsAccepted:
+      formValue.termsAccepted,
       depositAmount:
         depositAmount ?? formValue.depositAmount,
-
-      paymentMethod: formValue.paymentMethod,
-
+      paymentMethod:
+      formValue.paymentMethod,
       transactionId:
         formValue.transactionId || null,
-
-      employeePin: formValue.employeePin
-
+      employeePin:
+      formValue.employeePin
     };
-
   }
 
   private previewRecurringBooking(): void {
-
     if (!this.validateRecurringForm()) {
       return;
     }
 
     this.errorMessage = '';
-
     this.previewLoading = true;
 
     const request =
@@ -397,60 +341,38 @@ export class InternalBookingModal {
     this.recurringBookingService
       .previewRecurringBooking(request)
       .subscribe({
-
         next: response => {
-
           this.previewLoading = false;
-
           this.preview = response;
-
           this.previewVisible = true;
-
           this.previewConfirmed = false;
-
         },
-
         error: error => {
-
           this.previewLoading = false;
-
           this.errorMessage =
-            error?.error ||
-            'No se pudo obtener la disponibilidad del turno fijo.';
-
+            this.errorHandler.getMessage(error);
         }
-
       });
-
   }
 
   confirmRecurringBooking(): void {
-
     if (!this.preview) {
       return;
     }
 
-    if (
-      this.getPreviewConflictCount() > 0
-    ) {
-
+    if (this.getPreviewConflictCount() > 0) {
       this.errorMessage =
         'Hay turnos que se superponen con otras reservas. Corregí los conflictos antes de confirmar.';
-
       return;
-
     }
 
     this.previewConfirmed = true;
-
     this.errorMessage = '';
 
     this.createRecurringBooking();
-
   }
 
   private createRecurringBooking(): void {
-
     if (!this.validateRecurringForm()) {
       return;
     }
@@ -462,227 +384,340 @@ export class InternalBookingModal {
     const requiredDeposit =
       this.preview.firstDepositAmount;
 
-    if (requiredDeposit === null || requiredDeposit === undefined) {
-
+    if (
+      requiredDeposit === null ||
+      requiredDeposit === undefined
+    ) {
       this.errorMessage =
         'No se pudo determinar el monto de la seña necesaria.';
-
       return;
-
     }
 
     this.errorMessage = '';
-
     this.loading = true;
 
     const request =
-      this.buildRecurringBookingRequest(requiredDeposit);
+      this.buildRecurringBookingRequest(
+        requiredDeposit
+      );
 
     this.recurringBookingService
       .createRecurringBooking(request)
       .subscribe({
-
         next: () => {
-
           this.loading = false;
-
           this.bookingCreated.emit();
-
           this.close.emit();
-
         },
-
         error: error => {
-
           this.loading = false;
-
           this.previewConfirmed = false;
-
           this.errorMessage =
-            error?.error ||
-            'No se pudo crear el turno fijo.';
-
+            this.errorHandler.getMessage(error);
         }
-
       });
-
   }
 
   private validateSingleBookingForm(): boolean {
-
     const requiredFields = [
-
       'clientId',
-
       'spaceId',
-
       'startDatetime',
-
       'paymentMethod',
-
-      'depositAmount',
-
       'employeePin',
-
       'termsAccepted'
-
-    ];
-
-    return this.validateFields(requiredFields);
-
-  }
-
-  private validateRecurringForm(): boolean {
-
-    const requiredFields = [
-
-      'clientId',
-
-      'spaceId',
-
-      'startDate',
-
-      'startTime',
-
-      'intervalWeeks',
-
-      'endDate',
-
-      'paymentMethod',
-
-      'depositAmount',
-
-      'employeePin',
-
-      'termsAccepted'
-
     ];
 
     if (!this.validateFields(requiredFields)) {
       return false;
     }
 
-    const startDate =
-      this.form.get('startDate')?.value;
-
-    const endDate =
-      this.form.get('endDate')?.value;
+    const clientId = this.form.get('clientId')?.value;
+    const spaceId = this.form.get('spaceId')?.value;
+    const startDatetime = this.form.get('startDatetime')?.value;
+    const paymentMethod = this.form.get('paymentMethod')?.value;
+    const employeePin = this.form.get('employeePin')?.value;
+    const termsAccepted = this.form.get('termsAccepted')?.value;
 
     if (
-      startDate &&
-      endDate &&
-      endDate <= startDate
+      !Number.isInteger(clientId) ||
+      clientId <= 0
     ) {
-
       this.errorMessage =
-        'La fecha de finalización debe ser posterior a la fecha de inicio.';
-
+        'El ID del cliente debe ser un número entero mayor a 0.';
       return false;
+    }
 
+    if (
+      !Number.isInteger(spaceId) ||
+      spaceId <= 0
+    ) {
+      this.errorMessage =
+        'El ID de la cancha debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (!this.isValidDateTime(startDatetime)) {
+      this.errorMessage =
+        'Ingresá una fecha y hora válidas.';
+      return false;
+    }
+
+    if (
+      new Date(startDatetime).getTime() <=
+      new Date().getTime()
+    ) {
+      this.errorMessage =
+        'El turno debe comenzar en una fecha y hora futuras.';
+      return false;
+    }
+
+    if (
+      ![
+        'EFECTIVO',
+        'TRANSFERENCIA',
+        'MERCADOPAGO'
+      ].includes(paymentMethod)
+    ) {
+      this.errorMessage =
+        'Seleccioná un método de pago válido.';
+      return false;
+    }
+
+    if (
+      typeof employeePin !== 'string' ||
+      !employeePin.trim()
+    ) {
+      this.errorMessage =
+        'Ingresá el PIN del empleado.';
+      return false;
+    }
+
+    if (termsAccepted !== true) {
+      this.errorMessage =
+        'El cliente debe aceptar los términos y condiciones.';
+      return false;
     }
 
     return true;
-
   }
+
+  private validateRecurringForm(): boolean {
+    const requiredFields = [
+      'clientId',
+      'spaceId',
+      'startDate',
+      'startTime',
+      'intervalWeeks',
+      'endDate',
+      'paymentMethod',
+      'employeePin',
+      'termsAccepted'
+    ];
+
+    if (!this.validateFields(requiredFields)) {
+      return false;
+    }
+
+    const clientId = this.form.get('clientId')?.value;
+    const spaceId = this.form.get('spaceId')?.value;
+    const startDate = this.form.get('startDate')?.value;
+    const startTime = this.form.get('startTime')?.value;
+    const intervalWeeks =
+      Number(this.form.get('intervalWeeks')?.value);
+    const endDate = this.form.get('endDate')?.value;
+    const paymentMethod =
+      this.form.get('paymentMethod')?.value;
+    const employeePin =
+      this.form.get('employeePin')?.value;
+    const termsAccepted =
+      this.form.get('termsAccepted')?.value;
+
+    if (
+      !Number.isInteger(clientId) ||
+      clientId <= 0
+    ) {
+      this.errorMessage =
+        'El ID del cliente debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (
+      !Number.isInteger(spaceId) ||
+      spaceId <= 0
+    ) {
+      this.errorMessage =
+        'El ID de la cancha debe ser un número entero mayor a 0.';
+      return false;
+    }
+
+    if (!this.isValidDate(startDate)) {
+      this.errorMessage =
+        'Ingresá una fecha de inicio válida.';
+      return false;
+    }
+
+    if (!this.isValidTime(startTime)) {
+      this.errorMessage =
+        'Ingresá un horario válido.';
+      return false;
+    }
+
+    if (![1, 2].includes(intervalWeeks)) {
+      this.errorMessage =
+        'La frecuencia seleccionada no es válida.';
+      return false;
+    }
+
+    if (!this.isValidDate(endDate)) {
+      this.errorMessage =
+        'Ingresá una fecha de finalización válida.';
+      return false;
+    }
+
+    if (endDate <= startDate) {
+      this.errorMessage =
+        'La fecha de finalización debe ser posterior a la fecha de inicio.';
+      return false;
+    }
+
+    if (
+      ![
+        'EFECTIVO',
+        'TRANSFERENCIA',
+        'MERCADOPAGO'
+      ].includes(paymentMethod)
+    ) {
+      this.errorMessage =
+        'Seleccioná un método de pago válido.';
+      return false;
+    }
+
+    if (
+      typeof employeePin !== 'string' ||
+      !employeePin.trim()
+    ) {
+      this.errorMessage =
+        'Ingresá el PIN del empleado.';
+      return false;
+    }
+
+    if (termsAccepted !== true) {
+      this.errorMessage =
+        'El cliente debe aceptar los términos y condiciones.';
+      return false;
+    }
+
+    return true;
+  }
+
+  private isValidDate(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+
+    return !Number.isNaN(date.getTime());
+  }
+
+  private isValidTime(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{2}:\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const [hours, minutes] = value
+      .split(':')
+      .map(Number);
+
+    return (
+      hours >= 0 &&
+      hours <= 23 &&
+      minutes >= 0 &&
+      minutes <= 59
+    );
+  }
+
+  private isValidDateTime(value: unknown): boolean {
+    if (
+      typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)
+    ) {
+      return false;
+    }
+
+    const [datePart, timePart] = value.split('T');
+
+    return (
+      this.isValidDate(datePart) &&
+      this.isValidTime(timePart)
+    );
+  }
+
 
   private validateFields(
     fields: string[]
   ): boolean {
-
     const invalidFields: string[] = [];
 
     const fieldNames: Record<string, string> = {
-
       clientId: 'Cliente',
-
       spaceId: 'Cancha',
-
       startDatetime: 'Fecha y hora',
-
       startDate: 'Fecha de inicio',
-
       startTime: 'Horario',
-
       intervalWeeks: 'Frecuencia',
-
       endDate: 'Fecha de finalización',
-
       paymentMethod: 'Método de pago',
-
-      depositAmount: 'Seña',
-
       employeePin: 'PIN del empleado',
-
       termsAccepted: 'Aceptación de términos'
-
     };
 
     for (const field of fields) {
-
       const control =
         this.form.get(field);
 
       control?.markAsTouched();
-
       control?.updateValueAndValidity();
 
       if (control?.invalid) {
-
         invalidFields.push(
           fieldNames[field] ?? field
         );
-
       }
-
     }
 
     if (invalidFields.length > 0) {
-
       this.errorMessage =
         `Completá correctamente: ${invalidFields.join(', ')}.`;
-
       return false;
-
     }
 
     return true;
-
   }
 
   backToRecurringForm(): void {
-
     this.previewVisible = false;
-
     this.previewConfirmed = false;
-
     this.preview = null;
-
     this.errorMessage = '';
-
   }
 
   getPreviewConflictCount(): number {
-
-    return (
-      this.preview?.conflictingSlots ?? 0
-    );
-
+    return this.preview?.conflictingSlots ?? 0;
   }
 
   getPreviewAvailableCount(): number {
-
-    return (
-      this.preview?.available?.length ?? 0
-    );
-
+    return this.preview?.available?.length ?? 0;
   }
 
   getPreviewConflictDates(): string[] {
-
-    return (
-      this.preview?.conflicts ?? []
-    );
-
+    return this.preview?.conflicts ?? [];
   }
-
 }

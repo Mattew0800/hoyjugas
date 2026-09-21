@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, Observable } from 'rxjs';
 
 import { SpaceService } from '../../../../services/SpaceService/SpaceService';
+import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 interface DaySchedule {
   id?: number;
@@ -68,7 +69,8 @@ export class SpaceModal implements OnInit {
   private originalSchedules: DaySchedule[] = [];
 
   constructor(
-    private spaceService: SpaceService
+    private spaceService: SpaceService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
@@ -88,7 +90,6 @@ export class SpaceModal implements OnInit {
       schedules: this.spaceService.getSchedulesBySpace(this.spaceId!)
     }).subscribe({
       next: ({ space, schedules }) => {
-
         this.space = {
           name: space.name ?? '',
           type: space.type ?? 'CANCHA',
@@ -141,14 +142,9 @@ export class SpaceModal implements OnInit {
         }
       },
 
-      error: err => {
-        console.error(
-          'ERROR AL CARGAR ESPACIO:',
-          err
-        );
-
+      error: error => {
         this.errorMessage =
-          this.getErrorMessage(err);
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -278,66 +274,6 @@ export class SpaceModal implements OnInit {
     );
   }
 
-  private validatePricingAndSave(
-    spaceId: number
-  ): void {
-    this.validatePricing(spaceId).subscribe({
-      next: () => {
-        this.updatePricings();
-      },
-
-      error: err => {
-
-        this.restoreOriginalSchedules();
-
-        this.errorMessage =
-          this.getErrorMessage(err);
-
-        this.saving = false;
-
-        console.error(
-          'ERROR AL VALIDAR PRECIOS:',
-          err
-        );
-      }
-    });
-  }
-
-  private restoreOriginalSchedules(): void {
-    const requests: Observable<any>[] = [];
-
-    for (
-      const schedule of this.originalSchedules
-      ) {
-      if (schedule.id == null) {
-        continue;
-      }
-
-      requests.push(
-        this.spaceService.updateSchedule({
-          scheduleId: schedule.id,
-          spaceId: schedule.spaceId ?? this.spaceId,
-          dayType: schedule.dayType,
-          openingTime: schedule.openingTime,
-          closingTime: schedule.closingTime
-        })
-      );
-    }
-
-    if (requests.length === 0) {
-      return;
-    }
-
-    forkJoin(requests).subscribe({
-      error: err => {
-        console.error(
-          'ERROR AL RESTAURAR HORARIOS:',
-          err
-        );
-      }
-    });
-  }
-
   private createSpace(): void {
     this.saving = true;
 
@@ -362,16 +298,11 @@ export class SpaceModal implements OnInit {
         );
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL CREAR ESPACIO:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -389,122 +320,75 @@ export class SpaceModal implements OnInit {
 
     if (schedules.length === 0) {
       this.saving = false;
-      this.errorMessage = 'Debés agregar al menos un horario.';
+      this.errorMessage =
+        'Debés agregar al menos un horario.';
       return;
     }
 
     if (configurations.length === 0) {
       this.saving = false;
-      this.errorMessage = 'Debés agregar al menos una configuración.';
+      this.errorMessage =
+        'Debés agregar al menos una configuración.';
       return;
     }
 
-    const scheduleRequests: Observable<any>[] = [];
+    this.validatePricing(spaceId).subscribe({
+      next: () => {
+        const scheduleRequests: Observable<any>[] = [];
 
-    for (const schedule of schedules) {
-      scheduleRequests.push(
-        this.spaceService.addSchedule({
-          spaceId,
-          schedule: {
-            dayType: schedule.dayType,
-            openingTime: schedule.openingTime,
-            closingTime: schedule.closingTime
-          }
-        })
-      );
-    }
+        for (const schedule of schedules) {
+          const pricings = configurations
+            .filter(
+              config =>
+                config.dayType === schedule.dayType
+            )
+            .map(config => ({
+              dayType: config.dayType,
+              startTime: config.openingTime,
+              endTime: config.closingTime,
+              price: config.price
+            }));
 
-    forkJoin(scheduleRequests).subscribe({
-      next: responses => {
-        const createdSchedules = responses.map(
-          (response: any) => ({
-            id: response?.id,
-            spaceId,
-            dayType: response?.dayType,
-            openingTime: response?.openingTime,
-            closingTime: response?.closingTime
-          })
-        );
-
-        this.validatePricing(spaceId).subscribe({
-          next: () => {
-            const pricingRequests: Observable<any>[] = [];
-
-            for (const config of configurations) {
-              pricingRequests.push(
-                this.spaceService.addPricing({
-                  spaceId,
-                  pricing: {
-                    dayType: config.dayType,
-                    startTime: config.openingTime,
-                    endTime: config.closingTime,
-                    price: config.price
-                  }
-                })
-              );
-            }
-
-            forkJoin(pricingRequests).subscribe({
-              next: () => {
-                this.saving = false;
-                this.close.emit(true);
+          scheduleRequests.push(
+            this.spaceService.addSchedule({
+              spaceId,
+              schedule: {
+                dayType: schedule.dayType,
+                openingTime: schedule.openingTime,
+                closingTime: schedule.closingTime
               },
-              error: err => {
-                this.saving = false;
-                this.errorMessage = this.getErrorMessage(err);
+              pricings
+            })
+          );
+        }
 
-                console.error(
-                  'ERROR AL GUARDAR PRECIOS:',
-                  err
-                );
-              }
-            });
-          },
-          error: err => {
+        if (scheduleRequests.length === 0) {
+          this.saving = false;
+          this.errorMessage =
+            'Debés agregar al menos un horario.';
+          return;
+        }
+
+        forkJoin(scheduleRequests).subscribe({
+          next: () => {
             this.saving = false;
-            this.errorMessage = this.getErrorMessage(err);
+            this.close.emit(true);
+          },
 
-            const deleteRequests: Observable<any>[] = [];
+          error: error => {
+            this.saving = false;
 
-            for (const schedule of createdSchedules) {
-              if (schedule.id == null) {
-                continue;
-              }
-
-              deleteRequests.push(
-                this.spaceService.deleteSchedule({
-                  scheduleId: schedule.id,
-                  spaceId
-                })
-              );
-            }
-
-            if (deleteRequests.length > 0) {
-              forkJoin(deleteRequests).subscribe({
-                error: deleteError => {
-                  console.error(
-                    'ERROR AL ELIMINAR HORARIOS CREADOS:',
-                    deleteError
-                  );
-                }
-              });
-            }
-
-            console.error(
-              'ERROR AL VALIDAR PRECIOS:',
-              err
-            );
+            this.errorMessage =
+              this.getSpaceErrorMessage(error);
           }
         });
       },
-      error: err => {
-        this.saving = false;
-        this.errorMessage = this.getErrorMessage(err);
 
-        console.error(
-          'ERROR AL CREAR HORARIOS:',
-          err
-        );
+      error: error => {
+        this.saving = false;
+
+        this.errorMessage =
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -512,28 +396,34 @@ export class SpaceModal implements OnInit {
   private updateExistingSpace(): void {
     this.saving = true;
 
-    const spaceRequest = {
-      spaceId: this.spaceId,
-      ...this.space
-    };
-
-    this.spaceService.updateSpace(
-      spaceRequest
-    ).subscribe({
+    this.validatePricing(this.spaceId!).subscribe({
       next: () => {
-        this.updateSchedules();
+        const spaceRequest = {
+          spaceId: this.spaceId,
+          ...this.space
+        };
+
+        this.spaceService.updateSpace(
+          spaceRequest
+        ).subscribe({
+          next: () => {
+            this.updateSchedules();
+          },
+
+          error: error => {
+            this.saving = false;
+
+            this.errorMessage =
+              this.getSpaceErrorMessage(error);
+          }
+        });
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL ACTUALIZAR ESPACIO:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
@@ -556,49 +446,49 @@ export class SpaceModal implements OnInit {
 
     const requests: Observable<any>[] = [];
 
-    for (
-      const schedule of currentSchedules
-      ) {
-      if (schedule.id == null) {
-        continue;
-      }
+    for (const schedule of currentSchedules) {
+      const pricings = this.days
+        .filter(
+          day =>
+            day.enabled &&
+            day.dayType === schedule.dayType
+        )
+        .map(day => ({
+          dayType: day.dayType,
+          startTime: day.openingTime,
+          endTime: day.closingTime,
+          price: day.price
+        }));
 
-      requests.push(
-        this.spaceService.updateSchedule({
-          scheduleId: schedule.id,
-          spaceId: this.spaceId,
-          dayType: schedule.dayType,
-          openingTime: schedule.openingTime,
-          closingTime: schedule.closingTime
-        })
-      );
-    }
-
-    for (
-      const schedule of currentSchedules
-      ) {
       if (schedule.id != null) {
-        continue;
+        requests.push(
+          this.spaceService.updateSchedule({
+            scheduleId: schedule.id,
+            spaceId: this.spaceId,
+            schedule: {
+              dayType: schedule.dayType,
+              openingTime: schedule.openingTime,
+              closingTime: schedule.closingTime
+            },
+            pricings
+          })
+        );
+      } else {
+        requests.push(
+          this.spaceService.addSchedule({
+            spaceId: this.spaceId,
+            schedule: {
+              dayType: schedule.dayType,
+              openingTime: schedule.openingTime,
+              closingTime: schedule.closingTime
+            },
+            pricings
+          })
+        );
       }
-
-      requests.push(
-        this.spaceService.addSchedule({
-          spaceId: this.spaceId,
-          schedule: {
-            dayType: schedule.dayType,
-            openingTime: schedule.openingTime,
-            closingTime: schedule.closingTime
-          }
-        })
-      );
     }
 
-    /*
-     * Eliminar schedules que fueron quitados.
-     */
-    for (
-      const scheduleId of originalIds
-      ) {
+    for (const scheduleId of originalIds) {
       if (currentIds.includes(scheduleId)) {
         continue;
       }
@@ -612,169 +502,75 @@ export class SpaceModal implements OnInit {
     }
 
     if (requests.length === 0) {
-      this.validatePricingAndSave(
-        this.spaceId!
-      );
-
-      return;
-    }
-
-    forkJoin(requests).subscribe({
-      next: () => {
-        this.validatePricingAndSave(
-          this.spaceId!
-        );
-      },
-
-      error: err => {
-        this.saving = false;
-
-        this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL ACTUALIZAR HORARIOS:',
-          err
-        );
-      }
-    });
-  }
-
-  private updatePricings(): void {
-    const current =
-      this.days.filter(
-        day => day.enabled
-      );
-
-    const currentIds =
-      current
-        .filter(day => day.id != null)
-        .map(day => day.id!);
-
-    const deleted =
-      this.originalPricings.filter(
-        original =>
-          original.id != null &&
-          !currentIds.includes(original.id)
-      );
-
-    const requests: Observable<any>[] = [];
-
-    for (
-      const config of deleted
-      ) {
-      requests.push(
-        this.spaceService.deletePricing({
-          spaceId: this.spaceId,
-          pricingId: config.id!
-        })
-      );
-    }
-
-    for (
-      const config of current
-      ) {
-      if (config.id != null) {
-        requests.push(
-          this.spaceService.updatePricing({
-            spaceId: this.spaceId,
-            pricingId: config.id,
-            pricing: {
-              dayType: config.dayType,
-              startTime: config.openingTime,
-              endTime: config.closingTime,
-              price: config.price
-            }
-          })
-        );
-      } else {
-        requests.push(
-          this.spaceService.addPricing({
-            spaceId: this.spaceId,
-            pricing: {
-              dayType: config.dayType,
-              startTime: config.openingTime,
-              endTime: config.closingTime,
-              price: config.price
-            }
-          })
-        );
-      }
-    }
-
-    if (requests.length === 0) {
       this.saving = false;
-
       this.close.emit(true);
-
       return;
     }
 
     forkJoin(requests).subscribe({
       next: () => {
         this.saving = false;
-
         this.close.emit(true);
       },
 
-      error: err => {
+      error: error => {
         this.saving = false;
 
         this.errorMessage =
-          this.getErrorMessage(err);
-
-        console.error(
-          'ERROR AL ACTUALIZAR CONFIGURACIONES:',
-          err
-        );
+          this.getSpaceErrorMessage(error);
       }
     });
   }
 
   private validateForm(): boolean {
-    if (
-      !this.space.name ||
-      !this.space.name.trim()
-    ) {
-      this.errorMessage =
-        'El nombre es obligatorio.';
+    const name = this.space.name?.trim() ?? '';
 
+    if (!name) {
+      this.errorMessage = 'El nombre del espacio es obligatorio.';
+      return false;
+    }
+
+    if (name.length < 3) {
+      this.errorMessage =
+        'El nombre del espacio debe tener al menos 3 caracteres.';
+      return false;
+    }
+
+    if (name.length > 100) {
+      this.errorMessage =
+        'El nombre del espacio no puede superar los 100 caracteres.';
       return false;
     }
 
     if (
-      this.space.fixedDeposit === null ||
-      this.space.fixedDeposit === undefined ||
+      !Number.isFinite(this.space.fixedDeposit) ||
       this.space.fixedDeposit <= 0
     ) {
       this.errorMessage =
-        'La seña fija debe ser mayor a 0.';
-
+        'La seña fija debe ser un número mayor a 0.';
       return false;
     }
 
-    const schedules =
-      this.schedules.filter(
-        schedule => schedule.enabled
-      );
+    const schedules = this.schedules.filter(
+      schedule => schedule.enabled
+    );
 
     if (schedules.length === 0) {
       this.errorMessage =
         'Debés agregar al menos un horario.';
-
       return false;
     }
 
-    /*
-     * Validar horarios operativos.
-     */
-    for (
-      const schedule of schedules
+    for (const schedule of schedules) {
+      if (
+        ![
+          'DIA_DE_SEMANA',
+          'SABADO',
+          'DOMINGO'
+        ].includes(schedule.dayType)
       ) {
-      if (!schedule.dayType) {
         this.errorMessage =
-          'Seleccioná el tipo de día del horario.';
-
+          'Seleccioná un tipo de día válido para el horario.';
         return false;
       }
 
@@ -784,7 +580,15 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `Completá el horario de ${schedule.label}.`;
+        return false;
+      }
 
+      if (
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.openingTime) ||
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.closingTime)
+      ) {
+        this.errorMessage =
+          `Ingresá horarios válidos para ${schedule.label}.`;
         return false;
       }
 
@@ -794,52 +598,57 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `El horario de cierre debe ser posterior al de apertura en ${schedule.label}.`;
-
         return false;
       }
     }
 
-    for (
-      let i = 0;
-      i < schedules.length;
-      i++
-    ) {
-      for (
-        let j = i + 1;
-        j < schedules.length;
-        j++
-      ) {
+    for (let i = 0; i < schedules.length; i++) {
+      for (let j = i + 1; j < schedules.length; j++) {
         if (
           schedules[i].dayType ===
           schedules[j].dayType
         ) {
           this.errorMessage =
             `Ya existe un horario configurado para ${schedules[i].label}.`;
-
           return false;
         }
       }
     }
 
-    const configurations =
-      this.days.filter(
-        day => day.enabled
-      );
+    const configurations = this.days.filter(
+      day => day.enabled
+    );
 
     if (configurations.length === 0) {
       this.errorMessage =
-        'Debés agregar al menos una configuración.';
-
+        'Debés agregar al menos una configuración de precio.';
       return false;
     }
 
-    for (
-      const config of configurations
-      ) {
-      if (!config.dayType) {
-        this.errorMessage =
-          'Seleccioná el tipo de día.';
+    for (const schedule of schedules) {
+      const pricingConfigurations =
+        configurations.filter(
+          config =>
+            config.dayType === schedule.dayType
+        );
 
+      if (pricingConfigurations.length === 0) {
+        this.errorMessage =
+          `Debés agregar al menos una configuración de precio para ${schedule.label}.`;
+        return false;
+      }
+    }
+
+    for (const config of configurations) {
+      if (
+        ![
+          'DIA_DE_SEMANA',
+          'SABADO',
+          'DOMINGO'
+        ].includes(config.dayType)
+      ) {
+        this.errorMessage =
+          'Seleccioná un tipo de día válido para cada precio.';
         return false;
       }
 
@@ -849,7 +658,15 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `Completá el horario de ${config.label}.`;
+        return false;
+      }
 
+      if (
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.openingTime) ||
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.closingTime)
+      ) {
+        this.errorMessage =
+          `Ingresá horarios válidos para ${config.label}.`;
         return false;
       }
 
@@ -859,41 +676,26 @@ export class SpaceModal implements OnInit {
       ) {
         this.errorMessage =
           `El horario de cierre debe ser posterior al de apertura en ${config.label}.`;
-
         return false;
       }
 
       if (
-        config.price === null ||
-        config.price === undefined ||
+        !Number.isFinite(config.price) ||
         config.price <= 0
       ) {
         this.errorMessage =
-          `El precio de ${config.label} debe ser mayor a 0.`;
-
+          `El precio de ${config.label} debe ser un número mayor a 0.`;
         return false;
       }
     }
 
-    for (
-      let i = 0;
-      i < configurations.length;
-      i++
-    ) {
-      for (
-        let j = i + 1;
-        j < configurations.length;
-        j++
-      ) {
-        const first =
-          configurations[i];
-
-        const second =
-          configurations[j];
+    for (let i = 0; i < configurations.length; i++) {
+      for (let j = i + 1; j < configurations.length; j++) {
+        const first = configurations[i];
+        const second = configurations[j];
 
         if (
-          first.dayType !==
-          second.dayType
+          first.dayType !== second.dayType
         ) {
           continue;
         }
@@ -916,20 +718,16 @@ export class SpaceModal implements OnInit {
       }
     }
 
-    for (
-      const config of configurations
-      ) {
-      const schedule =
-        schedules.find(
-          item =>
-            item.dayType ===
-            config.dayType
-        );
+    for (const config of configurations) {
+      const schedule = this.schedules.find(
+        item =>
+          item.dayType === config.dayType &&
+          item.enabled
+      );
 
       if (!schedule) {
         this.errorMessage =
           `No hay un horario configurado para ${config.label}.`;
-
         return false;
       }
 
@@ -989,17 +787,11 @@ export class SpaceModal implements OnInit {
     return time.substring(0, 5);
   }
 
-  getErrorMessage(
+  private getSpaceErrorMessage(
     error: any
   ): string {
     const backendMessage =
-      typeof error?.error?.message === 'string'
-        ? error.error.message
-        : typeof error?.error === 'string'
-          ? error.error
-          : typeof error?.message === 'string'
-            ? error.message
-            : 'Ocurrió un error inesperado.';
+      this.errorHandler.getMessage(error);
 
     const missingPriceMatch =
       backendMessage.match(
@@ -1017,13 +809,9 @@ export class SpaceModal implements OnInit {
             day.closingTime === startTime
         );
 
-      if (
-        relatedConfigIndex !== -1
-      ) {
+      if (relatedConfigIndex !== -1) {
         const relatedConfig =
-          this.days[
-            relatedConfigIndex
-            ];
+          this.days[relatedConfigIndex];
 
         const configurationNumber =
           relatedConfigIndex + 1;

@@ -298,3 +298,13 @@
 
   font-size: 12px;
 }
+
+.field-error {
+  margin-top: -2px;
+  color: #d98b8b;
+  font-size: 12px;
+}
+
+.input-error {
+  border-color: rgba(217, 139, 139, .65) !important;
+}

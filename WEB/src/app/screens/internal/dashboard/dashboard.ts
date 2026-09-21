@@ -17,6 +17,7 @@ import { SpaceService } from '../../../services/SpaceService/SpaceService';
 import { BookingDetailModal } from '../components/booking-detail-modal/booking-detail-modal';
 import { InternalBookingModal } from '../components/internal-booking-modal/internal-booking-modal';
 import { RoleService } from '../../../services/RoleService/role-service';
+import { ErrorHandlerService} from '../../../services/ErrorHandlerService/error-handler.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -57,6 +58,8 @@ export class Dashboard implements OnInit {
 
   selectedBooking?: BookingListModel;
 
+  errorMessage = '';
+
 
   timelineHours: number[] = [];
 
@@ -74,7 +77,8 @@ export class Dashboard implements OnInit {
   constructor(
     private bookingService: BookingService,
     private spaceService: SpaceService,
-    public roleService: RoleService
+    public roleService: RoleService,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   ngOnInit(): void {
@@ -171,6 +175,8 @@ export class Dashboard implements OnInit {
 
   private loadBookings(): void {
 
+    this.errorMessage='';
+
     const date = this.formatLocalDate(
       this.selectedDate
     );
@@ -189,7 +195,6 @@ export class Dashboard implements OnInit {
     }).subscribe({
 
       next: ({ spaces, bookings }) => {
-
 
         if (this.isPastDate(this.selectedDate)) {
 
@@ -210,7 +215,6 @@ export class Dashboard implements OnInit {
           );
 
           return;
-
         }
 
         const availabilityRequests = spaces.map(
@@ -236,7 +240,6 @@ export class Dashboard implements OnInit {
           );
 
           return;
-
         }
 
         forkJoin(
@@ -265,10 +268,8 @@ export class Dashboard implements OnInit {
 
           error: error => {
 
-            console.error(
-              'ERROR AL CARGAR DISPONIBILIDAD:',
-              error
-            );
+            this.errorMessage =
+              this.errorHandler.getMessage(error);
 
             this.spaces = this.mapSpaces(
               spaces,
@@ -294,10 +295,8 @@ export class Dashboard implements OnInit {
 
       error: error => {
 
-        console.error(
-          'ERROR AL CARGAR DASHBOARD:',
-          error
-        );
+        this.errorMessage =
+          this.errorHandler.getMessage(error);
 
       }
 
@@ -711,17 +710,32 @@ export class Dashboard implements OnInit {
           booking.status !== 'CANCELADO'
       ).length,
 
-      occupiedSpaces: new Set(
-        bookings
-          .filter(
-            booking =>
-              booking.status !== 'CANCELADO'
-          )
-          .map(
-            booking =>
-              booking.spaceName
-          )
-      ).size,
+      occupiedSpaces: isToday
+        ? new Set(
+          bookings
+            .filter(booking => {
+              if (booking.status === 'CANCELADO') {
+                return false;
+              }
+
+              const start = new Date(
+                booking.startDatetime
+              ).getTime();
+
+              const end = new Date(
+                booking.endDatetime
+              ).getTime();
+
+              const now = new Date().getTime();
+
+              return start <= now && now < end;
+            })
+            .map(
+              booking =>
+                booking.spaceName
+            )
+        ).size
+        : 0,
 
       nextBookingTime: nextBooking
         ? this.formatTime(
@@ -824,10 +838,7 @@ export class Dashboard implements OnInit {
   openInternalBookingModal(
     slot?: SpaceSlotModel
   ): void {
-
-    console.log(
-      'ABRIENDO MODAL DE TURNO'
-    );
+    this.errorMessage = '';
 
     if (slot?.booking) {
 
@@ -882,12 +893,6 @@ export class Dashboard implements OnInit {
   confirmPayment(
     booking: BookingListModel
   ): void {
-
-    console.log(
-      'Pago confirmado',
-      booking
-    );
-
     this.closeBookingModal();
 
   }

@@ -260,6 +260,11 @@
 .error-state {
   color: #d85c5c;
 }
+.confirm-button:disabled,
+.cancel-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
 
 @media (max-width: 900px) {
   .customers-page {

@@ -131,15 +131,25 @@
                       <button
                         type="button"
                         class="confirm-button"
-                        (click)="executeAction()">
-                        Sí
+                        (click)="executeAction()"
+                        [disabled]="processingAction">
+
+                        {{
+                          processingAction
+                            ? 'Procesando...'
+                            : 'Sí'
+                        }}
+
                       </button>
 
                       <button
                         type="button"
                         class="cancel-button"
-                        (click)="cancelAction()">
+                        (click)="cancelAction()"
+                        [disabled]="processingAction">
+
                         No
+
                       </button>
 
                     </div>
