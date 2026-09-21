@@ -44,6 +44,9 @@ export class EmployeeModal implements OnInit {
   @Input()
   employee?: EmployeeModel;
 
+  @Input() saving = false;
+  @Input() errorMessage = '';
+
   @Output()
   close = new EventEmitter<void>();
 
@@ -148,7 +151,7 @@ export class EmployeeModal implements OnInit {
       return false;
     }
 
-    const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$/;
+    const nameRegex = /^\p{L}+$/u;
 
     if (!words.every(word => nameRegex.test(word))) {
       this.nameError =
@@ -266,7 +269,7 @@ export class EmployeeModal implements OnInit {
     const employee: EmployeeCreateModel = {
       name: this.name.trim(),
       email: this.email.trim(),
-      password: this.password,
+      password: this.password.trim(),
       dni: this.dni.trim(),
       phone: this.phone.trim()
     };
@@ -275,6 +278,8 @@ export class EmployeeModal implements OnInit {
   }
 
   private updateEmployeeData(): void {
+    const password = this.password.trim();
+
     const updatedEmployee: EmployeeUpdateModel = {
       name: this.name.trim(),
       email: this.email.trim(),
@@ -282,8 +287,8 @@ export class EmployeeModal implements OnInit {
       dni: this.dni.trim()
     };
 
-    if (this.password.trim()) {
-      updatedEmployee.password = this.password;
+    if (password) {
+      updatedEmployee.password = password;
     }
 
     this.updateEmployee.emit(updatedEmployee);

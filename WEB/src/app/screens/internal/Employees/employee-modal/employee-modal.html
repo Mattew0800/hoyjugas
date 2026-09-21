@@ -17,11 +17,20 @@
   <button
     type="button"
     class="close-button"
-    (click)="closeModal()">
+    (click)="closeModal()"
+    [disabled]="saving">
+
     ×
+
   </button>
 
 </div>
+
+@if (errorMessage) {
+  <div class="error-message">
+    {{ errorMessage }}
+  </div>
+}
 
 <form
   class="employee-form"
@@ -40,7 +49,8 @@
         name="name"
         [(ngModel)]="name"
         placeholder="Juan Pérez"
-        [class.input-error]="nameError">
+        [class.input-error]="nameError"
+        [disabled]="saving">
 
       @if (nameError) {
         <span class="field-error">
@@ -61,7 +71,8 @@
         name="dni"
         [(ngModel)]="dni"
         placeholder="40123456"
-        [class.input-error]="dniError">
+        [class.input-error]="dniError"
+        [disabled]="saving">
 
       @if (dniError) {
         <span class="field-error">
@@ -84,7 +95,8 @@
       name="email"
       [(ngModel)]="email"
       placeholder="empleado@email.com"
-      [class.input-error]="emailError">
+      [class.input-error]="emailError"
+      [disabled]="saving">
 
     @if (emailError) {
       <span class="field-error">
@@ -105,7 +117,8 @@
       name="phone"
       [(ngModel)]="phone"
       placeholder="2235123456"
-      [class.input-error]="phoneError">
+      [class.input-error]="phoneError"
+      [disabled]="saving">
 
     @if (phoneError) {
       <span class="field-error">
@@ -128,7 +141,8 @@
         name="password"
         [(ngModel)]="password"
         placeholder="Mínimo 6 caracteres"
-        [class.input-error]="passwordError">
+        [class.input-error]="passwordError"
+        [disabled]="saving">
 
       @if (passwordError) {
         <span class="field-error">
@@ -149,7 +163,8 @@
         name="confirmPassword"
         [(ngModel)]="confirmPassword"
         placeholder="Repetí la contraseña"
-        [class.input-error]="confirmPasswordError">
+        [class.input-error]="confirmPasswordError"
+        [disabled]="saving">
 
       @if (confirmPasswordError) {
         <span class="field-error">
@@ -174,7 +189,8 @@
     <button
       type="button"
       class="cancel-button"
-      (click)="closeModal()">
+      (click)="closeModal()"
+      [disabled]="saving">
 
       Cancelar
 
@@ -182,9 +198,14 @@
 
     <button
       type="submit"
-      class="save-button">
+      class="save-button"
+      [disabled]="saving">
 
-      {{ buttonText }}
+      {{
+        saving
+          ? 'Guardando...'
+          : buttonText
+      }}
 
     </button>
 

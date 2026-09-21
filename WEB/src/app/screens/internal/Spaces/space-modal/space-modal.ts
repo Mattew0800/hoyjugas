@@ -584,8 +584,8 @@ export class SpaceModal implements OnInit {
       }
 
       if (
-        !/^\d{2}:\d{2}$/.test(schedule.openingTime) ||
-        !/^\d{2}:\d{2}$/.test(schedule.closingTime)
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.openingTime) ||
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.closingTime)
       ) {
         this.errorMessage =
           `Ingresá horarios válidos para ${schedule.label}.`;
@@ -625,6 +625,20 @@ export class SpaceModal implements OnInit {
       return false;
     }
 
+    for (const schedule of schedules) {
+      const pricingConfigurations =
+        configurations.filter(
+          config =>
+            config.dayType === schedule.dayType
+        );
+
+      if (pricingConfigurations.length === 0) {
+        this.errorMessage =
+          `Debés agregar al menos una configuración de precio para ${schedule.label}.`;
+        return false;
+      }
+    }
+
     for (const config of configurations) {
       if (
         ![
@@ -648,8 +662,8 @@ export class SpaceModal implements OnInit {
       }
 
       if (
-        !/^\d{2}:\d{2}$/.test(config.openingTime) ||
-        !/^\d{2}:\d{2}$/.test(config.closingTime)
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.openingTime) ||
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.closingTime)
       ) {
         this.errorMessage =
           `Ingresá horarios válidos para ${config.label}.`;

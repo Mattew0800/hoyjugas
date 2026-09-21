@@ -41,6 +41,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   searchTerm = '';
 
   showEmployeeModal = false;
+  savingEmployee = false;
 
   selectedEmployee?: EmployeeModel;
 
@@ -51,6 +52,10 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   loadingEmployees = false;
 
   errorMessage = '';
+
+  employeeModalError = '';
+  dismissError = '';
+  rehireError = '';
 
   showPinModal = false;
 
@@ -155,6 +160,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
   openNewEmployee(): void {
     this.errorMessage = '';
+    this.employeeModalError = '';
     this.selectedEmployee = undefined;
     this.showEmployeeModal = true;
   }
@@ -164,7 +170,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   ): void {
 
     this.errorMessage = '';
-
+    this.employeeModalError = '';
 
     this.employeeDetailSubscription?.unsubscribe();
 
@@ -188,8 +194,13 @@ export class EmployeesScreen implements OnInit, OnDestroy {
     updatedEmployee: EmployeeUpdateModel
   ): void {
 
+    if (this.savingEmployee) {
+      return;
+    }
+
     if (!this.selectedEmployee) {
-      this.errorMessage = 'No se pudo identificar el empleado a modificar.';
+      this.employeeModalError =
+        'No se pudo identificar el empleado a modificar.';
       return;
     }
 
@@ -199,6 +210,9 @@ export class EmployeesScreen implements OnInit, OnDestroy {
       id: employeeId,
       ...updatedEmployee
     };
+
+    this.savingEmployee = true;
+    this.employeeModalError = '';
 
     this.employeeService
       .updateEmployee(employeeToUpdate)
@@ -216,11 +230,13 @@ export class EmployeesScreen implements OnInit, OnDestroy {
             };
           }
 
+          this.savingEmployee = false;
           this.closeEmployeeModal();
         },
 
         error: error => {
-          this.errorMessage =
+          this.savingEmployee = false;
+          this.employeeModalError =
             this.errorHandler.getMessage(error);
         }
       });
@@ -229,37 +245,31 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   closeEmployeeModal(): void {
     this.showEmployeeModal = false;
     this.selectedEmployee = undefined;
+    this.employeeModalError = '';
+    this.savingEmployee = false;
   }
 
-  saveEmployee(
-    employee: EmployeeCreateModel
-  ): void {
+  saveEmployee(employee: EmployeeCreateModel): void {
+    if (this.savingEmployee) {
+      return;
+    }
 
-    this.subscriptions.add(
-      this.employeeService
-        .createEmployee(employee)
-        .subscribe({
-          next: response => {
-            const newEmployee: EmployeeModel = {
-              id: response.id,
-              name: response.name,
-              email: response.email,
-              phone: response.phone,
-              dni: employee.dni,
-              role: response.role,
-              active: true
-            };
+    this.savingEmployee = true;
+    this.employeeModalError = '';
 
-            this.employees.push(newEmployee);
-            this.closeEmployeeModal();
-          },
+    this.employeeService.createEmployee(employee).subscribe({
+      next: () => {
+        this.savingEmployee = false;
+        this.closeEmployeeModal();
+        this.loadEmployees();
+      },
 
-          error: error => {
-            this.errorMessage =
-              this.errorHandler.getMessage(error);
-          }
-        })
-    );
+      error: error => {
+        this.savingEmployee = false;
+        this.employeeModalError =
+          this.errorHandler.getMessage(error);
+      }
+    });
   }
 
   resetPin(
@@ -280,7 +290,8 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   }): void {
 
     if (!this.selectedEmployeeForPin) {
-      this.pinError = 'No se pudo identificar el empleado.';
+      this.pinError =
+        'No se pudo identificar el empleado.';
       return;
     }
 
@@ -324,6 +335,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
       return;
     }
 
+    this.dismissError = '';
     this.selectedEmployeeForDismiss = employee;
     this.showDismissConfirmation = true;
   }
@@ -335,6 +347,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
     this.showDismissConfirmation = false;
     this.selectedEmployeeForDismiss = undefined;
+    this.dismissError = '';
   }
 
   confirmDismissEmployee(): void {
@@ -347,6 +360,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
     }
 
     this.dismissingEmployee = true;
+    this.dismissError = '';
 
     this.subscriptions.add(
       this.employeeService
@@ -367,11 +381,12 @@ export class EmployeesScreen implements OnInit, OnDestroy {
             this.dismissingEmployee = false;
             this.showDismissConfirmation = false;
             this.selectedEmployeeForDismiss = undefined;
+            this.dismissError = '';
           },
 
           error: error => {
             this.dismissingEmployee = false;
-            this.errorMessage =
+            this.dismissError =
               this.errorHandler.getMessage(error);
           }
         })
@@ -415,6 +430,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
   openRehireConfirmation(
     employee: EmployeeModel
   ): void {
+    this.rehireError = '';
     this.selectedEmployeeForRehire = employee;
     this.showRehireConfirmation = true;
   }
@@ -426,6 +442,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
 
     this.showRehireConfirmation = false;
     this.selectedEmployeeForRehire = undefined;
+    this.rehireError = '';
   }
 
   confirmRehireEmployee(): void {
@@ -438,6 +455,7 @@ export class EmployeesScreen implements OnInit, OnDestroy {
     }
 
     this.rehiringEmployee = true;
+    this.rehireError = '';
 
     this.subscriptions.add(
       this.employeeService
@@ -458,11 +476,12 @@ export class EmployeesScreen implements OnInit, OnDestroy {
             this.rehiringEmployee = false;
             this.showRehireConfirmation = false;
             this.selectedEmployeeForRehire = undefined;
+            this.rehireError = '';
           },
 
           error: error => {
             this.rehiringEmployee = false;
-            this.errorMessage =
+            this.rehireError =
               this.errorHandler.getMessage(error);
           }
         })

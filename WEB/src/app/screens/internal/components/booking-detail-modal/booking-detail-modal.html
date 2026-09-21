@@ -1,4 +1,6 @@
-<div class="modal-overlay" (click)="closeModal()">
+<div
+  class="modal-overlay"
+  (click)="closeModal()">
 
   <div
     class="modal-container"
@@ -6,7 +8,9 @@
 
     <div class="modal-header">
 
-      <h2>Detalle del turno</h2>
+      <h2>
+        Detalle del turno
+      </h2>
 
       <button
         type="button"
@@ -40,7 +44,11 @@
           <section class="section-card">
 
             <div class="section-header">
-              <h3>Cliente</h3>
+
+              <h3>
+                Cliente
+              </h3>
+
             </div>
 
             <div class="client-info">
@@ -91,11 +99,14 @@
 
           </section>
 
-
           <section class="section-card">
 
             <div class="section-header">
-              <h3>Información del turno</h3>
+
+              <h3>
+                Información del turno
+              </h3>
+
             </div>
 
             <div class="section-content">
@@ -158,11 +169,14 @@
 
           </section>
 
-
           <section class="section-card">
 
             <div class="section-header">
-              <h3>Estado</h3>
+
+              <h3>
+                Estado
+              </h3>
+
             </div>
 
             <div class="section-content">
@@ -177,9 +191,7 @@
                 <div class="status-info">
 
                   <span class="status-title">
-
                     {{ paymentLabel }}
-
                   </span>
 
                   <span class="status-description">
@@ -210,13 +222,16 @@
 
         </div>
 
-
         <div class="right-column">
 
           <section class="section-card">
 
             <div class="section-header">
-              <h3>Cobro</h3>
+
+              <h3>
+                Cobro
+              </h3>
+
             </div>
 
             <div class="section-content">
@@ -230,9 +245,7 @@
                   </span>
 
                   <span class="payment-value">
-
                     ${{ totalAmount | number:'1.0-0' }}
-
                   </span>
 
                 </div>
@@ -266,9 +279,7 @@
                   </span>
 
                   <span class="payment-value">
-
                     ${{ remainingAmount | number:'1.0-0' }}
-
                   </span>
 
                 </div>
@@ -286,6 +297,7 @@
                   </label>
 
                   <select [(ngModel)]="selectedPaymentMethod">
+
                     <option value="EFECTIVO">
                       Efectivo
                     </option>
@@ -305,6 +317,7 @@
                     <option value="CREDITO">
                       Crédito
                     </option>
+
                   </select>
 
                 </div>
@@ -322,6 +335,14 @@
                     [placeholder]="remainingAmount.toString()">
 
                 </div>
+
+                @if (paymentError) {
+
+                  <div class="payment-error">
+                    {{ paymentError }}
+                  </div>
+
+                }
 
                 <div class="payment-input">
 
@@ -342,7 +363,6 @@
 
           </section>
 
-
           <section class="section-card">
 
             <div class="section-content">
@@ -360,7 +380,6 @@
             </div>
 
           </section>
-
 
           <div class="modal-footer">
 
@@ -412,7 +431,6 @@
 
 </div>
 
-
 @if (showCancelForm) {
 
   <div
@@ -448,7 +466,6 @@
 
       </div>
 
-
       <div class="cancel-modal-body">
 
         <div class="cancel-input">
@@ -462,10 +479,9 @@
             rows="4"
             maxlength="500"
             placeholder="Ingresá el motivo...">
-</textarea>
+          </textarea>
 
         </div>
-
 
         <div class="cancel-input">
 
@@ -482,7 +498,6 @@
 
         </div>
 
-
         @if (cancellationError) {
 
           <div class="cancel-error">
@@ -492,7 +507,6 @@
         }
 
       </div>
-
 
       <div class="cancel-modal-footer">
 
@@ -530,7 +544,6 @@
   </div>
 
 }
-
 
 @if (showClientProfile && selectedClient) {
 

@@ -49,6 +49,8 @@ export class BookingDetailModal implements OnChanges {
 
   errorMessage = '';
 
+  paymentError = '';
+
   showCancelForm = false;
 
   cancellationReason = '';
@@ -89,6 +91,7 @@ export class BookingDetailModal implements OnChanges {
     this.bookingDetail = undefined;
     this.loading = false;
     this.errorMessage = '';
+    this.paymentError='';
 
     this.showCancelForm = false;
     this.cancellationReason = '';
@@ -290,19 +293,21 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
+    this.paymentError = '';
+
     const receivedAmount = Number(this.receivedAmount);
 
     if (
       !Number.isFinite(receivedAmount) ||
       receivedAmount <= 0
     ) {
-      this.errorMessage =
+      this.paymentError =
         'Ingresá un importe recibido válido.';
       return;
     }
 
     if (receivedAmount < this.remainingAmount) {
-      this.errorMessage =
+      this.paymentError =
         `El importe recibido debe ser igual o mayor al saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`;
       return;
     }
@@ -316,18 +321,16 @@ export class BookingDetailModal implements OnChanges {
     ];
 
     if (!validPaymentMethods.includes(this.selectedPaymentMethod)) {
-      this.errorMessage =
+      this.paymentError =
         'Seleccioná un método de pago válido.';
       return;
     }
 
     if (!this.booking) {
-      this.errorMessage =
+      this.paymentError =
         'No se pudo identificar el turno.';
       return;
     }
-
-    this.errorMessage = '';
 
     this.paymentConfirmed.emit(this.booking);
   }

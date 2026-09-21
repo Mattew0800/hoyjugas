@@ -740,6 +740,21 @@
   cursor: not-allowed;
 }
 
+.payment-error {
+  margin-top: 8px;
+  padding: 10px 12px;
+
+  border: 1px solid rgba(220, 80, 80, .25);
+  border-radius: 8px;
+
+  background: rgba(220, 80, 80, .08);
+
+  color: #e8a0a0;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 @media (max-width: 900px) {
 
   .modal-container {
@@ -816,5 +831,6 @@
   .cancel-modal-footer button {
     width: 100%;
   }
+
 
 }
