@@ -90,7 +90,7 @@ export class FieldSchedule {
     this.bookingState.patch({ startDateTime: dateOnlyString });
 
 
-    this.router.navigate(['/field-schedule/date-selection']);
+    this.router.navigate(['/field-schedule/time-selection']);
   }
 
   // ── Modal ─────────────────────────────────────────────────────────

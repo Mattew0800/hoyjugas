@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
@@ -42,27 +43,37 @@ const ALL_SLOTS: Record<Tab, TimeSlot[]> = {
   templateUrl: './step-time-selection.html',
   styleUrl: './step-time-selection.scss',
 })
-export class StepTimeSelection {
+export class StepTimeSelection implements OnInit, OnDestroy {
 
-  // ── Estado de tabs ────────────────────────────────────────────────
   activeTab: Tab = 'tarde';
   tabs: Tab[] = ['mañana', 'tarde', 'noche'];
-
-  // ── Estado de selección ───────────────────────────────────────────
   selectedSlot: TimeSlot | null = null;
+  selectedDateText = 'Selecciona una fecha';
 
   private bookingStateService = inject(BookingStateService);
+  private readonly destroy$ = new Subject<void>();
 
   constructor(private router: Router) {}
 
-  // ── Slots visibles según tab activo ───────────────────────────────
+  ngOnInit() {
+    this.bookingStateService.draft$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((draft) => {
+        this.selectedDateText = this.formatSelectedDate(draft.startDateTime);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   get currentSlots(): TimeSlot[] {
     return ALL_SLOTS[this.activeTab];
   }
 
   selectTab(tab: Tab): void {
     this.activeTab = tab;
-    this.selectedSlot = null; // limpiar selección al cambiar tab
   }
 
   selectSlot(slot: TimeSlot): void {
@@ -70,7 +81,6 @@ export class StepTimeSelection {
     this.selectedSlot = slot;
   }
 
-  // ── Navegación con validación y formateo ──────────────────────────
   goToPayment(): void {
     if (!this.selectedSlot) return;
 
@@ -101,4 +111,22 @@ export class StepTimeSelection {
   capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
+
+  private formatSelectedDate(dateString: string | null): string {
+    if (!dateString) {
+      return 'Selecciona una fecha';
+    }
+
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (!year || !month || !day) {
+      return 'Selecciona una fecha';
+    }
+
+    const date = new Date(year, month - 1, day);
+    const weekday = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][date.getDay()];
+    const monthName = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][date.getMonth()];
+
+    return `${weekday} ${day} de ${monthName}`;
+  }
+
 }
