@@ -29,7 +29,7 @@
         @if(!emptySpacesCard){
           @for (space of filteredSpacesCardList; track space.id) {
 
-            <div class="field-card" (click)="goToFieldSchedule()">
+            <div class="field-card" (click)="goToFieldSchedule(space.id)">
 
               @if (space.imageUrl) {
                 <img
@@ -61,7 +61,7 @@
 
                 <button
                   class="view-button"
-                  (click)="goToFieldSchedule()">
+                  (click)="goToFieldSchedule(space.id)">
 
                   Reservar
 

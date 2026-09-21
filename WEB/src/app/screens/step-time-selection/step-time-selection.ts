@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
+import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
 
 type Tab = 'mañana' | 'tarde' | 'noche';
 
@@ -50,6 +51,8 @@ export class StepTimeSelection {
   // ── Estado de selección ───────────────────────────────────────────
   selectedSlot: TimeSlot | null = null;
 
+  private bookingStateService = inject(BookingStateService);
+
   constructor(private router: Router) {}
 
   // ── Slots visibles según tab activo ───────────────────────────────
@@ -67,9 +70,27 @@ export class StepTimeSelection {
     this.selectedSlot = slot;
   }
 
-  // ── Navegación con validación ─────────────────────────────────────
+  // ── Navegación con validación y formateo ──────────────────────────
   goToPayment(): void {
     if (!this.selectedSlot) return;
+
+
+    const draft = this.bookingStateService.snapshot;
+    const savedDate = draft.startDateTime;
+
+
+    if (!savedDate) {
+      this.goBack();
+      return;
+    }
+
+
+    const fullLocalDateTime = `${savedDate}T${this.selectedSlot.label}:00`;
+
+
+    this.bookingStateService.patch({ startDateTime: fullLocalDateTime });
+
+
     this.router.navigate(['/field-schedule/payment-selection']);
   }
 
@@ -77,7 +98,6 @@ export class StepTimeSelection {
     this.router.navigate(['/field-schedule']);
   }
 
-  // ── Helper para capitalizar el label del tab ──────────────────────
   capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }

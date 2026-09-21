@@ -177,6 +177,23 @@ export class BookingService {
       );
   }
 
+  createPublicBooking(request: {
+    spaceId: number;
+    startDatetime: string;
+    paymentMethod: 'EFECTIVO' | 'TRANSFERENCIA' | 'MERCADOPAGO' | 'DEBITO' | 'CREDITO' | 'INTERNO';
+    termsAccepted: boolean;
+    depositAmount: number;
+    slots?: number;
+  }): Observable<BookingResponseModel> {
+    return this.http.post<BookingResponseModel>(
+      `${this.bookingApiUrl}/public/create`,
+      request,
+      {
+        withCredentials: true
+      }
+    );
+  }
+
 
 
 

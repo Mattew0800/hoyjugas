@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, Renderer2} from '@angular/core';
+import {Component, inject, Inject, OnInit, Renderer2} from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import {CommonModule, DOCUMENT} from '@angular/common';
 import {BookingService} from '../../services/BookingService/booking-service';
 import {clearAppScopedEarlyEventContract} from '@angular/core/primitives/event-dispatch';
 import {SpaceCardDTO} from '../../models/SpaceCardDTO';
+import {BookingStateService} from '../../services/BookingStateService/booking-state-service';
 
 @Component({
   selector: 'app-booking',
@@ -30,11 +31,15 @@ export class Booking implements OnInit{
 
   spacesCardList: SpaceCardDTO[];
 
+  private bService=  inject(BookingService);
+  private bStateService = inject(BookingStateService);
+
+
   constructor(
     private router: Router,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document,
-    public bService: BookingService
+
   ) {
     this.spacesCardList = [];
   }
@@ -84,7 +89,8 @@ export class Booking implements OnInit{
     }
   }
 
-  goToFieldSchedule(): void {
+  goToFieldSchedule(spaceId: number): void {
+    this.bStateService.patch({spaceId});
     this.router.navigate(['/field-schedule']);
   }
 
@@ -98,7 +104,7 @@ export class Booking implements OnInit{
           this.availableFieldTypes = Array.from(new Set(this.spacesCardList.map(s => s.type)));
           this.selectedFieldType = this.availableFieldTypes[0];
         }
-        
+
       },
       error: (e)=>{
         this.emptySpacesCard = true;
