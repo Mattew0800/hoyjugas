@@ -9,6 +9,7 @@ import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -634,10 +635,11 @@ public class BookingService extends BaseBookingService {
 
     public BookingResponseDTO getNextBooking(Long clientId) {
         return bookingRepository
-                .findNextBookingByClientId(clientId, LocalDateTime.now(), BookingStatus.CONFIRMADO)
+                .findNextBookingByClientId(clientId,LocalDateTime.now(),BookingStatus.CONFIRMADO,PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
                 .map(this::buildBookingResponseDTO)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
     }
 
     private Optional<SpaceSchedule> resolveScheduleOptional(Long spaceId, DayOfWeek dayOfWeek) {
