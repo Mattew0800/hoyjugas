@@ -121,16 +121,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     );
 
     @Query("""
-        SELECT b FROM Booking b
-        WHERE b.client.id = :clientId
-        AND b.bookingStatus = :status
-        AND b.startDatetime > :now
-        ORDER BY b.startDatetime ASC
-        """)
-    Optional<Booking> findNextBookingByClientId(
+    SELECT b FROM Booking b
+    WHERE b.client.id = :clientId
+    AND b.bookingStatus = :status
+    AND b.startDatetime > :now
+    ORDER BY b.startDatetime ASC
+    """)
+    List<Booking> findNextBookingByClientId(
             @Param("clientId") Long clientId,
             @Param("now") LocalDateTime now,
-            @Param("status") BookingStatus status
+            @Param("status") BookingStatus status,
+            Pageable pageable
     );
 
     @Query("SELECT b FROM Booking b WHERE b.space.id IN :spaceIds " +

@@ -131,25 +131,6 @@ public class SpaceScheduleService {
         };
     }
 
-    private void deletePricingsForDayTypeCoverage(Long spaceId, DayType dayType) {
-        List<DayType> dayTypesToDelete = getPossibleDayTypes(dayType);
-        if (!dayTypesToDelete.contains(dayType)) {
-            dayTypesToDelete = new ArrayList<>(dayTypesToDelete);
-            dayTypesToDelete.add(dayType);
-        }
-        spacePricingRepository.deleteBySpaceIdAndDayTypeIn(spaceId, dayTypesToDelete);
-    }
-
-    private List<DayType> getPossibleDayTypes(DayType scheduleDayType) {
-        return switch (scheduleDayType) {
-            case DIA_DE_SEMANA -> new ArrayList<>(List.of(
-                    DayType.LUNES, DayType.MARTES, DayType.MIERCOLES,
-                    DayType.JUEVES, DayType.VIERNES));
-            case FIN_DE_SEMANA -> new ArrayList<>(List.of(DayType.SABADO, DayType.DOMINGO));
-            default -> new ArrayList<>(List.of(scheduleDayType));
-        };
-    }
-
     public SpaceSchedule buildTempSchedule(SpaceScheduleRequestDTO dto) {
         SpaceSchedule temp = new SpaceSchedule();
         temp.setDayType(dto.getDayType());
