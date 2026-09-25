@@ -196,3 +196,41 @@
   cursor: pointer;
 }
 
+// ── Skeleton loader ───────────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.date-card.skeleton {
+  pointer-events: none;
+  border-color: transparent;
+  background: linear-gradient(
+    90deg,
+    #0A0A0C 25%,
+    #1a1a20 50%,
+    #0A0A0C 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+
+  .date-month,
+  .date-number,
+  .date-status {
+    display: block;
+    width: 60%;
+    height: 0.9em;
+    border-radius: 4px;
+    background-color: #26262B;
+  }
+}
+
+// ── Error state ───────────────────────────────────────────────────────────────
+.load-error {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #707070;
+  font-size: 13px;
+  margin: 0;
+  padding: 12px 0;
+}

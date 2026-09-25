@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectDateModal } from '../../components/select-date-modal/select-date-modal';
 import {BookingStateService} from '../../services/BookingStateService/booking-state-service';
+import {BookingService} from '../../services/BookingService/booking-service';
+import {DailyAvailabilityDTO} from '../../models/DailyAvailabilityDTO';
 
 export interface DateCard {
   label: string;    // 'HOY' | 'AGO' | etc.
@@ -28,7 +30,7 @@ export interface DateCard {
   templateUrl: './field-schedule.html',
   styleUrl: './field-schedule.scss'
 })
-export class FieldSchedule {
+export class FieldSchedule implements OnInit {
 
   // ── Estado del modal ──────────────────────────────────────────────
   isModalOpen = false;
@@ -37,39 +39,103 @@ export class FieldSchedule {
   // ── Datos de fechas ───────────────────────────────────────────────
   dates: DateCard[] = [];
   selectedMoreDate: DateCard | null = null;
-
   selectedDate: DateCard | null = null;
 
-  private bookingState = inject(BookingStateService);
+  // ── Estado de carga ───────────────────────────────────────────────
+  isLoading = true;
+  loadError = false;
 
-  constructor(private router: Router) {
-    this.dates = this.buildInitialDates();
+  /** Respuesta completa del backend (30 días) para consultas del modal */
+  private availabilityIndex = new Map<string, number>();
+
+  private bookingState  = inject(BookingStateService);
+  private bookingService = inject(BookingService);
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.bookingService.availabilityNext30Days().subscribe({
+      next: (response) => {
+        // Indexamos por fecha normalizada para búsquedas O(1) en el modal
+        this.availabilityIndex.clear();
+        response.days.forEach(d => {
+          const key = this.toDateKey(d.date);
+          this.availabilityIndex.set(key, d.availableSlots);
+        });
+
+        this.dates = this.buildDatesFromResponse(response.days);
+        this.isLoading = false;
+      },
+      error: () => {
+        // Fallback: mostrar los próximos 7 días vacíos con error
+        this.dates = this.buildFallbackDates();
+        this.isLoading = false;
+        this.loadError = true;
+      }
+    });
   }
 
   private readonly monthLabels = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-  private buildInitialDates(): DateCard[] {
+  /**
+   * Normaliza cualquier formato de fecha del backend ("2026-09-25" o "2026-09-25T00:00:00")
+   * a una clave uniforme "YYYY-MM-DD" para el Map de búsqueda.
+   */
+  private toDateKey(dateStr: string): string {
+    return dateStr.substring(0, 10);
+  }
+
+  /** Construye las DateCards para los primeros 7 días usando la respuesta real de la API */
+  private buildDatesFromResponse(days: DailyAvailabilityDTO[]): DateCard[] {
     const today = new Date();
+    const todayKey = this.toDateKey(today.toISOString());
     const cards: DateCard[] = [];
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
+      const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+
+      const available = this.availabilityIndex.get(key) ?? null;
 
       cards.push({
         label: i === 0 ? 'HOY' : this.monthLabels[date.getMonth()],
         day: date.getDate(),
         month: date.getMonth(),
         year: date.getFullYear(),
-        slots: i === 2 ? null : 8 - (i % 3),
+        slots: available !== null && available > 0 ? available : (available === 0 ? null : null),
       });
     }
 
     return cards;
   }
 
-  private hasSlotsForDate(date: Date): boolean {
-    return date.getDate() % 4 !== 0;
+  /** Fallback en caso de error de red: 7 días sin datos de slots */
+  private buildFallbackDates(): DateCard[] {
+    const today = new Date();
+    const cards: DateCard[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      cards.push({
+        label: i === 0 ? 'HOY' : this.monthLabels[date.getMonth()],
+        day: date.getDate(),
+        month: date.getMonth(),
+        year: date.getFullYear(),
+        slots: null,
+      });
+    }
+
+    return cards;
+  }
+
+  /** Consulta el índice de disponibilidad para una fecha dada */
+  private getSlotsForDate(year: number, month: number, day: number): number | null {
+    const key = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const slots = this.availabilityIndex.get(key);
+    if (slots === undefined) return null;
+    return slots > 0 ? slots : null; // 0 slots → agotado
   }
 
   // ── Selección de fecha ────────────────────────────────────────────
@@ -135,7 +201,10 @@ export class FieldSchedule {
       return;
     }
 
-    if (!this.hasSlotsForDate(selectedDateValue)) {
+    const slots = this.getSlotsForDate(parsedDate.year, parsedDate.month, parsedDate.day);
+
+    if (slots === null) {
+      // Fecha fuera del rango de 30 días o sin disponibilidad — no seleccionar
       this.isModalOpen = false;
       return;
     }
@@ -145,7 +214,7 @@ export class FieldSchedule {
       day: parsedDate.day,
       month: parsedDate.month,
       year: parsedDate.year,
-      slots: 8,
+      slots,
     };
     this.selectedDate = this.selectedMoreDate;
     this.isModalOpen = false;
@@ -194,6 +263,8 @@ export class FieldSchedule {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
   }
+
+
 
 
 }

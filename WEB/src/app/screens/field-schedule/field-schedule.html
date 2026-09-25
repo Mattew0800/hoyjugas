@@ -22,6 +22,18 @@
     <!-- 3. Date grid -->
     <div class="date-grid">
 
+      @if (isLoading) {
+        @for (i of [1,2,3,4,5,6,7]; track i) {
+          <div class="date-card skeleton">
+            <span class="date-month">&nbsp;</span>
+            <span class="date-number">&nbsp;</span>
+            <span class="date-status">&nbsp;</span>
+          </div>
+        }
+      } @else if (loadError) {
+        <p class="load-error">No se pudo cargar la disponibilidad. Intenta de nuevo.</p>
+      } @else {
+
       @for (date of dates; track date.day) {
         <div
           class="date-card"
@@ -57,6 +69,8 @@
           <span class="more-text">VER MÁS</span>
         </div>
       }
+
+      } <!-- end @else (data loaded) -->
 
       @if (isModalOpen) {
         <app-select-date-modal

@@ -17,6 +17,7 @@ import {InternalBookingRequestModel} from '../../screens/internal/models/interna
 import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
 import {AuthService} from '../AuthService/auth-service';
 import {BookingListDTO, Page} from '../../models/booking.model';
+import {AvailabilitySummaryDTO} from '../../models/AvailabilitySummaryDTO';
 
 @Injectable({
   providedIn: 'root'
@@ -182,7 +183,11 @@ export class BookingService {
       {
         withCredentials: true
       }
-    );
+    )
+  }
+
+  availabilityNext30Days(){
+    return this.http.get<AvailabilitySummaryDTO>(`${this.bookingApiUrl}/availability-next-30-days`)
   }
 
 
