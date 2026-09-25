@@ -104,21 +104,32 @@ public class SpaceScheduleService {
     public SpaceScheduleResponseDTO updateScheduleWithPricing(Long spaceId, Long scheduleId,SpaceScheduleRequestDTO scheduleDto, List<SpacePricingRequestDTO> pricings) {
         SpaceSchedule oldSchedule = getScheduleOrThrow(scheduleId, spaceId);
         pricingService.validatePricingForDayType(pricings, scheduleDto);
-        SpaceScheduleResponseDTO updatedSchedule = updateSchedule(spaceId, scheduleId, scheduleDto);
-        spacePricingRepository.deleteByScheduleId(scheduleId);
+        deletePricingsForSchedule(oldSchedule);
+        SpaceScheduleResponseDTO updatedSchedule = applyScheduleUpdate(spaceId, oldSchedule, scheduleDto);
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         setPricings(space, oldSchedule, pricings);
         return updatedSchedule;
     }
-    private void deletePricingsForDayTypeCoverage(Long spaceId, DayType dayType) {
+    private void deletePricingsForSchedule(SpaceSchedule schedule) {
+        DayType dayType = schedule.getDayType();
         List<DayType> dayTypesToDelete = getPossibleDayTypes(dayType);
         if (!dayTypesToDelete.contains(dayType)) {
             dayTypesToDelete = new ArrayList<>(dayTypesToDelete);
             dayTypesToDelete.add(dayType);
         }
-        spacePricingRepository.deleteBySpaceIdAndDayTypeIn(spaceId, dayTypesToDelete);
+        List<SpacePricing> legacyPricings = spacePricingRepository
+                .findBySpaceIdAndScheduleIsNullAndDayTypeIn(schedule.getSpace().getId(), dayTypesToDelete)
+                .stream()
+                .filter(p -> schedulesOverlap(schedule.getOpeningTime(), schedule.getClosingTime(),
+                        p.getStartTime(), p.getEndTime()))
+                .toList();
+        List<SpacePricing> pricingsToDelete = new ArrayList<>(schedule.getPricings());
+        pricingsToDelete.addAll(legacyPricings);
+        schedule.getPricings().clear();
+        schedule.getSpace().getPricings().removeAll(pricingsToDelete);
+        spacePricingRepository.deleteAll(pricingsToDelete);
     }
 
     private List<DayType> getPossibleDayTypes(DayType scheduleDayType) {
@@ -154,11 +165,22 @@ public class SpaceScheduleService {
     @Transactional
     public SpaceScheduleResponseDTO updateSchedule(Long spaceId, Long scheduleId, SpaceScheduleRequestDTO dto) {
         SpaceSchedule schedule = getScheduleOrThrow(scheduleId, spaceId);
+        boolean changed = schedule.getDayType() != dto.getDayType()
+                || !schedule.getOpeningTime().equals(dto.getOpeningTime())
+                || !schedule.getClosingTime().equals(dto.getClosingTime());
+        if (changed && spacePricingRepository.existsByScheduleId(scheduleId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El horario tiene precios vinculados; actualice el horario junto con sus precios");
+        }
+        return applyScheduleUpdate(spaceId, schedule, dto);
+    }
+
+    private SpaceScheduleResponseDTO applyScheduleUpdate(Long spaceId, SpaceSchedule schedule, SpaceScheduleRequestDTO dto) {
         validateSchedule(dto.getOpeningTime(), dto.getClosingTime(), dto.getDayType());
         List<SpaceSchedule> existingSchedules = spaceScheduleRepository
                 .findAllBySpaceIdAndDayType(spaceId, dto.getDayType());
         for (SpaceSchedule existing : existingSchedules) {
-            if (existing.getId().equals(scheduleId)) {
+            if (existing.getId().equals(schedule.getId())) {
                 continue;
             }
             if (schedulesOverlap(dto.getOpeningTime(), dto.getClosingTime(), existing.getOpeningTime(), existing.getClosingTime())) {
@@ -178,7 +200,7 @@ public class SpaceScheduleService {
     @Transactional
     public void deleteSchedule(Long spaceId, Long scheduleId) {
         SpaceSchedule schedule = getScheduleOrThrow(scheduleId, spaceId);
-        spacePricingRepository.deleteByScheduleId(scheduleId);
+        deletePricingsForSchedule(schedule);
         spaceScheduleRepository.delete(schedule);
     }
 
