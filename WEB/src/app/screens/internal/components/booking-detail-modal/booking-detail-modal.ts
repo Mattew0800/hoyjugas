@@ -75,6 +75,10 @@ export class BookingDetailModal implements OnChanges {
 
   internalObservation = '';
 
+  observationError = '';
+
+  observationLoading = false;
+
   constructor(
     private bookingService: BookingService,
     private errorHandler: ErrorHandlerService
@@ -91,7 +95,7 @@ export class BookingDetailModal implements OnChanges {
     this.bookingDetail = undefined;
     this.loading = false;
     this.errorMessage = '';
-    this.paymentError='';
+    this.paymentError = '';
 
     this.showCancelForm = false;
     this.cancellationReason = '';
@@ -106,7 +110,10 @@ export class BookingDetailModal implements OnChanges {
 
     this.selectedPaymentMethod = 'EFECTIVO';
     this.receivedAmount = 0;
+
     this.internalObservation = '';
+    this.observationError = '';
+    this.observationLoading = false;
   }
 
   private loadBookingDetail(): void {
@@ -339,6 +346,52 @@ export class BookingDetailModal implements OnChanges {
     this.confirmPayment();
   }
 
+  addObservation(): void {
+    if (!this.bookingDetail) {
+      return;
+    }
+
+    if (this.observationLoading) {
+      return;
+    }
+
+    this.observationError = '';
+
+    const content = this.internalObservation.trim();
+
+    if (!content) {
+      this.observationError =
+        'Ingresá una observación.';
+      return;
+    }
+
+    if (content.length > 1000) {
+      this.observationError =
+        'La observación no puede superar los 1000 caracteres.';
+      return;
+    }
+
+    this.observationLoading = true;
+
+    this.bookingService
+      .addObservation(
+        this.bookingDetail.id,
+        content
+      )
+      .subscribe({
+        next: () => {
+          this.observationLoading = false;
+          this.internalObservation = '';
+          this.loadBookingDetail();
+        },
+        error: error => {
+          this.observationLoading = false;
+          this.observationError =
+            this.errorHandler.getMessage(error);
+        }
+      });
+  }
+
   openCancelForm(): void {
     if (
       this.loading ||
@@ -458,7 +511,8 @@ export class BookingDetailModal implements OnChanges {
   closeModal(): void {
     if (
       this.loading ||
-      this.cancellationLoading
+      this.cancellationLoading ||
+      this.observationLoading
     ) {
       return;
     }

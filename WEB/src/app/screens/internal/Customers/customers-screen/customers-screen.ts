@@ -6,6 +6,7 @@ import { RoleService } from '../../../../services/RoleService/role-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 import { CustomerModel } from '../../models/user-response';
+import { UserDetailModel} from '../../models/user-detail.model';
 
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
@@ -39,6 +40,11 @@ export class CustomersScreen implements OnInit {
   errorMessage: string | null = null;
 
   processingAction = false;
+
+  selectedCustomer: UserDetailModel | null = null;
+  showCustomerDetail = false;
+  customerDetailLoading = false;
+  customerDetailError = '';
 
   private customersSubscription?: Subscription;
 
@@ -88,6 +94,35 @@ export class CustomersScreen implements OnInit {
   ): void {
     this.statusFilter = filter;
     this.loadCustomers();
+  }
+
+  openCustomerDetail(id: number): void {
+    this.customerDetailLoading = true;
+    this.customerDetailError = '';
+    this.selectedCustomer = null;
+    this.showCustomerDetail = true;
+
+    this.userService.getUserDetail(id).subscribe({
+      next: customer => {
+        this.selectedCustomer = customer;
+        this.customerDetailLoading = false;
+      },
+      error: error => {
+        this.customerDetailLoading = false;
+        this.customerDetailError =
+          this.errorHandler.getMessage(error);
+      }
+    });
+  }
+
+  closeCustomerDetail(): void {
+    if (this.customerDetailLoading) {
+      return;
+    }
+
+    this.showCustomerDetail = false;
+    this.selectedCustomer = null;
+    this.customerDetailError = '';
   }
 
   desactivateCustomer(id: number): void {

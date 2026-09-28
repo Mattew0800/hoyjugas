@@ -50,7 +50,9 @@
 
     </div>
 
-    <div class="customers-card">
+    <div
+      class="customers-card"
+      [class.with-actions]="isAdmin && statusFilter !== 'all'">
 
       <div class="table-header">
 
@@ -89,7 +91,9 @@
 
           <div class="customer-row">
 
-            <div class="customer-name">
+            <div
+              class="customer-name"
+              (click)="openCustomerDetail(customer.id)">
 
               <div class="customer-avatar">
                 {{ customer.name.charAt(0).toUpperCase() }}
@@ -220,3 +224,160 @@
   </div>
 
 </div>
+
+@if (showCustomerDetail) {
+
+  <div
+    class="customer-detail-overlay"
+    (click)="closeCustomerDetail()">
+
+    <div
+      class="customer-detail-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="customer-detail-header">
+
+        <h2>Detalle del cliente</h2>
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeCustomerDetail()"
+          [disabled]="customerDetailLoading">
+          ×
+        </button>
+
+      </div>
+
+      @if (customerDetailLoading) {
+
+        <div class="customer-detail-loading">
+          Cargando datos del cliente...
+        </div>
+
+      } @else if (customerDetailError) {
+
+        <div class="customer-detail-error">
+          {{ customerDetailError }}
+        </div>
+
+      } @else if (selectedCustomer) {
+
+        <div class="customer-detail-content">
+
+          <div class="customer-detail-avatar">
+            {{ selectedCustomer.name.charAt(0).toUpperCase() }}
+          </div>
+
+          <h3>
+            {{ selectedCustomer.name }}
+          </h3>
+
+          <div class="customer-detail-info">
+
+            <div class="customer-detail-item">
+
+              <span class="detail-label">
+                DNI
+              </span>
+
+              <span class="detail-value">
+                {{ selectedCustomer.dni || '-' }}
+              </span>
+
+            </div>
+
+            <div class="customer-detail-item">
+
+              <span class="detail-label">
+                Email
+              </span>
+
+              <span class="detail-value">
+                {{ selectedCustomer.email || '-' }}
+              </span>
+
+            </div>
+
+            <div class="customer-detail-item">
+
+              <span class="detail-label">
+                Teléfono
+              </span>
+
+              <span class="detail-value">
+                {{ selectedCustomer.phone || '-' }}
+              </span>
+
+            </div>
+
+            <div class="customer-detail-item">
+
+              <span class="detail-label">
+                Rol
+              </span>
+
+              <span class="detail-value">
+                {{ selectedCustomer.role }}
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="customer-observations">
+
+            <span class="detail-label">
+              Observaciones
+            </span>
+
+            @if (
+              selectedCustomer.observations &&
+              selectedCustomer.observations.length > 0
+              ) {
+
+              <ul>
+
+                @for (
+                  observation of selectedCustomer.observations;
+                  track $index
+                  ) {
+
+                  <li>
+                    {{ observation }}
+                  </li>
+
+                }
+
+              </ul>
+
+            } @else {
+
+              <p>
+                No hay observaciones registradas.
+              </p>
+
+            }
+
+          </div>
+
+        </div>
+
+        <div class="customer-detail-footer">
+
+          <button
+            type="button"
+            class="close-detail-button"
+            (click)="closeCustomerDetail()">
+            Cerrar
+          </button>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+}

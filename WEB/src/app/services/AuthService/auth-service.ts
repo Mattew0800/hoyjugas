@@ -6,6 +6,7 @@ import {LoginRequestDTO} from '../../models/LoginRequestDTO';
 import {BehaviorSubject, catchError, Observable, of, tap} from 'rxjs';
 import {LoginResponseDTO} from '../../models/LoginResponseDTO';
 import {getAuthApiUrl, getUserApiUrl} from '../../config/api.config';
+import {AdminCreatedModel} from '../../screens/internal/models/admin-created.model';
 
 @Injectable({
   providedIn: 'root',
@@ -57,6 +58,14 @@ export class AuthService {
 
   registerUser(user: RegisterRequestDTO){
     return this.http.post<RegisterRequestDTO>(`${this.API_URL}/register`,user);
+  }
+
+  registerAdmin(admin: RegisterRequestDTO) {
+    return this.http.post<AdminCreatedModel>(
+      `${this.API_URL}/register-admin`,
+      admin,
+      { withCredentials: true }
+    );
   }
 
   logout(): Observable<any> {
