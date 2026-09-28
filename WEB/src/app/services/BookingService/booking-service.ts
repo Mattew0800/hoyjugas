@@ -151,7 +151,7 @@ export class BookingService {
   }
 
   getMyBookings(): Observable<Page<BookingListDTO>> {
-    return this.http.get<Page<BookingListDTO>>(`${this.bookingApiUrl}/my-bookings`, {
+    return this.http.post<Page<BookingListDTO>>(`${this.bookingApiUrl}/my-bookings`, null, {
       withCredentials: true
     });
   }
