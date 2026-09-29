@@ -5,7 +5,8 @@
 }
 
 .home-screen {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #000000;
   color: white;
   padding: 0;
@@ -304,7 +305,7 @@
 
 .quick-actions {
   width: calc(100% - 36px);
-  margin: 0 18px 120px;
+  margin: 0 18px;
   display: flex;
   justify-content: space-between;
   gap: 12px;
