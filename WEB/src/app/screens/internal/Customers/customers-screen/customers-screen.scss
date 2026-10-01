@@ -125,7 +125,6 @@
   font-size: 13px;
   border-bottom: 1px solid rgba(255, 255, 255, .05);
   transition: .2s;
-  cursor: pointer;
 }
 
 .customer-row:last-child {
@@ -139,11 +138,25 @@
 .customer-name {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: white;
-  font-weight: 500;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  width: fit-content;
+}
+
+.customer-name:focus-visible {
+
+  outline: 2px solid #CEA764;
+
+  outline-offset: 3px;
+
+  border-radius: 6px;
+
 }
 
 .customer-name:hover {

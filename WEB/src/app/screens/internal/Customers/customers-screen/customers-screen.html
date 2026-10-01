@@ -91,7 +91,8 @@
 
           <div class="customer-row">
 
-            <div
+            <button
+              type="button"
               class="customer-name"
               (click)="openCustomerDetail(customer.id)">
 
@@ -103,7 +104,7 @@
                 {{ customer.name }}
               </span>
 
-            </div>
+            </button>
 
             <div class="customer-email">
               {{ customer.email }}
@@ -232,12 +233,20 @@
     (click)="closeCustomerDetail()">
 
     <div
+      #customerDetailModal
       class="customer-detail-modal"
-      (click)="$event.stopPropagation()">
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="customer-detail-title"
+      tabindex="-1"
+      (click)="$event.stopPropagation()"
+      (keydown)="handleCustomerDetailKeydown($event)">
 
       <div class="customer-detail-header">
 
-        <h2>Detalle del cliente</h2>
+        <h2 id="customer-detail-title">
+          Detalle del cliente
+        </h2>
 
         <button
           type="button"
