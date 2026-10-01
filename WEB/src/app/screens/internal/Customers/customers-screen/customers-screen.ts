@@ -56,6 +56,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
 
   private customersSubscription?: Subscription;
   private customerDetailSubscription?: Subscription;
+  private customerDetailFocusTimeout?: ReturnType<typeof setTimeout>;
   private customerDetailTrigger: HTMLElement | null = null;
 
   constructor(
@@ -72,6 +73,10 @@ export class CustomersScreen implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.customersSubscription?.unsubscribe();
     this.customerDetailSubscription?.unsubscribe();
+
+    if (this.customerDetailFocusTimeout) {
+      clearTimeout(this.customerDetailFocusTimeout);
+    }
   }
 
   loadCustomers(): void {
@@ -124,8 +129,13 @@ export class CustomersScreen implements OnInit, OnDestroy {
     this.selectedCustomer = null;
     this.showCustomerDetail = true;
 
-    setTimeout(() => {
+    if (this.customerDetailFocusTimeout) {
+      clearTimeout(this.customerDetailFocusTimeout);
+    }
+
+    this.customerDetailFocusTimeout = setTimeout(() => {
       this.customerDetailModal?.nativeElement.focus();
+      this.customerDetailFocusTimeout = undefined;
     });
 
     this.customerDetailSubscription =
@@ -151,9 +161,14 @@ export class CustomersScreen implements OnInit, OnDestroy {
     this.customerDetailLoading = false;
     this.customerDetailError = '';
 
-    setTimeout(() => {
+    if (this.customerDetailFocusTimeout) {
+      clearTimeout(this.customerDetailFocusTimeout);
+    }
+
+    this.customerDetailFocusTimeout = setTimeout(() => {
       this.customerDetailTrigger?.focus();
       this.customerDetailTrigger = null;
+      this.customerDetailFocusTimeout = undefined;
     });
   }
 
