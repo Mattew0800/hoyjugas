@@ -35,6 +35,10 @@ export class SpacesScreen implements OnInit {
 
   errorMessage = '';
 
+  confirmingSpaceId: number | null = null;
+  confirmingSpaceActive: boolean | null = null;
+  processingStatusChange = false;
+
   constructor(
     private spaceService: SpaceService,
     private errorHandler: ErrorHandlerService
@@ -89,5 +93,54 @@ export class SpacesScreen implements OnInit {
     this.errorMessage = '';
     this.selectedSpaceId = spaceId;
     this.showModal = true;
+  }
+
+  toggleSpaceStatus(event: { spaceId: number; isActive: boolean }): void {
+    this.confirmSpaceStatus(event.spaceId, event.isActive);
+  }
+
+  confirmSpaceStatus(spaceId: number, isActive: boolean): void {
+    this.confirmingSpaceId = spaceId;
+    this.confirmingSpaceActive = isActive;
+    this.errorMessage = '';
+  }
+
+  cancelSpaceStatus(): void {
+    if (this.processingStatusChange) return;
+
+    this.confirmingSpaceId = null;
+    this.confirmingSpaceActive = null;
+  }
+
+  executeSpaceStatusChange(): void {
+    if (
+      this.confirmingSpaceId === null ||
+      this.confirmingSpaceActive === null ||
+      this.processingStatusChange
+    ) {
+      return;
+    }
+
+    this.processingStatusChange = true;
+    this.errorMessage = '';
+
+    this.spaceService
+      .toggleSpaceStatus(
+        this.confirmingSpaceId,
+        this.confirmingSpaceActive
+      )
+      .subscribe({
+        next: () => {
+          this.processingStatusChange = false;
+          this.confirmingSpaceId = null;
+          this.confirmingSpaceActive = null;
+          this.loadSpaces();
+        },
+        error: error => {
+          this.processingStatusChange = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
   }
 }

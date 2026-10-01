@@ -6,11 +6,11 @@ import {
   OnInit
 } from '@angular/core';
 
-import { FormsModule } from '@angular/forms';
-import { forkJoin, Observable } from 'rxjs';
+import {FormsModule} from '@angular/forms';
+import {forkJoin, Observable} from 'rxjs';
 
-import { SpaceService } from '../../../../services/SpaceService/SpaceService';
-import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
+import {SpaceService} from '../../../../services/SpaceService/SpaceService';
+import {ErrorHandlerService} from '../../../../services/ErrorHandlerService/error-handler.service';
 
 interface DaySchedule {
   id?: number;
@@ -71,7 +71,8 @@ export class SpaceModal implements OnInit {
   constructor(
     private spaceService: SpaceService,
     private errorHandler: ErrorHandlerService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     if (this.spaceId !== null) {
@@ -89,7 +90,7 @@ export class SpaceModal implements OnInit {
       space: this.spaceService.getSpaceDetail(this.spaceId!),
       schedules: this.spaceService.getSchedulesBySpace(this.spaceId!)
     }).subscribe({
-      next: ({ space, schedules }) => {
+      next: ({space, schedules}) => {
         this.space = {
           name: space.name ?? '',
           type: space.type ?? 'CANCHA',
@@ -429,6 +430,11 @@ export class SpaceModal implements OnInit {
   }
 
   private updateSchedules(): void {
+
+    if(this.spaceId===null){
+      return;
+    }
+
     const currentSchedules =
       this.schedules.filter(
         schedule => schedule.enabled
@@ -494,10 +500,10 @@ export class SpaceModal implements OnInit {
       }
 
       requests.push(
-        this.spaceService.deleteSchedule({
-          scheduleId,
-          spaceId: this.spaceId
-        })
+        this.spaceService.deleteSchedule(
+          this.spaceId,
+          scheduleId
+        )
       );
     }
 

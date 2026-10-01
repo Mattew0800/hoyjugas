@@ -19,9 +19,18 @@ export class SpaceListItem {
   @Output()
   edit = new EventEmitter<number>();
 
+  @Output()
+  toggleStatus = new EventEmitter<{ spaceId: number; isActive: boolean }>();
+
   editSpace(): void {
 
     this.edit.emit(this.space.id);
+  }
 
+  toggleSpaceStatus(): void {
+    this.toggleStatus.emit({
+      spaceId: this.space.id,
+      isActive: !this.space.isActive
+    });
   }
 }
