@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { getUserApiUrl, getAuthApiUrl } from '../../config/api.config';
 import { UserUpdateDTO } from '../../models/UserUpdateDTO';
 import {CustomerModel} from '../../screens/internal/models/user-response';
+import {UserDetailModel} from '../../screens/internal/models/user-detail.model';
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +39,14 @@ export class UserService {
 
     return this.http.get<CustomerModel[]>(
       url,
+      { withCredentials: true }
+    );
+  }
+
+  getUserDetail(id: number) {
+    return this.http.post<UserDetailModel>(
+      `${this.USER_API_URL}/detail`,
+      { id },
       { withCredentials: true }
     );
   }

@@ -44,14 +44,27 @@ export class EmployeeModal implements OnInit {
   @Input()
   employee?: EmployeeModel;
 
-  @Input() saving = false;
-  @Input() errorMessage = '';
+  @Input()
+  saving = false;
+
+  @Input()
+  errorMessage = '';
+
+  @Input()
+  mode: 'employee' | 'admin' = 'employee';
+
+  @Input()
+  createdAdminPin = '';
 
   @Output()
   close = new EventEmitter<void>();
 
   @Output()
   saveEmployee =
+    new EventEmitter<EmployeeCreateModel>();
+
+  @Output()
+  saveAdmin =
     new EventEmitter<EmployeeCreateModel>();
 
   @Output()
@@ -88,19 +101,45 @@ export class EmployeeModal implements OnInit {
     return !!this.employee;
   }
 
+  get isCreatingAdmin(): boolean {
+    return !this.isEditing && this.mode === 'admin';
+  }
+
   get title(): string {
-    return this.isEditing
-      ? 'Editar empleado'
+    if (this.isEditing) {
+      return 'Editar empleado';
+    }
+
+    return this.isCreatingAdmin
+      ? 'Nuevo administrador'
       : 'Nuevo empleado';
   }
 
+  get subtitle(): string {
+    if (this.isEditing) {
+      return 'Modificá los datos del empleado';
+    }
+
+    return this.isCreatingAdmin
+      ? 'Completá los datos del nuevo administrador'
+      : 'Completá los datos del nuevo empleado';
+  }
+
   get buttonText(): string {
-    return this.isEditing
-      ? 'Guardar cambios'
+    if (this.isEditing) {
+      return 'Guardar cambios';
+    }
+
+    return this.isCreatingAdmin
+      ? 'Crear administrador'
       : 'Crear empleado';
   }
 
   save(): void {
+    if (this.saving || this.createdAdminPin) {
+      return;
+    }
+
     this.clearErrors();
 
     if (!this.validateName()) {
@@ -124,7 +163,20 @@ export class EmployeeModal implements OnInit {
     }
 
     if (!this.isEditing) {
-      this.createEmployee();
+      const data: EmployeeCreateModel = {
+        name: this.name.trim(),
+        email: this.email.trim(),
+        password: this.password.trim(),
+        dni: this.dni.trim(),
+        phone: this.phone.trim()
+      };
+
+      if (this.isCreatingAdmin) {
+        this.saveAdmin.emit(data);
+      } else {
+        this.saveEmployee.emit(data);
+      }
+
       return;
     }
 
@@ -135,23 +187,30 @@ export class EmployeeModal implements OnInit {
     const value = this.name.trim();
 
     if (!value) {
-      this.nameError = 'El nombre y apellido son obligatorios.';
+      this.nameError =
+        'El nombre y apellido son obligatorios.';
       return false;
     }
 
-    const words = value.split(/\s+/).filter(word => word.length > 0);
+    const words =
+      value
+        .split(/\s+/)
+        .filter(word => word.length > 0);
 
     if (words.length < 2) {
-      this.nameError = 'Ingresá nombre y apellido.';
+      this.nameError =
+        'Ingresá nombre y apellido.';
       return false;
     }
 
     if (value.length > 100) {
-      this.nameError = 'El nombre no puede superar los 100 caracteres.';
+      this.nameError =
+        'El nombre no puede superar los 100 caracteres.';
       return false;
     }
 
-    const nameRegex = /^\p{L}+$/u;
+    const nameRegex =
+      /^\p{L}+$/u;
 
     if (!words.every(word => nameRegex.test(word))) {
       this.nameError =
@@ -166,12 +225,14 @@ export class EmployeeModal implements OnInit {
     const value = this.email.trim();
 
     if (!value) {
-      this.emailError = 'El email es obligatorio.';
+      this.emailError =
+        'El email es obligatorio.';
       return false;
     }
 
     if (value.length > 254) {
-      this.emailError = 'El email no puede superar los 254 caracteres.';
+      this.emailError =
+        'El email no puede superar los 254 caracteres.';
       return false;
     }
 
@@ -179,7 +240,8 @@ export class EmployeeModal implements OnInit {
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(value)) {
-      this.emailError = 'Ingresá un email válido.';
+      this.emailError =
+        'Ingresá un email válido.';
       return false;
     }
 
@@ -190,12 +252,14 @@ export class EmployeeModal implements OnInit {
     const value = this.phone.trim();
 
     if (!value) {
-      this.phoneError = 'El teléfono es obligatorio.';
+      this.phoneError =
+        'El teléfono es obligatorio.';
       return false;
     }
 
     if (!/^\d+$/.test(value)) {
-      this.phoneError = 'El teléfono solo puede contener números.';
+      this.phoneError =
+        'El teléfono solo puede contener números.';
       return false;
     }
 
@@ -212,12 +276,14 @@ export class EmployeeModal implements OnInit {
     const value = this.dni.trim();
 
     if (!value) {
-      this.dniError = 'El DNI es obligatorio.';
+      this.dniError =
+        'El DNI es obligatorio.';
       return false;
     }
 
     if (!/^\d+$/.test(value)) {
-      this.dniError = 'El DNI solo puede contener números.';
+      this.dniError =
+        'El DNI solo puede contener números.';
       return false;
     }
 
@@ -231,8 +297,11 @@ export class EmployeeModal implements OnInit {
   }
 
   private validatePassword(): boolean {
-    const password = this.password.trim();
-    const confirmation = this.confirmPassword.trim();
+    const password =
+      this.password.trim();
+
+    const confirmation =
+      this.confirmPassword.trim();
 
     if (!this.isEditing && !password) {
       this.passwordError =
@@ -240,7 +309,9 @@ export class EmployeeModal implements OnInit {
       return false;
     }
 
-    if (this.isEditing && !password && !confirmation) {
+    if (this.isEditing &&
+      !password &&
+      !confirmation) {
       return true;
     }
 
@@ -265,20 +336,9 @@ export class EmployeeModal implements OnInit {
     return true;
   }
 
-  private createEmployee(): void {
-    const employee: EmployeeCreateModel = {
-      name: this.name.trim(),
-      email: this.email.trim(),
-      password: this.password.trim(),
-      dni: this.dni.trim(),
-      phone: this.phone.trim()
-    };
-
-    this.saveEmployee.emit(employee);
-  }
-
   private updateEmployeeData(): void {
-    const password = this.password.trim();
+    const password =
+      this.password.trim();
 
     const updatedEmployee: EmployeeUpdateModel = {
       name: this.name.trim(),
@@ -291,7 +351,9 @@ export class EmployeeModal implements OnInit {
       updatedEmployee.password = password;
     }
 
-    this.updateEmployee.emit(updatedEmployee);
+    this.updateEmployee.emit(
+      updatedEmployee
+    );
   }
 
   private clearErrors(): void {
@@ -304,6 +366,10 @@ export class EmployeeModal implements OnInit {
   }
 
   closeModal(): void {
+    if (this.saving) {
+      return;
+    }
+
     this.close.emit();
   }
 }
