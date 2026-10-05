@@ -31,7 +31,7 @@ export class BookingSuccess implements AfterViewInit, OnDestroy {
   }
 
   goToReservations() {
-    this.router.navigate(['/reservations']);
+    this.router.navigate(['/my-bookings']);
   }
 
   goHome() {
