@@ -1,0 +1,242 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background-color: #050505;
+  overflow: hidden;
+}
+
+.schedule-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 4.5dvh 20px 85px 20px;
+  gap: 2.5dvh;
+}
+
+.step-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5dvh;
+  margin-bottom: 4px;
+  padding: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 260px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #26262B;
+  color: #707070;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.step.completed,
+.step.active {
+  background-color: #CEA764;
+  color: #050505;
+}
+
+.line {
+  flex: 1;
+  height: 2px;
+  background-color: #26262B;
+  margin: 0 6px;
+}
+
+.line.active {
+  background-color: #CEA764;
+}
+
+.step-title {
+  color: #707070;
+  font-size: 12px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.selected-field-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  height: 72px;
+  background-color: #1c1c1c;
+  border: 1px solid #2c2c2e;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.field-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.field-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: url('WEB/public/cancha1.png') center/cover no-repeat;
+  flex-shrink: 0;
+}
+
+.field-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field-name {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-date {
+  margin: 0;
+  color: #8E8E93;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.change-btn {
+  background: none;
+  border: none;
+  color: #CEA764;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-label {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.payment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #1c1c1c;
+  border: 1px solid #26262B;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+
+  &.active {
+    border-color: #CEA764;
+  }
+}
+
+.radio-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.custom-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #707070;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .payment-card.active & {
+    border-color: #CEA764;
+    &::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background-color: #CEA764;
+      border-radius: 50%;
+    }
+  }
+}
+
+.payment-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payment-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.payment-desc {
+  color: #8E8E93;
+  font-size: 11px;
+}
+
+.payment-price {
+  color: #8E8E93;
+  font-size: 17px;
+  font-weight: 700;
+
+  .payment-card.active & {
+    color: #CEA764;
+  }
+}
+
+.fixed-bottom-action {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  span {
+    color: #707070;
+    font-size: 11px;
+  }
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background-color: #FFFFFF;
+  color: #050505;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}

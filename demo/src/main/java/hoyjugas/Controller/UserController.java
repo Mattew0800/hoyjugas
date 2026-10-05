@@ -26,11 +26,15 @@ public class UserController {
 
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserResponseDTO> getSelf(@AuthenticationPrincipal UserDetailsImpl me){
-        return userService.findById(me.getId()).map(user->UserResponseDTO.fromEntity(user,true))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        if (me == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return userService.findById(me.getId())
+            .map(user -> UserResponseDTO.fromEntity(user, true))
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.noContent().build());
     }
 
     @PutMapping("/me/update")

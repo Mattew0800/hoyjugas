@@ -1,18 +1,23 @@
-import { Injectable } from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
+import { Observable, of, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { getBookingApiUrl } from '../../config/api.config';
-
 import { SpaceCardDTO } from '../../models/SpaceCardDTO';
 import { AvailableSlotsResponse } from '../../models/AvailableSlotsResponse';
-
-import { BookingFilterModel } from '../../screens/internal/models/booking-filter.model';
-import { PageResponse } from '../../screens/internal/models/page-response.model';
-import { BookingListModel } from '../../screens/internal/models/booking-list.model';
-import { SpaceAvailabilityModel } from '../../screens/internal/models/space-availability.model';
-import { InternalBookingRequestModel } from '../../screens/internal/models/internal-booking-request.model';
-import { BookingResponseModel } from '../../screens/internal/models/booking-response.model';
+import { BookingFilterModel }
+  from '../../screens/internal/models/booking-filter.model';
+import { PageResponse }
+  from '../../screens/internal/models/page-response.model';
+import { BookingListModel }
+  from '../../screens/internal/models/booking-list.model';
+import { SpaceAvailabilityModel }
+  from '../../screens/internal/models/space-availability.model';
+import {InternalBookingRequestModel} from '../../screens/internal/models/internal-booking-request.model';
+import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
+import {AuthService} from '../AuthService/auth-service';
+import {BookingListDTO, Page} from '../../models/booking.model';
+import {AvailabilitySummaryDTO} from '../../models/AvailabilitySummaryDTO';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +25,7 @@ import { BookingResponseModel } from '../../screens/internal/models/booking-resp
 export class BookingService {
 
   private readonly bookingApiUrl = getBookingApiUrl();
-
+  private authService = inject(AuthService);
   constructor(
     private http: HttpClient
   ) {}
@@ -28,6 +33,7 @@ export class BookingService {
   getBookings(
     filter: BookingFilterModel
   ): Observable<PageResponse<BookingListModel>> {
+
     return this.http.post<PageResponse<BookingListModel>>(
       `${this.bookingApiUrl}/list`,
       filter,
@@ -35,15 +41,18 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
 
   getAvailableSlotsToday(): Observable<AvailableSlotsResponse> {
+
     return this.http.get<AvailableSlotsResponse>(
       `${this.bookingApiUrl}/available-slots-today`,
       {
         withCredentials: true
       }
     );
+
   }
 
   getComplexSchedule(): Observable<{
@@ -52,6 +61,7 @@ export class BookingService {
     closingTime?: string;
     dayType?: string;
   } & Record<string, unknown>> {
+
     return this.http.get<{
       open?: boolean;
       openingTime?: string;
@@ -63,20 +73,24 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
 
   getSpacesCard(): Observable<SpaceCardDTO[]> {
+
     return this.http.get<SpaceCardDTO[]>(
       `${this.bookingApiUrl}/spaces-card`,
       {
         withCredentials: true
       }
     );
+
   }
 
   createInternalBooking(
     request: InternalBookingRequestModel
   ): Observable<BookingResponseModel> {
+
     return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/create`,
       request,
@@ -84,6 +98,7 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
 
   cancelBooking(request: {
@@ -92,6 +107,7 @@ export class BookingService {
     employeePin?: string;
     requesterId?: number;
   }): Observable<BookingResponseModel> {
+
     return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/cancel`,
       request,
@@ -99,12 +115,14 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
 
   getAvailability(
     spaceId: number,
     date: string
   ): Observable<SpaceAvailabilityModel[]> {
+
     return this.http.post<SpaceAvailabilityModel[]>(
       `${this.bookingApiUrl}/availability`,
       {
@@ -115,13 +133,13 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
 
-  getBookingDetail(
-    request: {
-      bookingId: number;
-    }
-  ): Observable<BookingResponseModel> {
+  getBookingDetail(request: {
+    bookingId: number;
+  }): Observable<BookingResponseModel> {
+
     return this.http.post<BookingResponseModel>(
       `${this.bookingApiUrl}/detail`,
       request,
@@ -129,7 +147,49 @@ export class BookingService {
         withCredentials: true
       }
     );
+
   }
+
+  getMyBookings(): Observable<Page<BookingListDTO>> {
+    return this.http.post<Page<BookingListDTO>>(`${this.bookingApiUrl}/my-bookings`, null, {
+      withCredentials: true
+    });
+  }
+
+  getNextBooking(): Observable<BookingResponseModel | null> {
+    return this.http.get<BookingResponseModel>(`${this.bookingApiUrl}/next`, { withCredentials: true })
+      .pipe(
+        catchError((err) => {
+
+          if (err && err.status === 404) {
+            return of(null);
+          }
+          return throwError(() => err);
+        })
+      );
+  }
+
+  createPublicBooking(request: {
+    spaceId: number;
+    startDatetime: string;
+    paymentMethod: 'EFECTIVO' | 'TRANSFERENCIA' | 'MERCADOPAGO' | 'DEBITO' | 'CREDITO' | 'INTERNO';
+    termsAccepted: boolean;
+    depositAmount: number;
+    slots?: number;
+  }): Observable<BookingResponseModel> {
+    return this.http.post<BookingResponseModel>(
+      `${this.bookingApiUrl}/public/create`,
+      request,
+      {
+        withCredentials: true
+      }
+    )
+  }
+
+  availabilityNext30Days(){
+    return this.http.get<AvailabilitySummaryDTO>(`${this.bookingApiUrl}/availability-next-30-days`)
+  }
+
 
   addObservation(
     bookingId: number,

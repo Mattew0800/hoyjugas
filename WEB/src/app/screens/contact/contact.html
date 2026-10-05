@@ -1,0 +1,153 @@
+<app-header></app-header>
+
+<div class="contacto-container">
+
+  <!-- Encabezado -->
+  <section class="hero">
+
+    <div class="hero-icon">
+      <img src="assets/icons/message.svg" alt="Mensaje">
+    </div>
+
+    <h2>Hablá con nosotros</h2>
+
+    <p>Un encargado te responde por WhatsApp en minutos</p>
+
+  </section>
+
+  <!-- Info rápida -->
+  <div class="hours-card">
+
+    <div class="hours-item">
+
+      <svg class="hours-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3.5 2"></path>
+      </svg>
+
+      <span class="hours-value">{{ businessHours }}</span>
+      <span class="hours-label">Horario de atención</span>
+
+    </div>
+
+    <span class="divider" aria-hidden="true"></span>
+
+    <div class="hours-item">
+
+      <svg class="hours-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path>
+      </svg>
+
+      <span class="hours-value">{{ avgResponseTime }}</span>
+      <span class="hours-label">Tiempo de respuesta</span>
+
+    </div>
+
+  </div>
+
+  <!-- Accesos rápidos por tema -->
+  <span class="section-label">Contanos qué necesitás</span>
+
+  <div class="topics-list">
+
+    @for (topic of topics; track topic.id) {
+
+      <a
+        class="topic-card"
+        [href]="whatsappUrl(topic.message)"
+        target="_blank"
+        rel="noopener noreferrer"
+        (click)="handleTopicClick(topic, $event)">
+
+        <span class="topic-icon">
+          @switch (topic.id) {
+            @case ('reservar') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3.5" y="5" width="17" height="15" rx="2"></rect>
+                <path d="M3.5 9.5h17"></path>
+                <path d="M8 3v4M16 3v4"></path>
+              </svg>
+            }
+            @case ('modificar') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"></path>
+              </svg>
+            }
+            @case ('precios') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3l8 8-8 8-7-7a2 2 0 0 1 0-2.8L11 3h1z"></path>
+                <circle cx="8.6" cy="8.6" r="1"></circle>
+              </svg>
+            }
+            @default {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M9.5 9a2.5 2.5 0 0 1 4.6 1.4c0 1.6-2.1 2-2.1 3.6"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
+            }
+          }
+        </span>
+
+        <span class="topic-label">{{ topic.label }}</span>
+
+        <span class="arrow" aria-hidden="true">›</span>
+
+      </a>
+
+    }
+
+  </div>
+
+  <!-- Acción alternativa -->
+  <a
+    class="call-button"
+    [href]="phoneHref">
+
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3z"></path>
+    </svg>
+
+    LLAMAR AL COMPLEJO
+
+  </a>
+
+</div>
+
+<!-- Modal para alternativas Web -->
+@if (showModal && selectedTopic) {
+  <div class="web-modal-overlay" (click)="closeModal()">
+    <div class="web-modal" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <button class="close-btn" (click)="closeModal()" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h3>{{ selectedTopic.webAlternative?.title }}</h3>
+        <p>{{ selectedTopic.webAlternative?.description }}</p>
+
+        <div class="modal-actions">
+          <button class="primary-btn" (click)="goToWebAlternative()">
+            {{ selectedTopic.webAlternative?.buttonText }}
+          </button>
+          
+          <a
+            class="secondary-btn"
+            [href]="whatsappUrl(selectedTopic.message)"
+            target="_blank"
+            rel="noopener noreferrer"
+            (click)="closeModal()">
+            Continuar a WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<app-bottom-navbar></app-bottom-navbar>

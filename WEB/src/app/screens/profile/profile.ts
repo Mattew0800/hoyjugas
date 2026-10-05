@@ -6,6 +6,7 @@ import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { UserService } from '../../services/UserService/user-service';
 import { FormsModule } from '@angular/forms';
 import {Meta} from '@angular/platform-browser';
+import {AuthService} from '../../services/AuthService/auth-service';
 
 
 @Component({
@@ -36,7 +37,8 @@ export class Profile implements OnInit{
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private authService: AuthService
   ) {}
 
 
@@ -112,5 +114,14 @@ export class Profile implements OnInit{
 
   changePhoto(): void {
     console.log('Cambiar foto');
+  }
+
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/sign-in']);
+      },
+      error: err => console.error('Error al cerrar sesión', err)
+    });
   }
 }

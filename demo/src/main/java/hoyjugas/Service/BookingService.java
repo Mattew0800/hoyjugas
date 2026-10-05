@@ -639,7 +639,7 @@ public class BookingService extends BaseBookingService {
                 .stream()
                 .findFirst()
                 .map(this::buildBookingResponseDTO)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No tenés turnos próximos"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "No tenés turnos próximos"));
     }
 
     private Optional<SpaceSchedule> resolveScheduleOptional(Long spaceId, DayOfWeek dayOfWeek) {

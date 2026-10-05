@@ -1,55 +1,29 @@
 <div class="header">
-
   <div class="logo-section">
-
     <img src="/AZTK%20ARENA.svg" alt="Logo" class="logo">
-
-
   </div>
 
   <div class="user-section">
-
     <div class="welcome-text">
       <span>Bienvenido,</span>
       <h2>{{ userName$ | async }}</h2>
     </div>
 
     <div class="profile-wrapper">
-
-      <div
-        class="profile-button"
-        (click)="toggleMenu()">
-
-        <img src="/assets/emojis/header-profile.svg">
-
+      <div class="profile-button" (click)="toggleMenu()">
+        <img src="/assets/icons/header/Profile.svg" alt="Perfil">
       </div>
 
       @if(menuOpen){
-
         <div class="profile-menu">
-
-          <button
-            class="menu-item"
-            (click)="goToProfile()">
-
+          <button class="menu-item" (click)="goToProfile()">
             Mi perfil
-
           </button>
-
-          <button
-            class="menu-item logout"
-            (click)="logout()">
-
+          <button class="menu-item logout" (click)="logout()">
             Cerrar sesión
-
           </button>
-
         </div>
-
       }
-
     </div>
-
   </div>
-
 </div>
