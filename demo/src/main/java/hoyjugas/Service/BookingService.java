@@ -110,6 +110,7 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO createBookingByClient(ClientBookingRequestDTO dto, User client) {
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
+
         int slots = dto.getSlots() != null ? dto.getSlots() : 1;
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
@@ -118,12 +119,13 @@ public class BookingService extends BaseBookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tipo de pago no soportado.");
         }
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
-                .multiply(BigDecimal.valueOf(dto.getSlots()));
+                .multiply(BigDecimal.valueOf(slots));
         if (dto.getPaymentType() == PaymentType.SEÑA &&
                 space.getDepositValue().compareTo(totalPrice) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"La seña no puede superar el monto total");
         }
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
+        booking.setSlots(slots);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);

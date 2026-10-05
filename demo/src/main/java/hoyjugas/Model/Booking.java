@@ -63,6 +63,8 @@ public class Booking {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    private Integer slots;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
