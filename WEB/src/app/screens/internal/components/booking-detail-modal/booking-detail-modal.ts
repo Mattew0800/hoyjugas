@@ -11,10 +11,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BookingService } from '../../../../services/BookingService/booking-service';
+import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 
 import { BookingListModel } from '../../models/booking-list.model';
 import { BookingResponseModel } from '../../models/booking-response.model';
+import { RecurringBookingDetailModel } from '../../models/recurring-booking-detail.model';
 
 import { ClientProfileModal } from '../client-profile-modal/client-profile-modal';
 
@@ -45,6 +47,10 @@ export class BookingDetailModal implements OnChanges {
 
   bookingDetail?: BookingResponseModel;
 
+  recurringBookingDetail?: RecurringBookingDetailModel;
+
+  recurringBookingId: number | null = null;
+
   loading = false;
 
   errorMessage = '';
@@ -52,6 +58,8 @@ export class BookingDetailModal implements OnChanges {
   paymentError = '';
 
   showCancelForm = false;
+
+  cancellationMode: 'booking' | 'cycle' = 'booking';
 
   cancellationReason = '';
 
@@ -81,6 +89,7 @@ export class BookingDetailModal implements OnChanges {
 
   constructor(
     private bookingService: BookingService,
+    private recurringBookingService: RecurringBookingService,
     private errorHandler: ErrorHandlerService
   ) {}
 
@@ -93,11 +102,16 @@ export class BookingDetailModal implements OnChanges {
 
   private resetModalState(): void {
     this.bookingDetail = undefined;
+
+    this.recurringBookingDetail = undefined;
+    this.recurringBookingId = null;
+
     this.loading = false;
     this.errorMessage = '';
     this.paymentError = '';
 
     this.showCancelForm = false;
+    this.cancellationMode = 'booking';
     this.cancellationReason = '';
     this.employeePin = '';
     this.cancellationError = '';
@@ -132,11 +146,39 @@ export class BookingDetailModal implements OnChanges {
         next: response => {
           this.bookingDetail = response;
           this.receivedAmount = this.remainingAmount;
+
+          if (response.recurring) {
+            this.loadRecurringBookingDetail(response.id);
+            return;
+          }
+
           this.loading = false;
         },
         error: error => {
           this.loading = false;
-          this.errorMessage = this.errorHandler.getMessage(error);
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
+        }
+      });
+  }
+
+  private loadRecurringBookingDetail(
+    bookingId: number
+  ): void {
+    this.recurringBookingService
+      .getRecurringBookingDetail(bookingId)
+      .subscribe({
+        next: response => {
+          this.recurringBookingDetail = response;
+          this.recurringBookingId =
+            response.recurringBookingId;
+
+          this.loading = false;
+        },
+        error: error => {
+          this.loading = false;
+          this.errorMessage =
+            this.errorHandler.getMessage(error);
         }
       });
   }
@@ -150,15 +192,21 @@ export class BookingDetailModal implements OnChanges {
   }
 
   get totalAmount(): number {
-    return Number(this.bookingDetail?.totalAmount ?? 0);
+    return Number(
+      this.bookingDetail?.totalAmount ?? 0
+    );
   }
 
   get depositAmount(): number {
-    return Number(this.bookingDetail?.depositAmount ?? 0);
+    return Number(
+      this.bookingDetail?.depositAmount ?? 0
+    );
   }
 
   get remainingAmount(): number {
-    return Number(this.bookingDetail?.remainingAmount ?? 0);
+    return Number(
+      this.bookingDetail?.remainingAmount ?? 0
+    );
   }
 
   get paymentStatus(): string {
@@ -170,17 +218,26 @@ export class BookingDetailModal implements OnChanges {
   }
 
   get durationMinutes(): number {
-    const startDatetime = this.bookingDetail?.startDatetime;
-    const endDatetime = this.bookingDetail?.endDatetime;
+    const startDatetime =
+      this.bookingDetail?.startDatetime;
+
+    const endDatetime =
+      this.bookingDetail?.endDatetime;
 
     if (!startDatetime || !endDatetime) {
       return 0;
     }
 
-    const start = new Date(startDatetime).getTime();
-    const end = new Date(endDatetime).getTime();
+    const start =
+      new Date(startDatetime).getTime();
 
-    if (Number.isNaN(start) || Number.isNaN(end)) {
+    const end =
+      new Date(endDatetime).getTime();
+
+    if (
+      Number.isNaN(start) ||
+      Number.isNaN(end)
+    ) {
       return 0;
     }
 
@@ -279,7 +336,8 @@ export class BookingDetailModal implements OnChanges {
   }
 
   get changeAmount(): number {
-    const received = Number(this.receivedAmount);
+    const received =
+      Number(this.receivedAmount);
 
     if (
       !Number.isFinite(received) ||
@@ -302,7 +360,8 @@ export class BookingDetailModal implements OnChanges {
 
     this.paymentError = '';
 
-    const receivedAmount = Number(this.receivedAmount);
+    const receivedAmount =
+      Number(this.receivedAmount);
 
     if (
       !Number.isFinite(receivedAmount) ||
@@ -313,7 +372,10 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    if (receivedAmount < this.remainingAmount) {
+    if (
+      receivedAmount <
+      this.remainingAmount
+    ) {
       this.paymentError =
         `El importe recibido debe ser igual o mayor al saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`;
       return;
@@ -327,7 +389,11 @@ export class BookingDetailModal implements OnChanges {
       'CREDITO'
     ];
 
-    if (!validPaymentMethods.includes(this.selectedPaymentMethod)) {
+    if (
+      !validPaymentMethods.includes(
+        this.selectedPaymentMethod
+      )
+    ) {
       this.paymentError =
         'Seleccioná un método de pago válido.';
       return;
@@ -339,7 +405,9 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    this.paymentConfirmed.emit(this.booking);
+    this.paymentConfirmed.emit(
+      this.booking
+    );
   }
 
   onConfirmPayment(): void {
@@ -357,7 +425,8 @@ export class BookingDetailModal implements OnChanges {
 
     this.observationError = '';
 
-    const content = this.internalObservation.trim();
+    const content =
+      this.internalObservation.trim();
 
     if (!content) {
       this.observationError =
@@ -392,7 +461,9 @@ export class BookingDetailModal implements OnChanges {
       });
   }
 
-  openCancelForm(): void {
+  openCancelForm(
+    mode: 'booking' | 'cycle' = 'booking'
+  ): void {
     if (
       this.loading ||
       this.cancellationLoading ||
@@ -401,6 +472,7 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
+    this.cancellationMode = mode;
     this.cancellationError = '';
     this.cancellationReason = '';
     this.employeePin = '';
@@ -413,6 +485,7 @@ export class BookingDetailModal implements OnChanges {
     }
 
     this.showCancelForm = false;
+    this.cancellationMode = 'booking';
     this.cancellationError = '';
     this.cancellationReason = '';
     this.employeePin = '';
@@ -425,8 +498,11 @@ export class BookingDetailModal implements OnChanges {
 
     this.cancellationError = '';
 
-    const reason = this.cancellationReason.trim();
-    const pin = this.employeePin.trim();
+    const reason =
+      this.cancellationReason.trim();
+
+    const pin =
+      this.employeePin.trim();
 
     if (!reason) {
       this.cancellationError =
@@ -440,9 +516,9 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    if (reason.length > 500) {
+    if (reason.length > 255) {
       this.cancellationError =
-        'El motivo de cancelación no puede superar los 500 caracteres.';
+        'El motivo de cancelación no puede superar los 255 caracteres.';
       return;
     }
 
@@ -452,7 +528,10 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    if (this.bookingDetail.status === 'CANCELADO') {
+    if (
+      this.bookingDetail.status ===
+      'CANCELADO'
+    ) {
       this.cancellationError =
         'El turno ya está cancelado.';
       return;
@@ -464,9 +543,119 @@ export class BookingDetailModal implements OnChanges {
 
     this.cancellationLoading = true;
 
+    const request = {
+      bookingId: this.bookingDetail.id,
+      cancellationReason: reason,
+      employeePin: pin
+    };
+
+    if (this.bookingDetail.recurring) {
+      this.recurringBookingService
+        .cancelOneBooking(request)
+        .subscribe({
+          next: () => {
+            this.cancellationLoading = false;
+            this.showCancelForm = false;
+            this.cancellationMode = 'booking';
+            this.canceled.emit();
+            this.close.emit();
+          },
+          error: error => {
+            this.cancellationLoading = false;
+            this.cancellationError =
+              this.errorHandler.getMessage(error);
+          }
+        });
+
+      return;
+    }
+
     this.bookingService
-      .cancelBooking({
-        bookingId: this.bookingDetail.id,
+      .cancelBooking(request)
+      .subscribe({
+        next: () => {
+          this.cancellationLoading = false;
+          this.showCancelForm = false;
+          this.cancellationMode = 'booking';
+          this.canceled.emit();
+          this.close.emit();
+        },
+        error: error => {
+          this.cancellationLoading = false;
+          this.cancellationError =
+            this.errorHandler.getMessage(error);
+        }
+      });
+  }
+
+  cancelRecurringCycle(): void {
+    if (!this.bookingDetail) {
+      return;
+    }
+
+    this.cancellationError = '';
+
+    const reason =
+      this.cancellationReason.trim();
+
+    const pin =
+      this.employeePin.trim();
+
+    if (!reason) {
+      this.cancellationError =
+        'Ingresá el motivo de cancelación.';
+      return;
+    }
+
+    if (reason.length < 3) {
+      this.cancellationError =
+        'El motivo de cancelación debe tener al menos 3 caracteres.';
+      return;
+    }
+
+    if (reason.length > 255) {
+      this.cancellationError =
+        'El motivo de cancelación no puede superar los 255 caracteres.';
+      return;
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      this.cancellationError =
+        'El PIN del empleado debe tener exactamente 4 números.';
+      return;
+    }
+
+    if (!this.bookingDetail.recurring) {
+      this.cancellationError =
+        'Este turno no pertenece a un ciclo recurrente.';
+      return;
+    }
+
+    if (this.recurringBookingId === null) {
+      this.cancellationError =
+        'No se pudo obtener el ciclo recurrente.';
+      return;
+    }
+
+    if (
+      this.bookingDetail.status ===
+      'CANCELADO'
+    ) {
+      this.cancellationError =
+        'El turno ya está cancelado.';
+      return;
+    }
+
+    if (this.cancellationLoading) {
+      return;
+    }
+
+    this.cancellationLoading = true;
+
+    this.recurringBookingService
+      .cancelRecurringCycle({
+        recurringId:
+        this.recurringBookingId,
         cancellationReason: reason,
         employeePin: pin
       })
@@ -474,6 +663,7 @@ export class BookingDetailModal implements OnChanges {
         next: () => {
           this.cancellationLoading = false;
           this.showCancelForm = false;
+          this.cancellationMode = 'booking';
           this.canceled.emit();
           this.close.emit();
         },

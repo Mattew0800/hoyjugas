@@ -170,6 +170,122 @@
 
           </section>
 
+          @if (bookingDetail.recurring && recurringBookingDetail) {
+
+            <section class="section-card">
+
+              <div class="section-header">
+
+                <h3>
+                  Turno fijo
+                </h3>
+
+              </div>
+
+              <div class="section-content">
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Día
+                  </span>
+
+                  <span class="info-value">
+                    {{ recurringBookingDetail.dayOfWeek }}
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Horario
+                  </span>
+
+                  <span class="info-value">
+
+                    {{ recurringBookingDetail.startTime | slice:0:5 }}
+
+                    -
+
+                    {{ recurringBookingDetail.endTime | slice:0:5 }}
+
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Inicio del ciclo
+                  </span>
+
+                  <span class="info-value">
+                    {{ recurringBookingDetail.startDate | date:'dd/MM/yyyy' }}
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Fin del ciclo
+                  </span>
+
+                  <span class="info-value">
+                    {{ recurringBookingDetail.endDate | date:'dd/MM/yyyy' }}
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Frecuencia
+                  </span>
+
+                  <span class="info-value">
+
+                    Cada
+                    {{ recurringBookingDetail.intervalWeeks }}
+                    semana(s)
+
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Cancelaciones
+                  </span>
+
+                  <span class="info-value">
+
+                    {{ recurringBookingDetail.cancellationCount }}
+
+                  </span>
+
+                </div>
+
+                <div class="info-row">
+
+                  <span class="info-label">
+                    Estado del ciclo
+                  </span>
+
+                  <span class="info-value">
+                    {{ recurringBookingDetail.status }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </section>
+
+          }
+
           <section class="section-card">
 
             <div class="section-header">
@@ -418,9 +534,9 @@
 
                 <div class="current-observation">
 
-                    <span class="observation-title">
-                      Observación registrada
-                    </span>
+                  <span class="observation-title">
+                    Observación registrada
+                  </span>
 
                   <div class="observation-content">
                     {{ bookingDetail.observations }}
@@ -436,15 +552,33 @@
 
           <div class="modal-footer">
 
-            <button
-              type="button"
-              class="cancel-booking-button"
-              [disabled]="bookingDetail.status === 'CANCELADO'"
-              (click)="openCancelForm()">
+            <div class="footer-cancellation-actions">
 
-              Cancelar turno
+              <button
+                type="button"
+                class="cancel-booking-button"
+                [disabled]="bookingDetail.status === 'CANCELADO'"
+                (click)="openCancelForm('booking')">
 
-            </button>
+                Cancelar turno
+
+              </button>
+
+              @if (bookingDetail.recurring) {
+
+                <button
+                  type="button"
+                  class="cancel-cycle-button"
+                  [disabled]="bookingDetail.status === 'CANCELADO'"
+                  (click)="openCancelForm('cycle')">
+
+                  Cancelar ciclo completo
+
+                </button>
+
+              }
+
+            </div>
 
             <div class="footer-actions">
 
@@ -498,20 +632,35 @@
 
         <div>
 
-          <h3>
-            Cancelar turno
-          </h3>
+          @if (cancellationMode === 'booking') {
 
-          <p>
-            Para cancelar este turno ingresá el motivo y el PIN del empleado.
-          </p>
+            <h3>
+              Cancelar turno
+            </h3>
+
+            <p>
+              Para cancelar solamente este turno ingresá el motivo y el PIN del empleado.
+            </p>
+
+          } @else {
+
+            <h3>
+              Cancelar ciclo completo
+            </h3>
+
+            <p>
+              Esta acción cancelará el ciclo recurrente y sus turnos futuros. Ingresá el motivo y el PIN del empleado.
+            </p>
+
+          }
 
         </div>
 
         <button
           type="button"
           class="cancel-close-button"
-          (click)="closeCancelForm()">
+          (click)="closeCancelForm()"
+          [disabled]="cancellationLoading">
 
           ✕
 
@@ -530,7 +679,8 @@
           <textarea
             [(ngModel)]="cancellationReason"
             rows="4"
-            maxlength="500"
+            maxlength="255"
+            [disabled]="cancellationLoading"
             placeholder="Ingresá el motivo...">
           </textarea>
 
@@ -547,6 +697,7 @@
             maxlength="4"
             inputmode="numeric"
             [(ngModel)]="employeePin"
+            [disabled]="cancellationLoading"
             placeholder="••••">
 
         </div>
@@ -566,29 +717,54 @@
         <button
           type="button"
           class="secondary-button"
-          (click)="closeCancelForm()">
+          (click)="closeCancelForm()"
+          [disabled]="cancellationLoading">
 
           Volver
 
         </button>
 
-        <button
-          type="button"
-          class="danger-button"
-          [disabled]="cancellationLoading"
-          (click)="cancelBooking()">
+        @if (cancellationMode === 'booking') {
 
-          @if (cancellationLoading) {
+          <button
+            type="button"
+            class="danger-button"
+            [disabled]="cancellationLoading"
+            (click)="cancelBooking()">
 
-            Cancelando...
+            @if (cancellationLoading) {
 
-          } @else {
+              Cancelando...
 
-            Confirmar cancelación
+            } @else {
 
-          }
+              Confirmar cancelación
 
-        </button>
+            }
+
+          </button>
+
+        } @else {
+
+          <button
+            type="button"
+            class="danger-button"
+            [disabled]="cancellationLoading"
+            (click)="cancelRecurringCycle()">
+
+            @if (cancellationLoading) {
+
+              Cancelando ciclo...
+
+            } @else {
+
+              Cancelar ciclo completo
+
+            }
+
+          </button>
+
+        }
 
       </div>
 
