@@ -90,7 +90,11 @@ export class Booking implements OnInit{
   }
 
   goToFieldSchedule(spaceId: number): void {
-    this.bStateService.patch({spaceId});
+    const selectedSpace = this.spacesCardList.find(space => space.id === spaceId);
+    this.bStateService.patch({
+      spaceId,
+      spaceDeposit: selectedSpace?.depositValue ?? null,
+    });
     this.router.navigate(['/field-schedule/date-selection']);
   }
 

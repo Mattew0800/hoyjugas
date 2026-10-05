@@ -9,6 +9,8 @@ export interface BookingDraft{
   termsAccepted: boolean | null;
   depositAmount: number | null;
   slots: number | null;
+  slotPrice: number | null;
+  spaceDeposit: number | null;
 }
 
 @Injectable({
@@ -22,7 +24,9 @@ export class BookingStateService {
     paymentMethod: null,
     termsAccepted: null,
     depositAmount: null,
-    slots: null
+    slots: null,
+    slotPrice: null,
+    spaceDeposit: null
   })
 
   readonly draft$ = this._draft.asObservable();
@@ -42,7 +46,9 @@ export class BookingStateService {
       paymentMethod: null,
       termsAccepted: null,
       depositAmount: null,
-      slots: null
+      slots: null,
+      slotPrice: null,
+      spaceDeposit: null
     })
   }
 

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Header } from '../header/header';
@@ -21,30 +21,43 @@ export interface PaymentOption {
   templateUrl: './step-payment-selection.html',
   styleUrl: './step-payment-selection.scss',
 })
-export class StepPaymentSelection {
+export class StepPaymentSelection implements OnInit {
 
   private router = inject(Router);
   private bookingState = inject(BookingStateService);
   private bookingService = inject(BookingService);
 
-  // ── Opciones de pago ──────────────────────────────────────────────
-  paymentOptions: PaymentOption[] = [
-    {
-      id: 'full',
-      title: 'Pagar Total (100%)',
-      description: 'Turno abonado por completo',
-      amount: 20000,
-    },
-    {
-      id: 'partial',
-      title: 'Pagar Seña (50%)',
-      description: 'Resto del pago en el complejo',
-      amount: 10000,
-    },
-  ];
+  paymentOptions: PaymentOption[] = [];
+  selectedPayment: PaymentOption = { id: '', title: '', description: '', amount: 0 };
 
-  // Preseleccionar la primera opción (pago total) al entrar al paso
-  selectedPayment: PaymentOption = this.paymentOptions[0];
+  ngOnInit(): void {
+    this.refreshPaymentOptions();
+  }
+
+  private refreshPaymentOptions(): void {
+    const draft = this.bookingState.snapshot;
+    const totalAmount = draft.slotPrice ?? 0;
+    const partialAmount = draft.spaceDeposit != null
+      ? Math.min(draft.spaceDeposit, totalAmount)
+      : totalAmount;
+
+    this.paymentOptions = [
+      {
+        id: 'full',
+        title: 'Pagar Total (100%)',
+        description: 'Turno abonado por completo',
+        amount: totalAmount,
+      },
+      {
+        id: 'partial',
+        title: 'Pagar Seña',
+        description: 'Resto del pago en el complejo',
+        amount: partialAmount,
+      },
+    ];
+
+    this.selectedPayment = this.paymentOptions[0] ?? { id: '', title: '', description: '', amount: 0 };
+  }
 
   selectPayment(option: PaymentOption): void {
     this.selectedPayment = option;
@@ -61,7 +74,7 @@ export class StepPaymentSelection {
   }
 
   confirmBooking(): void {
-    if (!this.selectedPayment) return;
+    if (!this.selectedPayment || !this.selectedPayment.id) return;
 
     const draft = this.bookingState.snapshot;
 

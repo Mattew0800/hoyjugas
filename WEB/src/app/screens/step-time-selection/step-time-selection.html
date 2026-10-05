@@ -44,7 +44,7 @@
     @for (slot of currentSlots; track slot.label) {
       <div
         class="time-card"
-        [class.active]="slot === selectedSlot"
+        [class.active]="slot.label === selectedSlotKey"
         [class.disabled]="slot.disabled"
         (click)="selectSlot(slot)">
         {{ slot.label }}

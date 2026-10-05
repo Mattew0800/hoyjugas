@@ -12,28 +12,30 @@ type Tab = 'mañana' | 'tarde' | 'noche';
 interface TimeSlot {
   label: string;
   disabled: boolean;
+  price?: number;
+  datetime?: string;
 }
 
 const DEFAULT_SLOTS: Record<Tab, TimeSlot[]> = {
   mañana: [
-    { label: '09:00', disabled: false },
-    { label: '10:00', disabled: false },
-    { label: '11:00', disabled: true  },
-    { label: '12:00', disabled: false },
+   { label: '09:00', disabled: false },
+   { label: '10:00', disabled: false },
+   { label: '11:00', disabled: false },
+   { label: '12:00', disabled: false },
   ],
   tarde: [
-    { label: '13:00', disabled: false },
-    { label: '14:00', disabled: false },
-    { label: '15:00', disabled: false },
-    { label: '16:00', disabled: true  },
-    { label: '17:00', disabled: false },
-    { label: '18:00', disabled: true  },
+   { label: '13:00', disabled: false },
+   { label: '14:00', disabled: false },
+   { label: '15:00', disabled: false },
+   { label: '16:00', disabled: false },
+   { label: '17:00', disabled: false },
+   { label: '18:00', disabled: false },
   ],
   noche: [
-    { label: '19:00', disabled: false },
-    { label: '20:00', disabled: false },
-    { label: '21:00', disabled: true  },
-    { label: '22:00', disabled: false },
+   { label: '19:00', disabled: false },
+   { label: '20:00', disabled: false },
+   { label: '21:00', disabled: false },
+   { label: '22:00', disabled: false },
   ],
 };
 
@@ -49,6 +51,7 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   activeTab: Tab = 'tarde';
   tabs: Tab[] = ['mañana', 'tarde', 'noche'];
   selectedSlot: TimeSlot | null = null;
+  selectedSlotKey: string | null = null;
   selectedDateText = 'Selecciona una fecha';
   allSlots: Record<Tab, TimeSlot[]> = {
     mañana: DEFAULT_SLOTS.mañana.map(slot => ({ ...slot })),
@@ -91,27 +94,31 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   selectSlot(slot: TimeSlot): void {
     if (slot.disabled) return;
     this.selectedSlot = slot;
+    this.selectedSlotKey = slot.label;
+    this.bookingStateService.patch({
+      slotPrice: Number(slot.price ?? 0),
+    });
   }
 
   goToPayment(): void {
     if (!this.selectedSlot) return;
 
-
     const draft = this.bookingStateService.snapshot;
     const savedDate = draft.startDateTime;
-
 
     if (!savedDate) {
       this.goBack();
       return;
     }
 
+    const fullLocalDateTime = this.selectedSlot.datetime
+      ? this.selectedSlot.datetime
+      : `${savedDate}T${this.selectedSlot.label}:00`;
 
-    const fullLocalDateTime = `${savedDate}T${this.selectedSlot.label}:00`;
-
-
-    this.bookingStateService.patch({ startDateTime: fullLocalDateTime });
-
+    this.bookingStateService.patch({
+      startDateTime: fullLocalDateTime,
+      slotPrice: Number(this.selectedSlot.price ?? 0),
+    });
 
     this.router.navigate(['/field-schedule/payment-selection']);
   }
@@ -129,7 +136,8 @@ export class StepTimeSelection implements OnInit, OnDestroy {
       return 'Selecciona una fecha';
     }
 
-    const [year, month, day] = dateString.split('-').map(Number);
+    const normalized = dateString.includes('T') ? dateString.split('T')[0] : dateString;
+    const [year, month, day] = normalized.split('-').map(Number);
     if (!year || !month || !day) {
       return 'Selecciona una fecha';
     }
@@ -148,40 +156,47 @@ export class StepTimeSelection implements OnInit, OnDestroy {
       noche: DEFAULT_SLOTS.noche.map(slot => ({ ...slot })),
     };
     this.selectedSlot = null;
+    this.selectedSlotKey = null;
   }
 
-  private toHourLabel(dateValue: string): string | null {
-    if (!dateValue) return null;
-
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return null;
-
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+  private getTabForHour(hour: number): Tab {
+    if (hour < 12) return 'mañana';
+    if (hour < 18) return 'tarde';
+    return 'noche';
   }
 
-  private buildAvailabilityFromResponse(response: Array<{ startDatetime: string; available: boolean }>): Record<Tab, TimeSlot[]> {
-    const availableByLabel = new Map<string, boolean>();
+  private buildAvailabilityFromResponse(response: Array<{ startDatetime: string; available: boolean; price?: number }>): Record<Tab, TimeSlot[]> {
+    const availability = new Map<string, { available: boolean; price?: number; datetime?: string }>();
 
     response.forEach((slot) => {
-      const label = this.toHourLabel(slot.startDatetime);
-      if (!label) return;
-      availableByLabel.set(label, slot.available);
+      if (!slot?.startDatetime) return;
+      const date = new Date(slot.startDatetime);
+      const label = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      availability.set(label, {
+        available: slot.available,
+        price: Number(slot.price ?? 0),
+        datetime: slot.startDatetime,
+      });
     });
 
     return {
       mañana: DEFAULT_SLOTS.mañana.map((slot) => ({
         ...slot,
-        disabled: !(availableByLabel.get(slot.label) ?? false),
+        price: availability.get(slot.label)?.price ?? slot.price,
+        datetime: availability.get(slot.label)?.datetime ?? slot.datetime,
+        disabled: !(availability.get(slot.label)?.available ?? false),
       })),
       tarde: DEFAULT_SLOTS.tarde.map((slot) => ({
         ...slot,
-        disabled: !(availableByLabel.get(slot.label) ?? false),
+        price: availability.get(slot.label)?.price ?? slot.price,
+        datetime: availability.get(slot.label)?.datetime ?? slot.datetime,
+        disabled: !(availability.get(slot.label)?.available ?? false),
       })),
       noche: DEFAULT_SLOTS.noche.map((slot) => ({
         ...slot,
-        disabled: !(availableByLabel.get(slot.label) ?? false),
+        price: availability.get(slot.label)?.price ?? slot.price,
+        datetime: availability.get(slot.label)?.datetime ?? slot.datetime,
+        disabled: !(availability.get(slot.label)?.available ?? false),
       })),
     };
   }
@@ -201,10 +216,21 @@ export class StepTimeSelection implements OnInit, OnDestroy {
     this.bookingService.getAvailability(draft.spaceId, dateOnly).subscribe({
       next: (slots) => {
         this.allSlots = this.buildAvailabilityFromResponse(slots);
-        if (this.selectedSlot && this.allSlots[this.activeTab].some(slot => slot.label === this.selectedSlot?.label && !slot.disabled)) {
-          return;
+        const currentTabOptions = this.allSlots[this.activeTab];
+
+        if (this.selectedSlotKey) {
+          const existing = currentTabOptions.find((slot) => slot.label === this.selectedSlotKey && !slot.disabled);
+          this.selectedSlot = existing ?? null;
+          if (!existing) {
+            this.selectedSlotKey = null;
+          }
+        } else {
+          this.selectedSlot = null;
         }
-        this.selectedSlot = null;
+
+        if (!currentTabOptions.some(slot => !slot.disabled) && this.tabs.some(tab => this.allSlots[tab].some(slot => !slot.disabled))) {
+          this.activeTab = this.tabs.find(tab => this.allSlots[tab].some(slot => !slot.disabled)) ?? this.activeTab;
+        }
       },
       error: () => {
         this.resetSlots();
