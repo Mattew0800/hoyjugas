@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
+import {BookingService} from '../../services/BookingService/booking-service';
 
 type Tab = 'mañana' | 'tarde' | 'noche';
 
@@ -13,7 +14,7 @@ interface TimeSlot {
   disabled: boolean;
 }
 
-const ALL_SLOTS: Record<Tab, TimeSlot[]> = {
+const DEFAULT_SLOTS: Record<Tab, TimeSlot[]> = {
   mañana: [
     { label: '09:00', disabled: false },
     { label: '10:00', disabled: false },
@@ -49,9 +50,15 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   tabs: Tab[] = ['mañana', 'tarde', 'noche'];
   selectedSlot: TimeSlot | null = null;
   selectedDateText = 'Selecciona una fecha';
+  allSlots: Record<Tab, TimeSlot[]> = {
+    mañana: DEFAULT_SLOTS.mañana.map(slot => ({ ...slot })),
+    tarde: DEFAULT_SLOTS.tarde.map(slot => ({ ...slot })),
+    noche: DEFAULT_SLOTS.noche.map(slot => ({ ...slot })),
+  };
 
   private bookingStateService = inject(BookingStateService);
   private readonly destroy$ = new Subject<void>();
+  bookingService = inject(BookingService);
 
   constructor(private router: Router) {}
 
@@ -60,6 +67,11 @@ export class StepTimeSelection implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((draft) => {
         this.selectedDateText = this.formatSelectedDate(draft.startDateTime);
+        if (draft.spaceId && draft.startDateTime) {
+          this.getAvailability();
+        } else {
+          this.resetSlots();
+        }
       });
   }
 
@@ -69,7 +81,7 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   }
 
   get currentSlots(): TimeSlot[] {
-    return ALL_SLOTS[this.activeTab];
+    return this.allSlots[this.activeTab];
   }
 
   selectTab(tab: Tab): void {
@@ -127,6 +139,77 @@ export class StepTimeSelection implements OnInit, OnDestroy {
     const monthName = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][date.getMonth()];
 
     return `${weekday} ${day} de ${monthName}`;
+  }
+
+  private resetSlots(): void {
+    this.allSlots = {
+      mañana: DEFAULT_SLOTS.mañana.map(slot => ({ ...slot })),
+      tarde: DEFAULT_SLOTS.tarde.map(slot => ({ ...slot })),
+      noche: DEFAULT_SLOTS.noche.map(slot => ({ ...slot })),
+    };
+    this.selectedSlot = null;
+  }
+
+  private toHourLabel(dateValue: string): string | null {
+    if (!dateValue) return null;
+
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  private buildAvailabilityFromResponse(response: Array<{ startDatetime: string; available: boolean }>): Record<Tab, TimeSlot[]> {
+    const availableByLabel = new Map<string, boolean>();
+
+    response.forEach((slot) => {
+      const label = this.toHourLabel(slot.startDatetime);
+      if (!label) return;
+      availableByLabel.set(label, slot.available);
+    });
+
+    return {
+      mañana: DEFAULT_SLOTS.mañana.map((slot) => ({
+        ...slot,
+        disabled: !(availableByLabel.get(slot.label) ?? false),
+      })),
+      tarde: DEFAULT_SLOTS.tarde.map((slot) => ({
+        ...slot,
+        disabled: !(availableByLabel.get(slot.label) ?? false),
+      })),
+      noche: DEFAULT_SLOTS.noche.map((slot) => ({
+        ...slot,
+        disabled: !(availableByLabel.get(slot.label) ?? false),
+      })),
+    };
+  }
+
+  getAvailability(): void {
+    const draft = this.bookingStateService.snapshot;
+
+    if (!draft.spaceId || !draft.startDateTime) {
+      this.resetSlots();
+      return;
+    }
+
+    const dateOnly = draft.startDateTime.includes('T')
+      ? draft.startDateTime.split('T')[0]
+      : draft.startDateTime;
+
+    this.bookingService.getAvailability(draft.spaceId, dateOnly).subscribe({
+      next: (slots) => {
+        this.allSlots = this.buildAvailabilityFromResponse(slots);
+        if (this.selectedSlot && this.allSlots[this.activeTab].some(slot => slot.label === this.selectedSlot?.label && !slot.disabled)) {
+          return;
+        }
+        this.selectedSlot = null;
+      },
+      error: () => {
+        this.resetSlots();
+      }
+    });
   }
 
 }
