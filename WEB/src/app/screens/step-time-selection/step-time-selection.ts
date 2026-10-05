@@ -124,7 +124,7 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/field-schedule']);
+    this.router.navigate(['/field-schedule/date-selection']);
   }
 
   capitalize(s: string): string {
