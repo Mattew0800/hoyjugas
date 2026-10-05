@@ -191,8 +191,19 @@ export class BookingService {
   }
 
 
-
-
-
-
+  addObservation(
+    bookingId: number,
+    content: string
+  ): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.bookingApiUrl}/add-observation`,
+      {
+        bookingId,
+        content
+      },
+      {
+        withCredentials: true
+      }
+    );
+  }
 }

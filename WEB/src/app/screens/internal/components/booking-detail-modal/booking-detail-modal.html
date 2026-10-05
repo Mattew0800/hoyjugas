@@ -15,7 +15,8 @@
       <button
         type="button"
         class="close-button"
-        (click)="closeModal()">
+        (click)="closeModal()"
+        [disabled]="observationLoading">
 
         ✕
 
@@ -373,9 +374,61 @@
 
               <textarea
                 rows="6"
-                [value]="bookingDetail.observations ?? ''"
+                maxlength="1000"
+                [(ngModel)]="internalObservation"
+                [disabled]="observationLoading"
                 placeholder="Agregar una observación...">
               </textarea>
+
+              <div class="observation-footer">
+
+                <span class="observation-counter">
+                  {{ internalObservation.length }}/1000
+                </span>
+
+                <button
+                  type="button"
+                  class="primary-button"
+                  [disabled]="observationLoading || !internalObservation.trim()"
+                  (click)="addObservation()">
+
+                  @if (observationLoading) {
+
+                    Guardando...
+
+                  } @else {
+
+                    Agregar observación
+
+                  }
+
+                </button>
+
+              </div>
+
+              @if (observationError) {
+
+                <div class="payment-error">
+                  {{ observationError }}
+                </div>
+
+              }
+
+              @if (bookingDetail.observations) {
+
+                <div class="current-observation">
+
+                    <span class="observation-title">
+                      Observación registrada
+                    </span>
+
+                  <div class="observation-content">
+                    {{ bookingDetail.observations }}
+                  </div>
+
+                </div>
+
+              }
 
             </div>
 

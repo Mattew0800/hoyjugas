@@ -65,6 +65,19 @@
 
           </button>
 
+          <button
+            type="button"
+            class="create-button"
+            (click)="openNewAdmin()">
+
+            <span class="plus-icon">
+              +
+            </span>
+
+            Nuevo administrador
+
+          </button>
+
         }
 
       </div>
@@ -96,6 +109,10 @@
         </span>
 
         <span>
+          ROL
+        </span>
+
+        <span>
           ESTADO
         </span>
 
@@ -105,7 +122,10 @@
 
       </div>
 
-      @for (employee of filteredEmployees; track employee.id) {
+      @for (
+        employee of filteredEmployees;
+        track employee.id
+        ) {
 
         <div class="employee-row">
 
@@ -132,6 +152,16 @@
           <span>
 
             {{ employee.phone }}
+
+          </span>
+
+          <span>
+
+            {{
+              employee.role === 'ADMIN'
+                ? 'Administrador'
+                : 'Empleado'
+            }}
 
           </span>
 
@@ -222,14 +252,20 @@
       [employee]="selectedEmployee"
       [saving]="savingEmployee"
       [errorMessage]="employeeModalError"
+      [mode]="employeeModalMode"
+      [createdAdminPin]="createdAdminPin"
       (close)="closeEmployeeModal()"
       (saveEmployee)="saveEmployee($event)"
+      (saveAdmin)="saveAdmin($event)"
       (updateEmployee)="updateEmployee($event)">
     </app-employee-modal>
 
   }
 
-  @if (showPinModal && selectedEmployeeForPin) {
+  @if (
+    showPinModal &&
+    selectedEmployeeForPin
+    ) {
 
     <app-pin-modal
       [employeeName]="selectedEmployeeForPin.name"
@@ -270,6 +306,13 @@
 
         </p>
 
+        <span class="dismiss-description">
+
+          El empleado dejará de tener acceso al sistema.
+          Podrás reactivarlo más adelante desde el historial.
+
+        </span>
+
         @if (dismissError) {
 
           <div class="error-message">
@@ -277,13 +320,6 @@
           </div>
 
         }
-
-        <span class="dismiss-description">
-
-          El empleado dejará de tener acceso al sistema.
-          Podrás reactivarlo más adelante desde el historial.
-
-        </span>
 
         <div class="dismiss-actions">
 
@@ -350,6 +386,13 @@
 
         </p>
 
+        <span class="dismiss-description">
+
+          El empleado volverá a tener acceso al sistema
+          y aparecerá nuevamente entre los empleados activos.
+
+        </span>
+
         @if (rehireError) {
 
           <div class="error-message">
@@ -357,13 +400,6 @@
           </div>
 
         }
-
-        <span class="dismiss-description">
-
-          El empleado volverá a tener acceso al sistema
-          y aparecerá nuevamente entre los empleados activos.
-
-        </span>
 
         <div class="dismiss-actions">
 
