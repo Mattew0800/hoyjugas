@@ -144,7 +144,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("excludedStatus") BookingStatus excludedStatus);
 
     @Query("SELECT b FROM Booking b WHERE b.space.id = :spaceId " +
-            "AND b.startDatetime >= :startDate AND b.startDatetime < :endDate " +
+            "AND b.startDatetime < :endDate AND b.endDatetime > :startDate " +
             "AND b.bookingStatus != :excludedStatus")
     List<Booking> findBySpaceAndDateRange(
             @Param("spaceId") Long spaceId,
