@@ -110,11 +110,9 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(slots));
         BigDecimal minDeposit = space.getDepositValue();
-
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
@@ -129,7 +127,6 @@ public class BookingService extends BaseBookingService {
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
-
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
                 null, null, PaymentType.DEPOSITO);
         deposit.setStatus(PaymentStatus.PAGADO);
@@ -148,12 +145,10 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(slots));
         BigDecimal minimumDeposit = calculateDeposit(space, totalPrice);
         BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
-
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setSlots(slots);
         booking.setCreatedBy(employee);
@@ -161,7 +156,6 @@ public class BookingService extends BaseBookingService {
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         assignBookingNumber(saved);
-
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
                 dto.getTransactionId(), employee, PaymentType.DEPOSITO);
         paymentRepository.save(deposit);
@@ -611,8 +605,8 @@ public class BookingService extends BaseBookingService {
                 LocalDateTime current = scheduleStart;
                 while (current.isBefore(scheduleEnd)) {
                     LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
-                    boolean isPast = slotEnd.isBefore(now);
-                    if (!isPast) {
+                    if (slotEnd.isAfter(scheduleEnd)) break;
+                    if (current.isAfter(now)) {
                         final LocalDateTime slotStart = current;
                         boolean isOccupied = occupied.stream().anyMatch(b ->
                                 b.getStartDatetime().isBefore(slotEnd) &&
@@ -659,8 +653,13 @@ public class BookingService extends BaseBookingService {
         if (!specificSchedules.isEmpty()) {
             return specificSchedules;
         }
-        return spaceScheduleRepository
+        List<SpaceSchedule> generalSchedules = spaceScheduleRepository
                 .findAllBySpaceIdAndDayType(spaceId, generalDay);
+        if (!generalSchedules.isEmpty()) {
+            return generalSchedules;
+        }
+        return spaceScheduleRepository
+                .findAllBySpaceIdAndDayType(spaceId, pricingService.resolveGroupDay(dayOfWeek));
     }
 
     @Transactional
@@ -684,7 +683,7 @@ public class BookingService extends BaseBookingService {
         List<SpaceSchedule> allSchedules = spaceScheduleRepository
                 .findBySpaceIdIn(spaceIds);
         List<Booking> allBookings = bookingRepository
-                .findBySpaceIdInAndDateRange(spaceIds, today.atStartOfDay(), endDate.atStartOfDay(), BookingStatus.CANCELADO);
+                .findBySpaceIdInAndDateRange(spaceIds, today.atStartOfDay(), endDate.plusDays(1).atStartOfDay(), BookingStatus.CANCELADO);
         Map<Long, List<SpaceSchedule>> schedulesBySpace = allSchedules.stream()
                 .collect(Collectors.groupingBy(s -> s.getSpace().getId()));
         Map<Long, List<Booking>> bookingsBySpace = allBookings.stream()
@@ -701,11 +700,7 @@ public class BookingService extends BaseBookingService {
                         dayOfWeek
                 );
                 List<Booking> bookings = bookingsBySpace
-                        .getOrDefault(space.getId(), List.of())
-                        .stream()
-                        .filter(b -> !b.getStartDatetime().toLocalDate().isAfter(date)
-                                && !b.getEndDatetime().toLocalDate().isBefore(date))
-                        .toList();
+                        .getOrDefault(space.getId(), List.of());
                 slotsForDay += countSlotsForSpace(space, schedules, bookings, date);
             }
             days.add(new DailyAvailabilityDTO(date, slotsForDay));
@@ -737,6 +732,8 @@ public class BookingService extends BaseBookingService {
 
     private int countSlotsForSpace(Space space, List<SpaceSchedule> schedules, List<Booking> bookings, LocalDate date) {
         int count = 0;
+        LocalDateTime now = LocalDateTime.now();
+        boolean isToday = date.equals(now.toLocalDate());
         for (SpaceSchedule schedule : schedules) {
             LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
             LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
@@ -747,12 +744,13 @@ public class BookingService extends BaseBookingService {
             LocalDateTime current = startOfDay;
             while (current.isBefore(endOfDay)) {
                 LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
+                if (slotEnd.isAfter(endOfDay)) break;
                 final LocalDateTime slotStart = current;
                 boolean occupied = bookings.stream().anyMatch(b ->
                         b.getStartDatetime().isBefore(slotEnd) &&
                                 b.getEndDatetime().isAfter(slotStart)
                 );
-                if (!occupied) {
+                if (!occupied && (!isToday || slotStart.isAfter(now))) {
                     count++;
                 }
                 current = slotEnd;

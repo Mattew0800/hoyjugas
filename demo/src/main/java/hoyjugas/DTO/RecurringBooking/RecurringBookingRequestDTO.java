@@ -24,7 +24,6 @@ public class RecurringBookingRequestDTO {
     private Long spaceId;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
-    @Future(message = "La fecha de inicio debe ser futura")
     private LocalDate startDate;
 
     @NotNull(message = "El horario es obligatorio")
@@ -40,10 +39,6 @@ public class RecurringBookingRequestDTO {
     @NotNull(message = "Debe aceptar los términos y condiciones")
     @AssertTrue(message = "Debe aceptar los términos y condiciones")
     private Boolean termsAccepted;
-
-    @NotNull(message = "El monto de la seña es obligatorio")
-    @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
-    private BigDecimal depositAmount;
 
     @NotNull(message = "El método de pago es obligatorio")
     private PaymentMethod paymentMethod;
