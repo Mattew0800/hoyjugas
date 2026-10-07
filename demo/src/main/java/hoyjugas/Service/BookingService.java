@@ -63,25 +63,39 @@ public class BookingService extends BaseBookingService {
         if (schedules.isEmpty()) {
             return List.of();
         }
-        List<Booking> occupiedBookings = bookingRepository.findBySpaceAndDate(
+        LocalDateTime queryStart = date.atStartOfDay();
+        LocalDateTime queryEnd = date.plusDays(1).atStartOfDay();
+        for (SpaceSchedule schedule : schedules) {
+            LocalDateTime scheduleEnd = date.atTime(schedule.getClosingTime());
+            boolean crossesMidnight = !schedule.getClosingTime().isAfter(schedule.getOpeningTime());
+            if (crossesMidnight) {
+                scheduleEnd = date.plusDays(1).atTime(schedule.getClosingTime());
+            }
+            if (scheduleEnd.isAfter(queryEnd)) {
+                queryEnd = scheduleEnd;
+            }
+        }
+        List<Booking> occupiedBookings = bookingRepository.findBySpaceAndDateRange(
                 spaceId,
-                date.atStartOfDay(),
-                date.plusDays(1).atStartOfDay(),
+                queryStart,
+                queryEnd,
                 BookingStatus.CANCELADO
         );
         List<SpaceAvailabilityDTO> slots = new ArrayList<>();
         for (SpaceSchedule schedule : schedules) {
-            LocalDateTime startOfDay = date.atTime(schedule.getOpeningTime());
-            LocalDateTime endOfDay = date.atTime(schedule.getClosingTime());
+            LocalDateTime scheduleStart = date.atTime(schedule.getOpeningTime());
+            LocalDateTime scheduleEnd = date.atTime(schedule.getClosingTime());
             boolean crossesMidnight = !schedule.getClosingTime().isAfter(schedule.getOpeningTime());
             if (crossesMidnight) {
-                endOfDay = date.plusDays(1).atTime(schedule.getClosingTime());
+                scheduleEnd = date.plusDays(1).atTime(schedule.getClosingTime());
             }
-            LocalDateTime current = startOfDay;
-            while (current.isBefore(endOfDay)) {
+            LocalDateTime current = scheduleStart;
+            while (current.isBefore(scheduleEnd)) {
                 LocalDateTime slotEnd = current.plusMinutes(space.getSlotDuration());
+                if (slotEnd.isAfter(scheduleEnd)) {
+                    break;
+                }
                 final LocalDateTime slotStart = current;
-
                 boolean occupied = occupiedBookings.stream().anyMatch(b ->
                         b.getStartDatetime().isBefore(slotEnd) &&
                                 b.getEndDatetime().isAfter(slotStart)
@@ -99,7 +113,6 @@ public class BookingService extends BaseBookingService {
                 current = slotEnd;
             }
         }
-
         return slots;
     }
 
