@@ -682,7 +682,6 @@ public class BookingService extends BaseBookingService {
                 .toList();
         List<SpaceSchedule> allSchedules = spaceScheduleRepository
                 .findBySpaceIdIn(spaceIds);
-        // The final reported day's schedules can finish on the following date.
         List<Booking> allBookings = bookingRepository
                 .findBySpaceIdInAndDateRange(spaceIds, today.atStartOfDay(), endDate.plusDays(1).atStartOfDay(), BookingStatus.CANCELADO);
         Map<Long, List<SpaceSchedule>> schedulesBySpace = allSchedules.stream()

@@ -26,7 +26,15 @@
               type="number"
               min="0"
               [(ngModel)]="config.cancellationHoursLimit"
+              [class.input-error]="cancellationHoursLimitError"
             />
+
+            @if (cancellationHoursLimitError) {
+              <span class="field-error">
+                {{ cancellationHoursLimitError }}
+              </span>
+            }
+
           </div>
 
           <div class="form-field">
@@ -39,7 +47,15 @@
               min="1"
               max="168"
               [(ngModel)]="config.reminderHoursBeforeBooking"
+              [class.input-error]="reminderHoursBeforeBookingError"
             />
+
+            @if (reminderHoursBeforeBookingError) {
+              <span class="field-error">
+                {{ reminderHoursBeforeBookingError }}
+              </span>
+            }
+
           </div>
 
         </div>
@@ -63,7 +79,15 @@
               min="1"
               max="52"
               [(ngModel)]="config.recurringMonthsAhead"
+              [class.input-error]="recurringMonthsAheadError"
             />
+
+            @if (recurringMonthsAheadError) {
+              <span class="field-error">
+                {{ recurringMonthsAheadError }}
+              </span>
+            }
+
           </div>
 
           <div class="form-field">
@@ -75,7 +99,15 @@
               type="number"
               min="1"
               [(ngModel)]="config.recurringInitialDepositTurns"
+              [class.input-error]="recurringInitialDepositTurnsError"
             />
+
+            @if (recurringInitialDepositTurnsError) {
+              <span class="field-error">
+                {{ recurringInitialDepositTurnsError }}
+              </span>
+            }
+
           </div>
 
           <div class="form-field">
@@ -88,7 +120,15 @@
               min="1"
               step="0.01"
               [(ngModel)]="config.recurringDepositMultiplier"
+              [class.input-error]="recurringDepositMultiplierError"
             />
+
+            @if (recurringDepositMultiplierError) {
+              <span class="field-error">
+                {{ recurringDepositMultiplierError }}
+              </span>
+            }
+
           </div>
 
           <div class="form-field">
@@ -100,12 +140,21 @@
               type="number"
               min="1"
               [(ngModel)]="config.maxRecurringCancellations"
+              [class.input-error]="maxRecurringCancellationsError"
             />
+
+            @if (maxRecurringCancellationsError) {
+              <span class="field-error">
+                {{ maxRecurringCancellationsError }}
+              </span>
+            }
+
           </div>
 
         </div>
 
       </div>
+
 
       <div class="config-section">
 
@@ -154,8 +203,15 @@
 
           <textarea
             rows="8"
-            [(ngModel)]="config.termsAndConditions">
+            [(ngModel)]="config.termsAndConditions"
+            [class.input-error]="termsAndConditionsError">
           </textarea>
+
+          @if (termsAndConditionsError) {
+            <span class="field-error">
+              {{ termsAndConditionsError }}
+            </span>
+          }
 
         </div>
 

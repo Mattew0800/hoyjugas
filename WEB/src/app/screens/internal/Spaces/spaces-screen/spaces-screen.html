@@ -37,10 +37,15 @@
 
     </div>
 
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
 
     <div class="spaces-list">
 
-      @for(space of spaces; track space.id){
+      @for (space of filteredSpaces; track space.id) {
 
         <app-space-list-item
           [space]="space"
@@ -49,10 +54,25 @@
 
       }
 
+      @if (filteredSpaces.length === 0 && !errorMessage) {
+
+        <div class="space-placeholder">
+
+          {{
+            search.trim()
+              ? 'No se encontraron espacios.'
+              : 'No hay espacios registrados.'
+          }}
+
+        </div>
+
+      }
+
     </div>
 
   </main>
-  @if(showModal){
+
+  @if (showModal) {
 
     <app-space-modal
       [spaceId]="selectedSpaceId"
@@ -60,4 +80,5 @@
     </app-space-modal>
 
   }
+
 </div>

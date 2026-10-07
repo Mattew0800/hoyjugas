@@ -215,16 +215,33 @@
 
       <div class="form-group">
 
-        <label for="depositAmount">
-          Seña
+        <label>
+          Forma de pago
         </label>
 
-        <input
-          id="depositAmount"
-          type="number"
-          min="0"
-          placeholder="Monto de la seña"
-          formControlName="depositAmount">
+        <div class="payment-type-selector">
+
+          <button
+            type="button"
+            [class.active]="paymentType === 'deposit'"
+            (click)="setPaymentType('deposit')"
+            [disabled]="loading || previewLoading">
+
+            Seña
+
+          </button>
+
+          <button
+            type="button"
+            [class.active]="paymentType === 'full'"
+            (click)="setPaymentType('full')"
+            [disabled]="loading || previewLoading">
+
+            Pago completo
+
+          </button>
+
+        </div>
 
       </div>
 
