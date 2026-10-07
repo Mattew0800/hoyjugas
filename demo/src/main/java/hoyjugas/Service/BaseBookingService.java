@@ -95,6 +95,7 @@ public abstract class BaseBookingService {
         return space.getDepositValue()
                 .min(totalPrice);
     }
+
     protected void assignBookingNumbers(List<Booking> bookings) {
         bookings.forEach(b ->
                 b.setBookingNumber("BK-" + String.format("%08d", b.getId()))
@@ -116,21 +117,16 @@ public abstract class BaseBookingService {
                         PaymentType.DEPOSITO,
                         PaymentStatus.PAGADO
                 );
-
         BigDecimal totalCobrado = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
-
         BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCobrado).max(BigDecimal.ZERO);
-
         String createdByName = booking.getCreatedBy() != null
                 ? booking.getCreatedBy().getName()
                 : null;
-
         String collectedByName = paymentRepository
                 .findFirstByBookingIdAndTypeOrderByCreatedAtDesc(booking.getId(), PaymentType.PAGO_TOTAL)
                 .map(p -> p.getCollectedBy() != null ? p.getCollectedBy().getName() : null)
                 .orElse(null);
-
         return BookingResponseDTO.fromEntity(booking, depositAmount, remainingAmount, createdByName, collectedByName);
     }
 

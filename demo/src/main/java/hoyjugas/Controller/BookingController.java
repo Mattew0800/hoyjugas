@@ -7,6 +7,7 @@ import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
 import hoyjugas.DTO.Space.SpaceCardDTO;
 import hoyjugas.DTO.Space.SpaceIdRequestDTO;
+import hoyjugas.DTO.Space.SpaceSimpleResponseDTO;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
 import hoyjugas.Service.BookingService;
@@ -170,5 +171,10 @@ public class BookingController {
     @GetMapping("/availability-next-30-days")
     public ResponseEntity<AvailabilitySummaryDTO> getAvailabilityNext30Days() {
         return ResponseEntity.ok(bookingService.getAvailabilityNext30Days());
+    }
+
+    @PostMapping("/get-deposit-value")
+    public ResponseEntity<SpaceSimpleResponseDTO>getDepositValue(@Valid @RequestBody SpaceIdRequestDTO dto){
+        return ResponseEntity.ok(spaceService.getSpaceDepositValue(dto.getSpaceId()));
     }
 }

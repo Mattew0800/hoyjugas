@@ -31,8 +31,7 @@ public class RecurringBookingController {
 
     @PostMapping("/preview")//llamar a esto primero para ver como quedaria la reserva por si hay algun turno que se cruza, luego llamar a create para concretar
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<RecurringBookingPreviewDTO> previewRecurringBooking(
-            @Valid @RequestBody RecurringBookingRequestDTO dto) {
+    public ResponseEntity<RecurringBookingPreviewDTO> previewRecurringBooking(@Valid @RequestBody RecurringBookingRequestDTO dto) {
         return ResponseEntity.ok(recurringBookingService.previewRecurringBooking(dto));
     }
 

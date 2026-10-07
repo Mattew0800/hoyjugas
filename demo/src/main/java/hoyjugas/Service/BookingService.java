@@ -110,11 +110,9 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(slots));
         BigDecimal minDeposit = space.getDepositValue();
-
         if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("El monto mínimo es $%.2f", minDeposit));
@@ -129,7 +127,6 @@ public class BookingService extends BaseBookingService {
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
-
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
                 null, null, PaymentType.DEPOSITO);
         deposit.setStatus(PaymentStatus.PAGADO);
@@ -148,12 +145,10 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-
         BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
                 .multiply(BigDecimal.valueOf(slots));
         BigDecimal minimumDeposit = calculateDeposit(space, totalPrice);
         BigDecimal depositAmount = getDepositAmount(dto, minimumDeposit, totalPrice);
-
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setSlots(slots);
         booking.setCreatedBy(employee);
@@ -161,7 +156,6 @@ public class BookingService extends BaseBookingService {
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         assignBookingNumber(saved);
-
         Payment deposit = buildPayment(saved, dto.getPaymentMethod(), depositAmount,
                 dto.getTransactionId(), employee, PaymentType.DEPOSITO);
         paymentRepository.save(deposit);
