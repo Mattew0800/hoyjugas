@@ -1,3 +1,4 @@
+
 * {
   font-family: Roboto, sans-serif;
 }
@@ -17,7 +18,7 @@
 }
 
 .customers-page {
-  padding: 28px 32px 32px 32px;
+  padding: 28px 32px 32px;
 }
 
 .customers-toolbar {
@@ -150,13 +151,9 @@
 }
 
 .customer-name:focus-visible {
-
   outline: 2px solid #CEA764;
-
   outline-offset: 3px;
-
   border-radius: 6px;
-
 }
 
 .customer-name:hover {
@@ -299,6 +296,8 @@
   cursor: not-allowed;
 }
 
+/* Modal de detalle */
+
 .customer-detail-overlay {
   position: fixed;
   inset: 0;
@@ -313,13 +312,28 @@
 
 .customer-detail-modal {
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   background: #0b0b0b;
   border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+  scrollbar-width: thin;
+  scrollbar-color: #39332a #0b0b0b;
+}
+
+.customer-detail-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.customer-detail-modal::-webkit-scrollbar-track {
+  background: #0b0b0b;
+}
+
+.customer-detail-modal::-webkit-scrollbar-thumb {
+  background: #39332a;
+  border-radius: 10px;
 }
 
 .customer-detail-header {
@@ -361,9 +375,14 @@
   background: #151515;
 }
 
+.close-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
 .customer-detail-loading,
 .customer-detail-error {
-  min-height: 180px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,7 +418,7 @@
   font-weight: 600;
 }
 
-.customer-detail-content h3 {
+.customer-detail-content > h3 {
   margin: 0 0 26px;
   color: white;
   text-align: center;
@@ -440,6 +459,8 @@
   word-break: break-word;
 }
 
+/* Observaciones */
+
 .customer-observations {
   margin-top: 22px;
 }
@@ -478,6 +499,196 @@
   font-size: 13px;
 }
 
+/* Historial de reservas recurrentes */
+
+.customer-recurring-history {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.recurring-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.recurring-history-heading h3 {
+  margin: 0 0 6px;
+  color: #f1f1f1;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.recurring-history-heading p {
+  margin: 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.history-button {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid rgba(206, 167, 100, .35);
+  border-radius: 8px;
+  background: rgba(206, 167, 100, .09);
+  color: #CEA764;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.history-button:hover:not(:disabled) {
+  border-color: rgba(206, 167, 100, .6);
+  background: rgba(206, 167, 100, .16);
+}
+
+.history-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.recurring-history-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recurring-history-content > p {
+  margin: 0;
+  padding: 18px 14px;
+  border: 1px solid rgba(255, 255, 255, .05);
+  border-radius: 9px;
+  background: #101010;
+  color: #777;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.recurring-history-content > .customer-detail-error {
+  color: #d85c5c;
+}
+
+.recurring-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recurring-history-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 10px;
+  transition: border-color .2s, background .2s;
+}
+
+.recurring-history-item:hover {
+  border-color: rgba(206, 167, 100, .2);
+  background: #121212;
+}
+
+.recurring-history-details {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.recurring-history-details strong {
+  color: #eee;
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.recurring-history-details span {
+  color: #929292;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.recurring-history-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .04);
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+
+.recurring-history-status.status-active {
+  border-color: rgba(70, 180, 100, .25);
+  background: rgba(70, 180, 100, .09);
+  color: #78cc8c;
+}
+
+.recurring-history-status.status-cancelled {
+  border-color: rgba(220, 70, 70, .25);
+  background: rgba(220, 70, 70, .09);
+  color: #e07878;
+}
+
+.history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+}
+
+.history-pagination span {
+  color: #888;
+  font-size: 11px;
+  text-align: center;
+}
+
+.history-pagination button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 7px;
+  background: #101010;
+  color: #ccc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.history-pagination button:hover:not(:disabled) {
+  border-color: rgba(206, 167, 100, .4);
+  color: #CEA764;
+  background: rgba(206, 167, 100, .07);
+}
+
+.history-pagination button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+/* Pie del modal */
+
 .customer-detail-footer {
   display: flex;
   justify-content: flex-end;
@@ -503,8 +714,9 @@
   background: rgba(206, 167, 100, .14);
 }
 
-@media (max-width: 900px) {
+/* Responsive */
 
+@media (max-width: 900px) {
   .customers-page {
     padding: 24px;
   }
@@ -529,9 +741,23 @@
 }
 
 @media (max-width: 650px) {
-
   .customers-page {
     padding: 16px;
+  }
+
+  .customers-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-container {
+    box-sizing: border-box;
+  }
+
+  .status-filters {
+    flex-wrap: wrap;
+    margin-top: 0;
   }
 
   .table-header,
@@ -576,5 +802,27 @@
 
   .customer-detail-footer {
     padding: 14px 18px 18px;
+  }
+
+  .recurring-history-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .history-button {
+    width: 100%;
+  }
+
+  .recurring-history-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .recurring-history-status {
+    align-self: flex-start;
+  }
+
+  .history-pagination {
+    flex-wrap: wrap;
   }
 }

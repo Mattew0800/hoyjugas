@@ -1,18 +1,14 @@
 <app-internal-side-bar></app-internal-side-bar>
 
 <div class="customers-container">
-
   <app-internal-header
     [title]="'Clientes'"
     [subtitle]="'Administrá los clientes del complejo'">
   </app-internal-header>
 
   <div class="customers-page">
-
     <div class="customers-toolbar">
-
       <div class="search-container">
-
         <span class="search-icon">⌕</span>
 
         <input
@@ -20,11 +16,9 @@
           [(ngModel)]="searchTerm"
           placeholder="Buscar cliente..."
         />
-
       </div>
 
       <div class="status-filters">
-
         <button
           type="button"
           [class.active]="statusFilter === 'all'"
@@ -45,9 +39,7 @@
           (click)="changeStatusFilter('inactive')">
           Inactivos
         </button>
-
       </div>
-
     </div>
 
     <div
@@ -55,7 +47,6 @@
       [class.with-actions]="isAdmin && statusFilter !== 'all'">
 
       <div class="table-header">
-
         <div>CLIENTE</div>
         <div>EMAIL</div>
         <div class="phone-column">TELÉFONO</div>
@@ -64,33 +55,23 @@
         @if (isAdmin && statusFilter !== 'all') {
           <div class="action-column">ACCIÓN</div>
         }
-
       </div>
 
       @if (loading) {
-
         <div class="empty-state">
           Cargando clientes...
         </div>
-
       } @else if (errorMessage) {
-
         <div class="empty-state error-state">
           {{ errorMessage }}
         </div>
-
       } @else if (filteredCustomers.length === 0) {
-
         <div class="empty-state">
           No se encontraron clientes.
         </div>
-
       } @else {
-
         @for (customer of filteredCustomers; track customer.id) {
-
           <div class="customer-row">
-
             <button
               type="button"
               class="customer-name"
@@ -103,7 +84,6 @@
               <span>
                 {{ customer.name }}
               </span>
-
             </button>
 
             <div class="customer-email">
@@ -119,18 +99,13 @@
             </div>
 
             @if (isAdmin && statusFilter !== 'all') {
-
               <div class="customer-action action-column">
-
                 @if (statusFilter === 'active') {
-
                   @if (
                     confirmingAction === 'desactivate' &&
                     confirmingCustomerId === customer.id
                     ) {
-
                     <div class="confirmation-container">
-
                       <span>¿Dar de baja?</span>
 
                       <button
@@ -138,13 +113,7 @@
                         class="confirm-button"
                         (click)="executeAction()"
                         [disabled]="processingAction">
-
-                        {{
-                          processingAction
-                            ? 'Procesando...'
-                            : 'Sí'
-                        }}
-
+                        {{ processingAction ? 'Procesando...' : 'Sí' }}
                       </button>
 
                       <button
@@ -152,33 +121,23 @@
                         class="cancel-button"
                         (click)="cancelAction()"
                         [disabled]="processingAction">
-
                         No
-
                       </button>
-
                     </div>
-
                   } @else {
-
                     <button
                       type="button"
                       class="desactivate-button"
                       (click)="confirmAction('desactivate', customer.id)">
                       Dar de baja
                     </button>
-
                   }
-
                 } @else {
-
                   @if (
                     confirmingAction === 'activate' &&
                     confirmingCustomerId === customer.id
                     ) {
-
                     <div class="confirmation-container">
-
                       <span>¿Dar de alta?</span>
 
                       <button
@@ -194,40 +153,26 @@
                         (click)="cancelAction()">
                         No
                       </button>
-
                     </div>
-
                   } @else {
-
                     <button
                       type="button"
                       class="activate-button"
                       (click)="confirmAction('activate', customer.id)">
                       Dar de alta
                     </button>
-
                   }
-
                 }
-
               </div>
-
             }
-
           </div>
-
         }
-
       }
-
     </div>
-
   </div>
-
 </div>
 
 @if (showCustomerDetail) {
-
   <div
     class="customer-detail-overlay"
     (click)="closeCustomerDetail()">
@@ -243,7 +188,6 @@
       (keydown)="handleCustomerDetailKeydown($event)">
 
       <div class="customer-detail-header">
-
         <h2 id="customer-detail-title">
           Detalle del cliente
         </h2>
@@ -255,25 +199,18 @@
           [disabled]="customerDetailLoading">
           ×
         </button>
-
       </div>
 
       @if (customerDetailLoading) {
-
         <div class="customer-detail-loading">
           Cargando datos del cliente...
         </div>
-
       } @else if (customerDetailError) {
-
         <div class="customer-detail-error">
           {{ customerDetailError }}
         </div>
-
       } @else if (selectedCustomer) {
-
         <div class="customer-detail-content">
-
           <div class="customer-detail-avatar">
             {{ selectedCustomer.name.charAt(0).toUpperCase() }}
           </div>
@@ -283,110 +220,147 @@
           </h3>
 
           <div class="customer-detail-info">
-
             <div class="customer-detail-item">
-
-              <span class="detail-label">
-                DNI
-              </span>
-
+              <span class="detail-label">DNI</span>
               <span class="detail-value">
                 {{ selectedCustomer.dni || '-' }}
               </span>
-
             </div>
 
             <div class="customer-detail-item">
-
-              <span class="detail-label">
-                Email
-              </span>
-
+              <span class="detail-label">Email</span>
               <span class="detail-value">
                 {{ selectedCustomer.email || '-' }}
               </span>
-
             </div>
 
             <div class="customer-detail-item">
-
-              <span class="detail-label">
-                Teléfono
-              </span>
-
+              <span class="detail-label">Teléfono</span>
               <span class="detail-value">
                 {{ selectedCustomer.phone || '-' }}
               </span>
-
             </div>
 
             <div class="customer-detail-item">
-
-              <span class="detail-label">
-                Rol
-              </span>
-
+              <span class="detail-label">Rol</span>
               <span class="detail-value">
                 {{ selectedCustomer.role }}
               </span>
-
             </div>
-
           </div>
 
           <div class="customer-observations">
-
-            <span class="detail-label">
-              Observaciones
-            </span>
+            <span class="detail-label">Observaciones</span>
 
             @if (
               selectedCustomer.observations &&
               selectedCustomer.observations.length > 0
               ) {
-
               <ul>
-
                 @for (
                   observation of selectedCustomer.observations;
                   track $index
                   ) {
-
-                  <li>
-                    {{ observation }}
-                  </li>
-
+                  <li>{{ observation }}</li>
                 }
-
               </ul>
-
             } @else {
-
-              <p>
-                No hay observaciones registradas.
-              </p>
-
+              <p>No hay observaciones registradas.</p>
             }
-
           </div>
 
+          <div class="customer-recurring-history">
+            <div class="recurring-history-heading">
+              <div>
+                <h3>Reservas recurrentes</h3>
+                <p>Historial de reservas de este cliente.</p>
+              </div>
+
+              <button
+                type="button"
+                class="history-button"
+                (click)="loadRecurringHistory()"
+                [disabled]="historyLoading">
+                {{ showRecurringHistory ? 'Actualizar' : 'Ver historial' }}
+              </button>
+            </div>
+
+            @if (showRecurringHistory) {
+              <div class="recurring-history-content">
+                @if (historyLoading) {
+                  <p>Cargando historial...</p>
+                } @else if (historyError) {
+                  <p class="customer-detail-error">
+                    No se pudo cargar el historial de reservas.
+                  </p>
+                } @else if (recurringBookings.length === 0) {
+                  <p>No hay reservas recurrentes para este cliente.</p>
+                } @else {
+                  <div class="recurring-history-list">
+                    @for (booking of recurringBookings; track booking.id) {
+                      <div class="recurring-history-item">
+                        <div class="recurring-history-details">
+                          <strong>{{ booking.spaceName }}</strong>
+
+                          <span>
+                            {{ booking.dayOfWeek }} · {{ booking.startTime }}
+                          </span>
+
+                          <span>
+                            Desde {{ booking.startDate }} hasta {{ booking.endDate }}
+                          </span>
+
+                          <span>
+                              Frecuencia: cada {{ booking.intervalWeeks }} semana(s)
+                          </span>
+                        </div>
+
+                        <span
+                          class="recurring-history-status"
+                          [class.status-active]="booking.status === 'ACTIVO'"
+                          [class.status-cancelled]="booking.status === 'CANCELADO'">
+                            {{ booking.status }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  @if (historyTotalPages > 1) {
+                    <div class="history-pagination">
+                      <button
+                        type="button"
+                        (click)="changeHistoryPage(historyPage - 1)"
+                        [disabled]="historyPage === 0 || historyLoading">
+                        Anterior
+                      </button>
+
+                      <span>
+                        Página {{ historyPage + 1 }} de {{ historyTotalPages }}
+                      </span>
+
+                      <button
+                        type="button"
+                        (click)="changeHistoryPage(historyPage + 1)"
+                        [disabled]="historyPage >= historyTotalPages - 1 || historyLoading">
+                        Siguiente
+                      </button>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
         </div>
 
         <div class="customer-detail-footer">
-
           <button
             type="button"
             class="close-detail-button"
             (click)="closeCustomerDetail()">
             Cerrar
           </button>
-
         </div>
-
       }
-
     </div>
-
   </div>
-
 }
