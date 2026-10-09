@@ -72,10 +72,11 @@ public class MercadoPagoService {
             mpPaymentAuditRepository.save(audit);
             return preference.getInitPoint();
         } catch (MPApiException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al crear preferencia en mercado pago " );
-        } catch (MPException e) {
+            log.error("MP API Error - Status: {}, Content: {}",
+                    e.getStatusCode(),
+                    e.getApiResponse().getContent());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al comunicarse con Mercado Pago");
+                    "Error MP: " + e.getApiResponse().getContent());
         }
     }
 
