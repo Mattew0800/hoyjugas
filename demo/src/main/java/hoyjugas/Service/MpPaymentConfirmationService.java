@@ -8,7 +8,9 @@ import hoyjugas.Model.Booking;
 import hoyjugas.Model.MpPaymentAudit;
 import hoyjugas.Model.MpPaymentStatusHistory;
 import hoyjugas.Repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.annotation.Backoff;
@@ -18,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 public class MpPaymentConfirmationService extends BaseBookingService {
 
@@ -54,20 +57,31 @@ public class MpPaymentConfirmationService extends BaseBookingService {
     @Transactional
     @Retryable(value = CannotAcquireLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 100))
     public void confirmMpPaymentFromPaymentId(Long paymentId, String rawPayload) {
-        Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());//obtenemos desde la api de mp el objeto que coincide con el id de pago que nos llegó
+        Payment mpPayment = mercadoPagoService.getPayment(paymentId.toString());
         if (mpPayment == null) return;
-        String externalRef = mpPayment.getExternalReference();//llamamos a la api de mp, esta referencia es el id de la reserva con la que originalmente se creó la preferencia
+        String externalRef = mpPayment.getExternalReference();
         if (externalRef == null) return;
-        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
-            audit.setRawWebhookPayload(rawPayload);//guardamos el json como está, por si hay algun problema con el pago
+        mpPaymentAuditRepository.findFirstByExternalReferenceOrderByCreatedAtDesc(externalRef).ifPresent(audit -> {
+            audit.setRawWebhookPayload(rawPayload);
             mpPaymentAuditRepository.save(audit);
         });
         if (!"approved".equalsIgnoreCase(mpPayment.getStatus())) {
             updateAuditStatus(mpPayment);
             return;
         }
-        processApprovedPayment(mpPayment);//primero procesa el pago
-        updateAuditOnApproval(mpPayment);//una vez aprobado, empieza a guardar todos los datos consultando por el id del pago
+        try {
+            processApprovedPayment(mpPayment);
+            updateAuditOnApproval(mpPayment);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Webhook duplicado ignorado: transactionId {} ya procesado.", mpPayment.getTransactionDetails().getTransactionId());
+        } catch (Exception e) {
+            if (e.getCause() instanceof DataIntegrityViolationException) {
+                log.info("Webhook duplicado ignorado: transactionId {} ya procesado.", mpPayment.getTransactionDetails().getTransactionId());
+            } else {
+                log.error("Error inesperado procesando pago {}", paymentId, e);
+                throw e;
+            }
+        }
     }
 
     private String getExternalReference(Payment mpPayment) {
@@ -81,10 +95,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
         }
         Long bookingId = Long.parseLong(externalRef);
         Booking booking = bookingRepository.findById(bookingId)//ya que la preferencia se guarda linkeada al id de la reserva, se empieza buscando por ahi
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Turno no encontrado con id: " + bookingId
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Turno no encontrado con id: " + bookingId));
         String transactionId = String.valueOf(mpPayment.getId());
         if (paymentRepository.findByTransactionId(transactionId).isPresent()) {//este if evita duplicados por si llega el mismo id dos veces
             return;
@@ -110,7 +121,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
         LocalDateTime now = LocalDateTime.now();
         String externalRef = getExternalReference(mpPayment);
         if (externalRef == null) return;
-        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
+        mpPaymentAuditRepository.findFirstByExternalReferenceOrderByCreatedAtDesc(externalRef).ifPresent(audit -> {
             String previousStatus = audit.getPaymentStatus();
             audit.setPaymentId(mpPayment.getId() != null ? String.valueOf(mpPayment.getId()) : null);
             audit.setPaymentStatus(mpPayment.getStatus());
@@ -134,7 +145,7 @@ public class MpPaymentConfirmationService extends BaseBookingService {
         LocalDateTime now = LocalDateTime.now();
         String externalRef = getExternalReference(mpPayment);
         if (externalRef == null) return;
-        mpPaymentAuditRepository.findByExternalReference(externalRef).ifPresent(audit -> {
+        mpPaymentAuditRepository.findFirstByExternalReferenceOrderByCreatedAtDesc(externalRef).ifPresent(audit -> {
             String previousStatus = audit.getPaymentStatus();
             audit.setPaymentId(mpPayment.getId() != null ? String.valueOf(mpPayment.getId()) : null);
             audit.setPaymentStatus(mpPayment.getStatus());

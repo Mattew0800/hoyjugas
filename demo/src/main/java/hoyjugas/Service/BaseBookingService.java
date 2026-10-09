@@ -113,11 +113,7 @@ public abstract class BaseBookingService{
 
     protected BookingResponseDTO buildBookingResponseDTO(Booking booking) {
         BigDecimal depositAmount = paymentRepository
-                .findTotalByBookingIdAndType(
-                        booking.getId(),
-                        PaymentType.DEPOSITO,
-                        PaymentStatus.PAGADO
-                );
+                .findTotalByBookingIdAndTypes(booking.getId(), List.of(PaymentType.DEPOSITO, PaymentType.SEÑA), PaymentStatus.PAGADO);
         BigDecimal totalCollected = paymentRepository
                 .findTotalByBookingIdExcludingType(booking.getId(), PaymentType.DEVOLUCION, PaymentStatus.PAGADO);
         BigDecimal remainingAmount = booking.getTotalAmount().subtract(totalCollected).max(BigDecimal.ZERO);
@@ -131,8 +127,7 @@ public abstract class BaseBookingService{
         return BookingResponseDTO.fromEntity(booking, depositAmount, remainingAmount, createdByName, collectedByName);
     }
 
-    protected Payment buildTransferPayment(Booking original, Booking newBooking,
-                                           BigDecimal amount, User employee) {
+    protected Payment buildTransferPayment(Booking original, Booking newBooking, BigDecimal amount, User employee) {
         Payment transfer = buildPayment(
                 newBooking,
                 PaymentMethod.INTERNO,
@@ -146,8 +141,7 @@ public abstract class BaseBookingService{
     }
 
     protected void scheduleReminder(Booking booking) {
-        boolean alreadyExists = bookingNotificationRepository
-                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
+        boolean alreadyExists = bookingNotificationRepository.existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
         if (!alreadyExists) {
             SystemConfig config = getSystemConfig();
             BookingNotification notif = new BookingNotification();

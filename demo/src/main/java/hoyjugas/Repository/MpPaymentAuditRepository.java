@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface MpPaymentAuditRepository extends JpaRepository<MpPaymentAudit, Long> {
     Optional<MpPaymentAudit> findByPreferenceId(String preferenceId);
     Optional<MpPaymentAudit> findByPaymentId(String paymentId);
-    Optional<MpPaymentAudit> findByExternalReference(String externalReference);
+    Optional<MpPaymentAudit> findFirstByExternalReferenceOrderByCreatedAtDesc(String externalReference);
 }

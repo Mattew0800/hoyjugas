@@ -8,9 +8,11 @@ import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 
+@Slf4j
 @Service
 public class BookingService extends BaseBookingService {
 
@@ -38,6 +41,7 @@ public class BookingService extends BaseBookingService {
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final PaymentRepository paymentRepository;
     private final ComplexScheduleRepository complexScheduleRepository;
+    private final MercadoPagoService mercadoPagoService;
 
     public BookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -45,7 +49,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository, MercadoPagoService mercadoPagoService) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -54,6 +58,7 @@ public class BookingService extends BaseBookingService {
         this.spaceScheduleRepository=spaceScheduleRepository;
         this.paymentRepository=paymentRepository;
         this.complexScheduleRepository = complexScheduleRepository;
+        this.mercadoPagoService = mercadoPagoService;
     }
 
     public List<SpaceAvailabilityDTO> getAvailability(Long spaceId, LocalDate date) {
@@ -719,15 +724,50 @@ public class BookingService extends BaseBookingService {
         return count;
     }
 
-    public Booking getBookingEntity(Long id) {
-        return bookingRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    @Transactional
+    public BookingWebCreatedResponseDTO createBookingAndPayment(ClientBookingRequestDTO dto, User client) {
+        BookingResponseDTO bookingResponse = createBookingByClient(dto, client);
+        if(dto.getPaymentType()!=PaymentType.SEÑA&&dto.getPaymentType()!=PaymentType.PAGO_TOTAL){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tipo de pago invalido");
+        }
+        try {
+            Booking bookingEntity = getBookingEntity(bookingResponse.getId());
+            String mpUrl = mercadoPagoService.createPreference(bookingEntity, dto.getPaymentType());
+            log.info("Booking {} creado exitosamente con preferencia de MP", bookingResponse.getId());
+            return new BookingWebCreatedResponseDTO(bookingResponse, mpUrl);
+        } catch (Exception e) {
+            log.error("Error creando preferencia de MP para booking {}: {}",
+                    bookingResponse.getId(), e.getMessage(), e);
+            markAsPaymentError(bookingResponse.getId());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al procesar el pago en Mercado Pago. Por favor intentá de nuevo.");
+        }
     }
 
-    public void markAsPaymentError(Long bookingId){
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    }
+
+    public void markAsPaymentError(Long bookingId) {
         Booking booking = getBookingOrThrow(bookingId);
-        booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
+        booking.setBookingStatus(BookingStatus.CANCELADO);
         bookingRepository.save(booking);
     }
+
+    @Scheduled(cron = "0 */10 * * * *") //libera turnos que no se han pagado, cada 10 mins
+    @Transactional
+    public void cancelExpiredUnpaidBookings() {
+        LocalDateTime expiryThreshold = LocalDateTime.now().minusMinutes(15);
+        List<Booking> expiredBookings = bookingRepository.findExpiredUnpaidBookings(expiryThreshold);
+
+        for (Booking booking : expiredBookings) {
+            booking.setBookingStatus(BookingStatus.CANCELADO);
+        }
+
+        if (!expiredBookings.isEmpty()) {
+            bookingRepository.saveAll(expiredBookings);
+            log.info("Se cancelaron {} reservas expiradas sin pago.", expiredBookings.size());
+        }
+    }
+
 }

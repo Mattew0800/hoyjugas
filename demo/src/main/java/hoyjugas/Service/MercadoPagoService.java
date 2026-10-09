@@ -83,7 +83,7 @@ public class MercadoPagoService {
     private BigDecimal calculateAmount(Booking booking, PaymentType paymentType) {
         return paymentType == PaymentType.PAGO_TOTAL
                 ? booking.getTotalAmount()
-                : booking.getSpace().getDepositValue();
+                : booking.getSpace().getDepositValue().min(booking.getTotalAmount());
     }
 
     private String getDescription(Booking booking, PaymentType paymentType) {

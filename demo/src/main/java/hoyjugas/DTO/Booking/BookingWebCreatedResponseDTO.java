@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class BookingCreatedResponseDTO {
+public class BookingWebCreatedResponseDTO {
     private BookingResponseDTO booking;
     private String mpUrl;
 }
