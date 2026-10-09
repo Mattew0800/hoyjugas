@@ -144,11 +144,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("excludedStatus") BookingStatus excludedStatus);
 
     @Query("SELECT b FROM Booking b WHERE b.space.id = :spaceId " +
-            "AND b.startDatetime >= :startDate AND b.startDatetime < :endDate " +
+            "AND b.startDatetime < :endDate AND b.endDatetime > :startDate " +
             "AND b.bookingStatus != :excludedStatus")
     List<Booking> findBySpaceAndDateRange(
             @Param("spaceId") Long spaceId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("excludedStatus") BookingStatus excludedStatus);
+
+    @Query("""
+    SELECT b FROM Booking b 
+    WHERE b.bookingStatus = 'CONFIRMADO' 
+    AND b.createdAt <= :threshold 
+    AND NOT EXISTS (
+        SELECT p FROM Payment p 
+        WHERE p.booking.id = b.id 
+        AND p.status = 'PAGADO'
+    )
+    """)
+    List<Booking> findExpiredUnpaidBookings(@Param("threshold") LocalDateTime threshold);
 }
