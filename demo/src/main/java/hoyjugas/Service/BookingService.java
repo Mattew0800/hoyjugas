@@ -8,9 +8,11 @@ import hoyjugas.DTO.Booking.RescheduleBookingRequestDTO;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 
+@Slf4j
 @Service
 public class BookingService extends BaseBookingService {
 
@@ -38,6 +41,7 @@ public class BookingService extends BaseBookingService {
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final PaymentRepository paymentRepository;
     private final ComplexScheduleRepository complexScheduleRepository;
+    private final MercadoPagoService mercadoPagoService;
 
     public BookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -45,7 +49,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository, MercadoPagoService mercadoPagoService) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -54,6 +58,7 @@ public class BookingService extends BaseBookingService {
         this.spaceScheduleRepository=spaceScheduleRepository;
         this.paymentRepository=paymentRepository;
         this.complexScheduleRepository = complexScheduleRepository;
+        this.mercadoPagoService = mercadoPagoService;
     }
 
     public List<SpaceAvailabilityDTO> getAvailability(Long spaceId, LocalDate date) {
@@ -99,7 +104,6 @@ public class BookingService extends BaseBookingService {
                 current = slotEnd;
             }
         }
-
         return slots;
     }
 
@@ -110,28 +114,13 @@ public class BookingService extends BaseBookingService {
         LocalDateTime endDatetime = dto.getStartDatetime()
                 .plusMinutes(space.getSlotDuration() * slots);
         validateAvailability(space.getId(), dto.getStartDatetime(), endDatetime);
-        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime())
-                .multiply(BigDecimal.valueOf(slots));
-        BigDecimal minDeposit = space.getDepositValue();
-        if (dto.getDepositAmount().compareTo(minDeposit) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("El monto mínimo es $%.2f", minDeposit));
-        }
-        if (dto.getDepositAmount().compareTo(totalPrice) > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "El monto no puede superar el total");
-        }
+        BigDecimal totalPrice = pricingService.getPriceForSlot(space, dto.getStartDatetime()).multiply(BigDecimal.valueOf(slots));
         Booking booking = buildBooking(client, space, dto.getStartDatetime(), endDatetime, totalPrice);
         booking.setSlots(slots);
         booking.setTermsAccepted(dto.getTermsAccepted());
         booking.setTermsAcceptedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
         saved = assignBookingNumber(saved);
-        Payment deposit = buildPayment(saved, dto.getPaymentMethod(), dto.getDepositAmount(),
-                null, null, PaymentType.DEPOSITO);
-        deposit.setStatus(PaymentStatus.PAGADO);
-        paymentRepository.save(deposit);
-        saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), totalPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
         return buildBookingResponseDTO(saved);
@@ -250,7 +239,6 @@ public class BookingService extends BaseBookingService {
     public BookingResponseDTO cancelBooking(CancelBookingRequestDTO dto, User employee) {
         Long bookingId = dto.getBookingId();
         Booking booking = getBookingOrThrow(bookingId);
-
         if (booking.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar un turno finalizado");
         }
@@ -308,7 +296,6 @@ public class BookingService extends BaseBookingService {
                                     dto.setPaymentCollectedByName(p.getCollectedBy().getName());
                                 }
                             });
-
                     return dto;
                 });
     }
@@ -353,46 +340,25 @@ public class BookingService extends BaseBookingService {
                 .toList();
     }
 
-    private void scheduleReminder(Booking booking) {
-        boolean yaExiste = bookingNotificationRepository
-                .existsByBookingIdAndType(booking.getId(), NotificationType.RECUERDO_24H);
-
-        if (!yaExiste) {
-            SystemConfig config = getSystemConfig();
-            BookingNotification notif = new BookingNotification();
-            notif.setBooking(booking);
-            notif.setType(NotificationType.RECUERDO_24H);
-            notif.setStatus(NotificationStatus.PENDIENTE);
-            notif.setHoursBefore(config.getReminderHoursBeforeBooking());
-            bookingNotificationRepository.save(notif);
-        }
-    }
-
     @Transactional
     public BookingResponseDTO processRefund(Long bookingId, ProcessRefundRequestDTO dto, User employee) {
         Booking booking = getBookingOrThrow(bookingId);
-
         if (!booking.getBookingStatus().equals(BookingStatus.CANCELADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El turno no está cancelado");
         }
-
         if (booking.getRefunded()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La devolución ya fue procesada");
         }
-
         Payment refund = paymentRepository
                 .findByBookingIdAndTypeAndStatus(bookingId, PaymentType.DEVOLUCION, PaymentStatus.PENDIENTE)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay devolución pendiente"));
-
         refund.setMethod(dto.getPaymentMethod());
         refund.setCollectedBy(employee);
         refund.setStatus(PaymentStatus.PAGADO);
         refund.setTransactionId(dto.getTransactionId());
         paymentRepository.save(refund);
-
         booking.setRefunded(true);
         bookingRepository.save(booking);
-
         return buildBookingResponseDTO(booking);
     }
 
@@ -410,7 +376,6 @@ public class BookingService extends BaseBookingService {
     @Transactional
     public BookingResponseDTO rescheduleBooking(RescheduleBookingRequestDTO dto, User employee) {
         Booking original = getBookingOrThrow(dto.getOriginalBookingId());
-
         if (original.getBookingStatus().equals(BookingStatus.FINALIZADO)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se puede reprogramar un turno finalizado");
@@ -758,4 +723,51 @@ public class BookingService extends BaseBookingService {
         }
         return count;
     }
+
+    @Transactional
+    public BookingWebCreatedResponseDTO createBookingAndPayment(ClientBookingRequestDTO dto, User client) {
+        BookingResponseDTO bookingResponse = createBookingByClient(dto, client);
+        if(dto.getPaymentType()!=PaymentType.SEÑA&&dto.getPaymentType()!=PaymentType.PAGO_TOTAL){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tipo de pago invalido");
+        }
+        try {
+            Booking bookingEntity = getBookingEntity(bookingResponse.getId());
+            String mpUrl = mercadoPagoService.createPreference(bookingEntity, dto.getPaymentType());
+            log.info("Booking {} creado exitosamente con preferencia de MP", bookingResponse.getId());
+            return new BookingWebCreatedResponseDTO(bookingResponse, mpUrl);
+        } catch (Exception e) {
+            log.error("Error creando preferencia de MP para booking {}: {}",
+                    bookingResponse.getId(), e.getMessage(), e);
+            markAsPaymentError(bookingResponse.getId());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al procesar el pago en Mercado Pago. Por favor intentá de nuevo.");
+        }
+    }
+
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
+    }
+
+    public void markAsPaymentError(Long bookingId) {
+        Booking booking = getBookingOrThrow(bookingId);
+        booking.setBookingStatus(BookingStatus.CANCELADO);
+        bookingRepository.save(booking);
+    }
+
+    @Scheduled(cron = "0 */10 * * * *") //libera turnos que no se han pagado, cada 10 mins
+    @Transactional
+    public void cancelExpiredUnpaidBookings() {
+        LocalDateTime expiryThreshold = LocalDateTime.now().minusMinutes(15);
+        List<Booking> expiredBookings = bookingRepository.findExpiredUnpaidBookings(expiryThreshold);
+
+        for (Booking booking : expiredBookings) {
+            booking.setBookingStatus(BookingStatus.CANCELADO);
+        }
+
+        if (!expiredBookings.isEmpty()) {
+            bookingRepository.saveAll(expiredBookings);
+            log.info("Se cancelaron {} reservas expiradas sin pago.", expiredBookings.size());
+        }
+    }
+
 }
