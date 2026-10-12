@@ -30,12 +30,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     SELECT COALESCE(SUM(p.amount), 0)
     FROM Payment p
     WHERE p.booking.id = :bookingId
-    AND p.type = :type
+    AND p.type IN :types
     AND p.status = :status
     """)
-    BigDecimal findTotalByBookingIdAndType(
+    BigDecimal findTotalByBookingIdAndTypes(
             @Param("bookingId") Long bookingId,
-            @Param("type") PaymentType type,
+            @Param("types") List<PaymentType> types,
             @Param("status") PaymentStatus status
     );
 
@@ -65,6 +65,21 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         AND p.status = :status
         """)
     BigDecimal findTotalByBookingIdAndTypeAndStatus(
+            @Param("bookingId") Long bookingId,
+            @Param("type") PaymentType type,
+            @Param("status") PaymentStatus status
+    );
+
+    Optional<Payment> findByTransactionId(String transactionId);
+
+    @Query("""
+    SELECT COALESCE(SUM(p.amount), 0)
+    FROM Payment p
+    WHERE p.booking.id = :bookingId
+    AND p.type = :type
+    AND p.status = :status
+    """)
+    BigDecimal findTotalByBookingIdAndType(
             @Param("bookingId") Long bookingId,
             @Param("type") PaymentType type,
             @Param("status") PaymentStatus status
