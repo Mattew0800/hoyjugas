@@ -43,7 +43,12 @@ export class BookingDetailModal implements OnChanges {
   canceled = new EventEmitter<void>();
 
   @Output()
-  paymentConfirmed = new EventEmitter<BookingListModel>();
+  paymentConfirmed = new EventEmitter<{
+    booking: BookingListModel;
+    paymentMethod: string;
+    employeePin: string;
+    amount: number;
+  }>();
 
   bookingDetail?: BookingResponseModel;
 
@@ -87,6 +92,9 @@ export class BookingDetailModal implements OnChanges {
 
   observationLoading = false;
 
+  paymentEmployeePin = '';
+  paymentLoading = false;
+
   constructor(
     private bookingService: BookingService,
     private recurringBookingService: RecurringBookingService,
@@ -124,6 +132,8 @@ export class BookingDetailModal implements OnChanges {
 
     this.selectedPaymentMethod = 'EFECTIVO';
     this.receivedAmount = 0;
+    this.paymentEmployeePin = '';
+    this.paymentLoading = false;
 
     this.internalObservation = '';
     this.observationError = '';
@@ -330,6 +340,7 @@ export class BookingDetailModal implements OnChanges {
       !!this.bookingDetail &&
       !this.loading &&
       !this.cancellationLoading &&
+      !this.paymentLoading &&
       this.remainingAmount > 0 &&
       this.paymentStatus !== 'PAGADO'
     );
@@ -349,35 +360,35 @@ export class BookingDetailModal implements OnChanges {
     return received - this.remainingAmount;
   }
 
+
   confirmPayment(): void {
-    if (!this.bookingDetail) {
+    if (!this.bookingDetail || !this.booking) {
       return;
     }
 
-    if (!this.canConfirmPayment) {
+    if (!this.canConfirmPayment || this.paymentLoading) {
       return;
     }
 
     this.paymentError = '';
 
-    const receivedAmount =
-      Number(this.receivedAmount);
+    const receivedAmount = Number(this.receivedAmount);
+    const employeePin = this.paymentEmployeePin.trim();
+    const isCash = this.selectedPaymentMethod === 'EFECTIVO';
 
-    if (
-      !Number.isFinite(receivedAmount) ||
-      receivedAmount <= 0
-    ) {
-      this.paymentError =
-        'Ingresá un importe recibido válido.';
+    if (!Number.isFinite(receivedAmount) || receivedAmount <= 0) {
+      this.paymentError = 'Ingresá un importe recibido válido.';
       return;
     }
 
     if (
-      receivedAmount <
-      this.remainingAmount
+      isCash
+        ? receivedAmount < this.remainingAmount
+        : receivedAmount !== this.remainingAmount
     ) {
-      this.paymentError =
-        `El importe recibido debe ser igual o mayor al saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`;
+      this.paymentError = isCash
+        ? `El importe debe ser igual o mayor al saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`
+        : `El importe debe coincidir con el saldo pendiente de $${this.remainingAmount.toLocaleString('es-AR')}.`;
       return;
     }
 
@@ -389,25 +400,24 @@ export class BookingDetailModal implements OnChanges {
       'CREDITO'
     ];
 
-    if (
-      !validPaymentMethods.includes(
-        this.selectedPaymentMethod
-      )
-    ) {
-      this.paymentError =
-        'Seleccioná un método de pago válido.';
+    if (!validPaymentMethods.includes(this.selectedPaymentMethod)) {
+      this.paymentError = 'Seleccioná un método de pago válido.';
       return;
     }
 
-    if (!this.booking) {
-      this.paymentError =
-        'No se pudo identificar el turno.';
+    if (!/^\d{4}$/.test(employeePin)) {
+      this.paymentError = 'El PIN del empleado debe tener exactamente 4 números.';
       return;
     }
 
-    this.paymentConfirmed.emit(
-      this.booking
-    );
+    this.paymentLoading = true;
+
+    this.paymentConfirmed.emit({
+      booking: this.booking,
+      paymentMethod: this.selectedPaymentMethod,
+      employeePin,
+      amount: this.remainingAmount
+    });
   }
 
   onConfirmPayment(): void {
@@ -676,6 +686,11 @@ export class BookingDetailModal implements OnChanges {
             this.errorHandler.getMessage(error);
         }
       });
+  }
+
+  setPaymentError(message: string): void {
+    this.paymentError = message;
+    this.paymentLoading = false;
   }
 
   openClientProfile(): void {

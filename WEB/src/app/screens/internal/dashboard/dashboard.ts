@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 import { InternalHeader } from '../components/internal-header/internal-header';
@@ -34,6 +34,8 @@ import { ErrorHandlerService} from '../../../services/ErrorHandlerService/error-
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
+
+
 export class Dashboard implements OnInit {
 
   spaces: SpaceModel[] = [];
@@ -45,6 +47,9 @@ export class Dashboard implements OnInit {
     nextBookingSubtitle: '',
     estimatedRevenue: 0
   };
+
+  @ViewChild(BookingDetailModal)
+  bookingDetailModal?: BookingDetailModal;
 
   headerTitle = 'Turnos del día';
 
@@ -890,11 +895,33 @@ export class Dashboard implements OnInit {
 
   }
 
-  confirmPayment(
-    booking: BookingListModel
-  ): void {
-    this.closeBookingModal();
 
+
+
+  confirmPayment(payment: {
+    booking: BookingListModel;
+    paymentMethod: string;
+    employeePin: string;
+    amount: number;
+  }): void {
+    this.bookingService.completeBookingPayment({
+      bookingId: payment.booking.id,
+      paymentMethod: payment.paymentMethod,
+      employeePin: payment.employeePin,
+      amount: payment.amount
+    }).subscribe({
+      next: () => {
+        this.closeBookingModal();
+        this.loadBookings();
+      },
+      error: (error) => {
+        const message = this.errorHandler.getMessage(error);
+
+        this.bookingDetailModal?.setPaymentError(message);
+      }
+    });
   }
+
+
 
 }

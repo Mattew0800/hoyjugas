@@ -146,4 +146,19 @@ export class BookingService {
       }
     );
   }
+
+  completeBookingPayment(request: {
+    bookingId: number;
+    paymentMethod: string;
+    employeePin: string;
+    amount: number;
+    observations?: string;
+  }): Observable<BookingResponseModel> {
+    return this.http.post<BookingResponseModel>(
+      `${this.bookingApiUrl}/complete`,
+      request,
+      { withCredentials: true }
+    );
+  }
+
 }

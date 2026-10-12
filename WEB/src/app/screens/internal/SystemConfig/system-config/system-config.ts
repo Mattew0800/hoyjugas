@@ -206,10 +206,11 @@ export class SystemConfigScreen implements OnInit {
 
     if (
       this.config.recurringDepositMultiplier == null ||
-      this.config.recurringDepositMultiplier < 1
+      !Number.isFinite(Number(this.config.recurringDepositMultiplier)) ||
+      Number(this.config.recurringDepositMultiplier) <= 0
     ) {
       this.recurringDepositMultiplierError =
-        'El valor debe ser mayor o igual a 1.';
+        'El valor debe ser mayor a 0.';
       valid = false;
     }
 

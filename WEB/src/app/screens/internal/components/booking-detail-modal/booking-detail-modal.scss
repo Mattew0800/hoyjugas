@@ -487,25 +487,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 
-  gap: 16px;
-
-  padding: 20px 24px;
-
+  padding: 16px 20px;
   border-top: 1px solid #2D2D2D;
 
   flex-shrink: 0;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .footer-cancellation-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .footer-actions {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .secondary-button {
@@ -601,34 +609,39 @@
 }
 
 .cancel-cycle-button {
-  height: 46px;
+  min-height: 46px;
+  height: auto;
+  min-width: 0;
+  max-width: 145px;
 
-  padding: 0 22px;
+  padding: 6px 12px;
 
   border: 1px solid #A56B2A;
   border-radius: 10px;
 
   background: transparent;
-
   color: #D4A05A;
 
-  font-size: 14px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.15;
   font-weight: 600;
 
-  cursor: pointer;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: center;
 
+  cursor: pointer;
   transition: .2s;
 }
 
 .cancel-cycle-button:hover:not(:disabled) {
   background: rgba(212, 160, 90, .10);
-
   border-color: #D4A05A;
 }
 
 .cancel-cycle-button:disabled {
   opacity: .55;
-
   cursor: not-allowed;
 }
 
@@ -895,6 +908,18 @@
   font-size: 14px;
   text-align: center;
 }
+.cancel-booking-button,
+.cancel-cycle-button,
+.secondary-button,
+.primary-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  white-space: normal;
+  text-align: center;
+}
+
 
 @media (max-width: 900px) {
 

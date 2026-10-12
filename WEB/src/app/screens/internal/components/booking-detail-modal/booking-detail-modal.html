@@ -448,17 +448,28 @@
                   <input
                     type="number"
                     [(ngModel)]="receivedAmount"
-                    [min]="remainingAmount"
-                    [placeholder]="remainingAmount.toString()">
+                    [min]="selectedPaymentMethod === 'EFECTIVO' ? remainingAmount : remainingAmount"
+                    [placeholder]="remainingAmount.toString()"
+                    [disabled]="paymentLoading">
 
                 </div>
 
-                @if (paymentError) {
+                <div class="payment-input">
+                  <label>PIN del empleado</label>
 
+                  <input
+                    type="password"
+                    maxlength="4"
+                    inputmode="numeric"
+                    [(ngModel)]="paymentEmployeePin"
+                    [disabled]="paymentLoading"
+                    placeholder="••••">
+                </div>
+
+                @if (paymentError) {
                   <div class="payment-error">
                     {{ paymentError }}
                   </div>
-
                 }
 
                 <div class="payment-input">
@@ -592,16 +603,19 @@
               </button>
 
               @if (!isPaid && remainingAmount > 0) {
-
                 <button
                   type="button"
                   class="primary-button"
+                  [disabled]="!canConfirmPayment"
                   (click)="onConfirmPayment()">
 
-                  Cobrar turno
+                  @if (paymentLoading) {
+                    Procesando cobro...
+                  } @else {
+                    Cobrar turno
+                  }
 
                 </button>
-
               }
 
             </div>
