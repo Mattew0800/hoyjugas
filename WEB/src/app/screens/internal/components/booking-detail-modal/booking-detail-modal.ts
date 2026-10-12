@@ -466,8 +466,7 @@ export class BookingDetailModal implements OnChanges {
   ): void {
     if (
       this.loading ||
-      this.cancellationLoading ||
-      this.isPaid
+      this.cancellationLoading
     ) {
       return;
     }
@@ -548,6 +547,10 @@ export class BookingDetailModal implements OnChanges {
       cancellationReason: reason,
       employeePin: pin
     };
+
+    console.log('Booking ID:', this.bookingDetail.id);
+    console.log('¿Es recurrente?:', this.bookingDetail.recurring);
+    console.log('Detalle completo:', this.bookingDetail);
 
     if (this.bookingDetail.recurring) {
       this.recurringBookingService
