@@ -42,6 +42,7 @@ public class BookingResponseDTO {
     private String paymentCollectedByName;
     private LocalDateTime createdAt;
 
+    private boolean isRecurring;
     private Boolean termsAccepted;
 
     public static BookingResponseDTO fromEntity(
@@ -83,7 +84,7 @@ public class BookingResponseDTO {
 
         dto.setCreatedAt(booking.getCreatedAt());
         dto.setTermsAccepted(booking.getTermsAccepted());
-
+        dto.setRecurring(booking.isRecurring());
         return dto;
     }
 }
