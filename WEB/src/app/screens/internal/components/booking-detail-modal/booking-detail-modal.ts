@@ -92,6 +92,9 @@ export class BookingDetailModal implements OnChanges {
 
   observationLoading = false;
 
+  recurringErrorMessage = '';
+
+
   paymentEmployeePin = '';
   paymentLoading = false;
 
@@ -113,6 +116,7 @@ export class BookingDetailModal implements OnChanges {
 
     this.recurringBookingDetail = undefined;
     this.recurringBookingId = null;
+    this.recurringErrorMessage='';
 
     this.loading = false;
     this.errorMessage = '';
@@ -175,6 +179,9 @@ export class BookingDetailModal implements OnChanges {
   private loadRecurringBookingDetail(
     bookingId: number
   ): void {
+
+    this.recurringErrorMessage='';
+
     this.recurringBookingService
       .getRecurringBookingDetail(bookingId)
       .subscribe({
@@ -187,7 +194,7 @@ export class BookingDetailModal implements OnChanges {
         },
         error: error => {
           this.loading = false;
-          this.errorMessage =
+          this.recurringErrorMessage =
             this.errorHandler.getMessage(error);
         }
       });
@@ -557,10 +564,6 @@ export class BookingDetailModal implements OnChanges {
       cancellationReason: reason,
       employeePin: pin
     };
-
-    console.log('Booking ID:', this.bookingDetail.id);
-    console.log('¿Es recurrente?:', this.bookingDetail.recurring);
-    console.log('Detalle completo:', this.bookingDetail);
 
     if (this.bookingDetail.recurring) {
       this.recurringBookingService

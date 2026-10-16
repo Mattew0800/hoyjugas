@@ -138,6 +138,8 @@ export class SpacesScreen implements OnInit {
         },
         error: error => {
           this.processingStatusChange = false;
+          this.confirmingSpaceId= null;
+          this.confirmingSpaceActive=null;
           this.errorMessage =
             this.errorHandler.getMessage(error);
         }

@@ -27,7 +27,7 @@
     class="column-body"
     [style.height.px]="timelineHeight">
 
-    @if (space.slots.length === 0) {
+    @if (space.slots.length === 0 && !isPastDate) {
 
       <div class="not-configured">
         Este espacio no está configurado

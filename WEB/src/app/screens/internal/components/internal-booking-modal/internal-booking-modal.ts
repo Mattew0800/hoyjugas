@@ -123,7 +123,6 @@ export class InternalBookingModal implements OnInit{
 
     this.userService.getClients(true).subscribe({
       next: clients => {
-        console.log('Clientes recibidos:', clients);
         this.clients = clients;
         this.filteredClients = [];
         this.clientsLoading = false;

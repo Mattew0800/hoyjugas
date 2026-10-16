@@ -309,7 +309,7 @@ export class Dashboard implements OnInit {
 
   }
 
-  private isPastDate(date: Date): boolean {
+   isPastDate(date: Date): boolean {
 
     const selectedDate = new Date(
       date.getFullYear(),

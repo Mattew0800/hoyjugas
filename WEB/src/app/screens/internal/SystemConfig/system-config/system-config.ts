@@ -280,8 +280,11 @@ export class SystemConfigScreen implements OnInit {
     this.editingScheduleId = schedule.id;
 
     this.scheduleDayType = schedule.dayType;
-    this.scheduleOpeningTime = schedule.openingTime;
-    this.scheduleClosingTime = schedule.closingTime;
+    this.scheduleOpeningTime =
+      schedule.openingTime?.substring(0, 5) ?? '';
+
+    this.scheduleClosingTime =
+      schedule.closingTime?.substring(0, 5) ?? '';
 
     this.clearScheduleErrors();
   }
