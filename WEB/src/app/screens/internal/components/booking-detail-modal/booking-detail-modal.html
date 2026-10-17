@@ -580,7 +580,7 @@
                 <button
                   type="button"
                   class="cancel-cycle-button"
-                  [disabled]="bookingDetail.status === 'CANCELADO'"
+                  [disabled]="!recurringBookingDetail ||recurringBookingDetail.status === 'CANCELADO'"
                   (click)="openCancelForm('cycle')">
 
                   Cancelar ciclo completo

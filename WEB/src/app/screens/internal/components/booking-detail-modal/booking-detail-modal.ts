@@ -653,12 +653,15 @@ export class BookingDetailModal implements OnChanges {
       return;
     }
 
-    if (
-      this.bookingDetail.status ===
-      'CANCELADO'
-    ) {
+    if (!this.recurringBookingDetail) {
       this.cancellationError =
-        'El turno ya está cancelado.';
+        'No se pudo obtener el ciclo recurrente.';
+      return;
+    }
+
+    if (this.recurringBookingDetail.status === 'CANCELADO') {
+      this.cancellationError =
+        'El ciclo recurrente ya está cancelado.';
       return;
     }
 

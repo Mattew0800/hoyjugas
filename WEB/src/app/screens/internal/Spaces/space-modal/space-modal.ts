@@ -357,25 +357,15 @@ export class SpaceModal implements OnInit {
   private updateExistingSpace(): void {
     this.saving = true;
 
-    this.validatePricing(this.spaceId!).subscribe({
+    const spaceRequest = {
+      spaceId: this.spaceId,
+      ...this.space
+    };
+
+    this.spaceService.updateSpace(spaceRequest).subscribe({
       next: () => {
-        const spaceRequest = {
-          spaceId: this.spaceId,
-          ...this.space
-        };
-
-        this.spaceService.updateSpace(spaceRequest).subscribe({
-          next: () => {
-            this.updateSchedules();
-          },
-
-          error: error => {
-            this.saving = false;
-            this.errorMessage = this.getSpaceErrorMessage(error);
-          }
-        });
+        this.updateSchedules();
       },
-
       error: error => {
         this.saving = false;
         this.errorMessage = this.getSpaceErrorMessage(error);
