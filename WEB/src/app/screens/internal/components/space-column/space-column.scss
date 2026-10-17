@@ -159,3 +159,21 @@
   font-size: 12px;
 
 }
+
+.not-configured {
+  position: absolute;
+  top: 10%;
+  left: 12px;
+  right: 12px;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+  text-align: center;
+  color: #8A8A8A;
+  font-size: 16px;
+  line-height: 1.5;
+}

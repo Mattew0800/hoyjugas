@@ -1,13 +1,16 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import {
   FormControl,
-  FormGroup,
+  FormGroup, FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+import {UserService} from '../../../../services/UserService/user-service';
+import {SpaceService} from '../../../../services/SpaceService/SpaceService';
+import {CustomerModel} from '../../models/user-response';
+import {SpaceListModel} from '../../models/space-list-model';
 import { BookingService } from '../../../../services/BookingService/booking-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
 import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
@@ -19,11 +22,11 @@ import { RecurringBookingRequestModel } from '../../models/recurring-booking-req
 @Component({
   selector: 'app-internal-booking-modal',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, FormsModule],
   templateUrl: './internal-booking-modal.html',
   styleUrl: './internal-booking-modal.scss'
 })
-export class InternalBookingModal {
+export class InternalBookingModal implements OnInit{
 
   @Input() selectedDate!: Date;
 
@@ -49,10 +52,27 @@ export class InternalBookingModal {
 
   preview: RecurringBookingPreviewModel | null = null;
 
+  clients: CustomerModel[] = [];
+  spaces: SpaceListModel[] = [];
+
+  clientSearch = '';
+  spaceSearch = '';
+
+  filteredClients: CustomerModel[] = [];
+  filteredSpaces: SpaceListModel[] = [];
+
+  selectedClient: CustomerModel | null = null;
+  selectedSpace: SpaceListModel | null = null;
+
+  clientsLoading = false;
+  spacesLoading = false;
+
   constructor(
     private bookingService: BookingService,
     private errorHandler: ErrorHandlerService,
-    private recurringBookingService: RecurringBookingService
+    private recurringBookingService: RecurringBookingService,
+    private userService: UserService,
+    private spaceService: SpaceService
   ) {
     this.form = new FormGroup({
       clientId: new FormControl<number | null>(null, [
@@ -94,6 +114,89 @@ export class InternalBookingModal {
 
   ngOnInit(): void {
     this.initializeStartDate();
+    this.loadClients();
+    this.loadSpaces();
+  }
+
+  private loadClients(): void {
+    this.clientsLoading = true;
+
+    this.userService.getClients(true).subscribe({
+      next: clients => {
+        this.clients = clients;
+        this.filteredClients = [];
+        this.clientsLoading = false;
+      },
+      error: error => {
+        console.error('Error cargando clientes:', error);
+        this.clientsLoading = false;
+        this.errorMessage = this.errorHandler.getMessage(error);
+      }
+    });
+  }
+
+  private loadSpaces(): void {
+    this.spacesLoading = true;
+
+    this.spaceService.getAllActiveSpaces().subscribe({
+      next: spaces => {
+        console.log('Espacios recibidos:', spaces);
+        this.spaces = spaces;
+        this.filteredSpaces = [];
+        this.spacesLoading = false;
+      },
+      error: error => {
+        console.error('Error cargando espacios:', error);
+        this.spacesLoading = false;
+        this.errorMessage = this.errorHandler.getMessage(error);
+      }
+    });
+  }
+
+  searchClients(): void {
+    const dni = this.clientSearch.trim();
+
+    this.selectedClient = null;
+    this.form.get('clientId')?.setValue(null);
+
+    if (!dni) {
+      this.filteredClients = [];
+      return;
+    }
+
+    this.filteredClients = this.clients
+      .filter(client => client.dni.includes(dni))
+      .slice(0, 10);
+  }
+
+  selectClient(client: CustomerModel): void {
+    this.selectedClient = client;
+    this.clientSearch = `${client.name} — DNI: ${client.dni}`;
+    this.form.get('clientId')?.setValue(client.id);
+    this.filteredClients = [];
+  }
+
+  searchSpaces(): void {
+    const name = this.spaceSearch.trim().toLowerCase();
+
+    this.selectedSpace = null;
+    this.form.get('spaceId')?.setValue(null);
+
+    if (!name) {
+      this.filteredSpaces = [];
+      return;
+    }
+
+    this.filteredSpaces = this.spaces
+      .filter(space => space.name.toLowerCase().includes(name))
+      .slice(0, 10);
+  }
+
+  selectSpace(space: SpaceListModel): void {
+    this.selectedSpace = space;
+    this.spaceSearch = space.name;
+    this.form.get('spaceId')?.setValue(space.id);
+    this.filteredSpaces = [];
   }
 
   private initializeStartDate(): void {
