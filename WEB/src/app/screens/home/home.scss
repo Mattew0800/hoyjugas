@@ -4,15 +4,17 @@
   font-family: Roboto, sans-serif;
 }
 
+
+
 .home-screen {
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #000000;
   color: white;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  justify-content: space-between;
 }
 
 /* FIELD */
@@ -334,4 +336,10 @@
   .reservation-card {
     transition: none;
   }
+}
+
+/* Compensa la altura del bottom navbar fijo (55px + 16px offset + safe-area) */
+.navbar-spacer {
+  height: calc(55px + 16px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
