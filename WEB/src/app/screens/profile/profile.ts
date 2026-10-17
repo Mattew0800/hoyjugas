@@ -95,10 +95,9 @@ export class Profile implements OnInit{
             this.successMessage = '';
           }, 3000);
         },
-        error: () => {
+        error: (err) => {
 
-          this.errorMessage =
-            'No se pudieron guardar los cambios';
+          this.errorMessage = err.error;
 
           setTimeout(() => {
             this.successMessage = '';
