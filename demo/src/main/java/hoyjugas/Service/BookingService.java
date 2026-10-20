@@ -40,6 +40,8 @@ public class BookingService extends BaseBookingService {
     private final PricingService pricingService;
     private final SpaceScheduleRepository spaceScheduleRepository;
     private final PaymentRepository paymentRepository;
+    private final WhatsAppService whatsAppService;
+    private final CashMovementRepository cashMovementRepository;
     private final ComplexScheduleRepository complexScheduleRepository;
     private final MercadoPagoService mercadoPagoService;
 
@@ -49,7 +51,7 @@ public class BookingService extends BaseBookingService {
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, ComplexScheduleRepository complexScheduleRepository, MercadoPagoService mercadoPagoService) {
+            PricingService pricingService, SpaceScheduleRepository spaceScheduleRepository, PaymentRepository paymentRepository, MercadoPagoService mercadoPagoService, WhatsAppService whatsAppService,CashMovementRepository cashMovementRepository,ComplexScheduleRepository complexScheduleRepository) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.bookingRepository = bookingRepository;
         this.spaceRepository = spaceRepository;
@@ -57,6 +59,8 @@ public class BookingService extends BaseBookingService {
         this.pricingService = pricingService;
         this.spaceScheduleRepository=spaceScheduleRepository;
         this.paymentRepository=paymentRepository;
+        this.whatsAppService = whatsAppService;
+        this.cashMovementRepository=cashMovementRepository;
         this.complexScheduleRepository = complexScheduleRepository;
         this.mercadoPagoService = mercadoPagoService;
     }
@@ -273,7 +277,8 @@ public class BookingService extends BaseBookingService {
         booking.setCancellationReason(dto.getCancellationReason());
         booking.setPaymentStatus(calculatePaymentStatus(bookingId, booking.getTotalAmount()));
         bookingRepository.save(booking);
-        scheduleNotification(booking, NotificationType.CANCELACION);
+        // ver esto xd scheduleNotification(booking, NotificationType.CANCELACION);
+        whatsAppService.sendCancellationNotification(booking);
         return buildBookingResponseDTO(booking);
     }
 
@@ -296,6 +301,7 @@ public class BookingService extends BaseBookingService {
                                     dto.setPaymentCollectedByName(p.getCollectedBy().getName());
                                 }
                             });
+
                     return dto;
                 });
     }
@@ -430,11 +436,29 @@ public class BookingService extends BaseBookingService {
         saved.setPaymentStatus(calculatePaymentStatus(saved.getId(), newPrice));
         bookingRepository.save(saved);
         scheduleReminder(saved);
-        scheduleNotification(saved, NotificationType.CANCELACION);
+        // ver esto de vuelta scheduleNotification(saved, NotificationType.CANCELACION);
+        whatsAppService.sendRescheduleNotification(original, saved);
         return buildBookingResponseDTO(saved);
     }
 
-    @Transactional(readOnly = true)
+    //public void markAsPaymentError(Long bookingId){
+      //  Booking booking = getBookingOrThrow(bookingId);
+        //booking.setBookingStatus(BookingStatus.ERROR_DE_PAGO);
+        //bookingRepository.save(booking);
+    //}
+
+    @Transactional
+    public void markAbsent(Long bookingId, User employee) {//ver como ligar al empleado
+        Booking booking = getBookingOrThrow(bookingId);
+        if (!booking.getBookingStatus().equals(BookingStatus.CONFIRMADO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El turno no está confirmado");
+        }
+        booking.setBookingStatus(BookingStatus.FINALIZADO);
+        bookingRepository.save(booking);
+        whatsAppService.sendAbsentNotification(booking);
+    }
+
     public ComplexScheduleResponseDTO getComplexSchedule() {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
@@ -759,11 +783,9 @@ public class BookingService extends BaseBookingService {
     public void cancelExpiredUnpaidBookings() {
         LocalDateTime expiryThreshold = LocalDateTime.now().minusMinutes(15);
         List<Booking> expiredBookings = bookingRepository.findExpiredUnpaidBookings(expiryThreshold);
-
         for (Booking booking : expiredBookings) {
             booking.setBookingStatus(BookingStatus.CANCELADO);
         }
-
         if (!expiredBookings.isEmpty()) {
             bookingRepository.saveAll(expiredBookings);
             log.info("Se cancelaron {} reservas expiradas sin pago.", expiredBookings.size());

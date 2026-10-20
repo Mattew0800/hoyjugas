@@ -10,11 +10,9 @@ import hoyjugas.DTO.Space.SpaceIdRequestDTO;
 import hoyjugas.DTO.Space.SpaceSimpleResponseDTO;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
-import hoyjugas.Service.BookingService;
-import hoyjugas.Service.MercadoPagoService;
-import hoyjugas.Service.SpaceService;
-import hoyjugas.Service.UserService;
+import hoyjugas.Service.*;
 import jakarta.validation.Valid;
+import hoyjugas.Service.SpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
+    private final WhatsAppService whatsAppService;
     private final SpaceService spaceService;
 
     @PostMapping("/create")
@@ -111,7 +111,7 @@ public class BookingController {
 //    @PreAuthorize("hasRole('EMPLOYEE')")
 //    public ResponseEntity<BookingResponseDTO> processRefund(
 //            @Valid @RequestBody ProcessRefundRequestDTO dto) {
-//        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+//        User employee = userService.validateStaffPin(dto.getEmployeePin());
 //        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
 //    }
 
@@ -132,10 +132,24 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
 
-    @GetMapping("/next")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
-        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    @PostMapping("/mark-absent")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<?> markAbsent(@Valid @RequestBody MarkAbsentRequestDTO dto) {
+        User employee = userService.validateStaffPin(dto.getEmployeePin());
+        bookingService.markAbsent(dto.getBookingId(), employee);
+        return ResponseEntity.ok(Map.of("message","Reserva marcada como ausente exitosamente"));
+    }
+
+    @PostMapping("/test-reminder")
+    public ResponseEntity<Void>testReminder() {
+        whatsAppService.sendBookingReminder(bookingService.getBookingEntity(307L), BigDecimal.valueOf(120000));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("test-cancellation")
+    public ResponseEntity<Void>testCancellation() {
+        whatsAppService.sendCancellationNotification(bookingService.getBookingEntity(310L));
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/add-observation")
@@ -143,6 +157,12 @@ public class BookingController {
     public ResponseEntity<?> addObservation(@Valid @RequestBody BookingObservationRequestDTO dto) {
         bookingService.addObservations(dto.getBookingId(), dto.getContent());
         return ResponseEntity.ok(Map.of("message", "Observación agregada correctamente"));
+    }
+
+    @GetMapping("/next")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
     }
 
     //endpoints publicos
