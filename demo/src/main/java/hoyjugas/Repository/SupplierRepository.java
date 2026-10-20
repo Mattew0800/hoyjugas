@@ -13,4 +13,5 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     boolean existsByCuit(String cuit);
     boolean existsBySupplierNumberAndIdNot(String supplierNumber, Long id);
     boolean existsByCuitAndIdNot(String cuit, Long id);
+    boolean existsByAccountNumber(String accountNumber);
 }

@@ -8,8 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MarkAbsentRequestDTO {
-    @NotNull
+    @NotNull(message = "El id de la reserva es obligatorio")
     private Long bookingId;
-    @NotBlank
+    @NotBlank (message = "El PIN es obligatorio")
     private String employeePin;
 }

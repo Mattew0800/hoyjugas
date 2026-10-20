@@ -47,8 +47,10 @@ public class SupplierService {
         if (supplierRepository.existsByCuit(dto.getCuit())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese CUIT");
         }
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rubro no encontrado"));
+        if(supplierRepository.existsByAccountNumber(dto.getSupplierNumber())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese numero de cuenta");
+        }
+        Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rubro no encontrado"));
         Supplier supplier = new Supplier();
         mapDtoToEntity(dto, supplier, category);
         return SupplierDetailDTO.fromEntity(supplierRepository.save(supplier));
@@ -57,16 +59,15 @@ public class SupplierService {
     @Transactional
     public SupplierDetailDTO update(Long id, SupplierRequestDTO dto) {
         Supplier supplier = getSupplierOrThrow(id);
-
         if (supplierRepository.existsBySupplierNumberAndIdNot(dto.getSupplierNumber(), id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un proveedor con ese número");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese número");
         }
         if (supplierRepository.existsByCuitAndIdNot(dto.getCuit(), id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ya existe un proveedor con ese CUIT");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese CUIT");
         }
-
+        if(supplierRepository.existsByAccountNumber(dto.getSupplierNumber())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un proveedor con ese numero de cuenta");
+        }
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Rubro no encontrado"));

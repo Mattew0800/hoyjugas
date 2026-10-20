@@ -72,6 +72,7 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un producto con ese código de barras");
         }
+
         Category category =getCategoryOrThrow(dto.getCategoryId());
         Supplier supplier = null;
         if (dto.getSupplierId() != null) {

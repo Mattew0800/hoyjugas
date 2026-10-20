@@ -17,7 +17,7 @@ public class SupplierRequestDTO {
     private String phone;
 
     @NotBlank(message = "El CUIT es obligatorio")
-    @Size(min = 11, max = 13)
+    @Size(min = 11, max = 13,message = "El tamaño del cuit tiene que ser entre 11 y 13")
     private String cuit;
 
     @NotNull(message = "El rubro es obligatorio")
