@@ -26,7 +26,7 @@ public class SaleController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<SaleResponseDTO> createSale(@Valid @RequestBody SaleRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(saleService.createSale(dto, userService.validateEmployeePin(dto.getEmployeePin())));
+                .body(saleService.createSale(dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/get")
@@ -44,6 +44,6 @@ public class SaleController {
     @PostMapping("/cancel")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<SaleResponseDTO> cancel(@Valid @RequestBody SaleCancelRequestDTO dto) {
-        return ResponseEntity.ok(saleService.cancelSale(dto.getId(),userService.validateEmployeePin(dto.getEmployeePin())));
+        return ResponseEntity.ok(saleService.cancelSale(dto.getId(),userService.validateStaffPin(dto.getEmployeePin())));
     }
 }

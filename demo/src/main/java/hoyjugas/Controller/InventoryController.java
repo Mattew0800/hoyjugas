@@ -61,7 +61,7 @@ public class InventoryController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<InventoryMovementResponseDTO> registerMovement(@Valid @RequestBody InventoryMovementRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(inventoryService.registerMovement(dto.getItemId(), dto, userService.validateEmployeePin(dto.getEmployeePin())));
+                .body(inventoryService.registerMovement(dto.getItemId(), dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/movement/list")

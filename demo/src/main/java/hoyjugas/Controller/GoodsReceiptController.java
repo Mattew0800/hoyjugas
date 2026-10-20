@@ -29,7 +29,7 @@ public class GoodsReceiptController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<GoodsReceiptResponseDTO> create(@Valid @RequestBody GoodsReceiptRequestDTO dto) {
-        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+        User employee = userService.validateStaffPin(dto.getEmployeePin());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(goodsReceiptService.create(dto, employee));
     }

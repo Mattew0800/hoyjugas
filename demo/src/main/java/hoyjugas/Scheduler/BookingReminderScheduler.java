@@ -31,7 +31,7 @@ public class BookingReminderScheduler {
     @Transactional
     public void processReminders() {
         List<BookingNotification> pending = bookingNotificationRepository
-                .findByStatusAndTypeIn(NotificationStatus.PENDIENTE, List.of(NotificationType.RECUERDO_24H,NotificationType.CANCELADO));
+                .findByStatusAndTypeIn(NotificationStatus.PENDIENTE, List.of(NotificationType.RECUERDO_24H,NotificationType.CANCELACION));
         for (BookingNotification notification : pending) {
             Booking booking = notification.getBooking();
              if (notification.getType() == NotificationType.RECUERDO_24H) {
@@ -52,7 +52,7 @@ public class BookingReminderScheduler {
                     }
                     bookingNotificationRepository.save(notification);
                 }
-            }else if(notification.getType() == NotificationType.CANCELADO) {
+            }else if(notification.getType() == NotificationType.CANCELACION) {
                 try {
                     whatsAppService.sendCancellationNotification(booking);
                     notification.setStatus(NotificationStatus.ENVIADO);

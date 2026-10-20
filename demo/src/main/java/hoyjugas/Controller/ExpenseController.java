@@ -52,7 +52,7 @@ public class ExpenseController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ExpenseResponseDTO> createExpense(@Valid @RequestBody ExpenseRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(expenseService.createExpense(dto, userService.validateEmployeePin(dto.getEmployeePin())));
+                .body(expenseService.createExpense(dto, userService.validateStaffPin(dto.getEmployeePin())));
     }
 
     @PostMapping("/get")

@@ -111,7 +111,7 @@ public class BookingController {
 //    @PreAuthorize("hasRole('EMPLOYEE')")
 //    public ResponseEntity<BookingResponseDTO> processRefund(
 //            @Valid @RequestBody ProcessRefundRequestDTO dto) {
-//        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+//        User employee = userService.validateStaffPin(dto.getEmployeePin());
 //        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
 //    }
 
