@@ -3,7 +3,6 @@ package hoyjugas.DTO.CashMovement;
 import hoyjugas.Enum.CashMovementType;
 import hoyjugas.Enum.PaymentMethod;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
