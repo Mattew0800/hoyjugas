@@ -1,12 +1,12 @@
-import {Component, inject, Inject, OnInit, Renderer2} from '@angular/core';
+import { Component, inject, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { Router } from '@angular/router';
-import {CommonModule, DOCUMENT} from '@angular/common';
-import {BookingService} from '../../services/BookingService/booking-service';
-import {clearAppScopedEarlyEventContract} from '@angular/core/primitives/event-dispatch';
-import {SpaceCardDTO} from '../../models/SpaceCardDTO';
-import {BookingStateService} from '../../services/BookingStateService/booking-state-service';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { BookingService } from '../../services/BookingService/booking-service';
+
+import { SpaceCardDTO } from '../../models/SpaceCardDTO';
+import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
 
 @Component({
   selector: 'app-booking',
@@ -18,7 +18,7 @@ import {BookingStateService} from '../../services/BookingStateService/booking-st
   templateUrl: './booking.html',
   styleUrl: './booking.scss',
 })
-export class Booking implements OnInit{
+export class Booking implements OnInit {
 
   availableFieldTypes: string[] = [];
   selectedFieldType: string = '';
@@ -31,7 +31,7 @@ export class Booking implements OnInit{
 
   spacesCardList: SpaceCardDTO[];
 
-  private bService=  inject(BookingService);
+  private bService = inject(BookingService);
   private bStateService = inject(BookingStateService);
 
 
@@ -93,16 +93,18 @@ export class Booking implements OnInit{
     const selectedSpace = this.spacesCardList.find(space => space.id === spaceId);
     this.bStateService.patch({
       spaceId,
+      spaceName: selectedSpace?.name ?? null,
+      spaceType: selectedSpace?.type ?? null,
       spaceDeposit: selectedSpace?.depositValue ?? null,
     });
     this.router.navigate(['/field-schedule/date-selection']);
   }
 
-  getSpacesCard(){
+  getSpacesCard() {
     return this.bService.getSpacesCard().subscribe({
-      next: (r)=>{
+      next: (r) => {
         this.spacesCardList = r.filter(space => space.isActive);
-        if(this.spacesCardList.length === 0){
+        if (this.spacesCardList.length === 0) {
           this.emptySpacesCard = true;
         } else {
           this.availableFieldTypes = Array.from(new Set(this.spacesCardList.map(s => s.type)));
@@ -110,7 +112,7 @@ export class Booking implements OnInit{
         }
 
       },
-      error: (e)=>{
+      error: (e) => {
         this.emptySpacesCard = true;
         console.log(e);
       }
@@ -118,8 +120,8 @@ export class Booking implements OnInit{
   }
 
   onImageError(space: SpaceCardDTO): void {
-  space.imageUrl = ""; // Al volverlo null, Angular activará automáticamente el @else de tu HTML
-}
+    space.imageUrl = "";
+  }
 
 
 

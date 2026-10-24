@@ -1,11 +1,11 @@
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
-import {BookingService} from '../../services/BookingService/booking-service';
+import { BookingService } from '../../services/BookingService/booking-service';
 
 type Tab = 'mañana' | 'tarde' | 'noche';
 
@@ -18,24 +18,24 @@ interface TimeSlot {
 
 const DEFAULT_SLOTS: Record<Tab, TimeSlot[]> = {
   mañana: [
-   { label: '09:00', disabled: false },
-   { label: '10:00', disabled: false },
-   { label: '11:00', disabled: false },
-   { label: '12:00', disabled: false },
+    { label: '09:00', disabled: false },
+    { label: '10:00', disabled: false },
+    { label: '11:00', disabled: false },
+    { label: '12:00', disabled: false },
   ],
   tarde: [
-   { label: '13:00', disabled: false },
-   { label: '14:00', disabled: false },
-   { label: '15:00', disabled: false },
-   { label: '16:00', disabled: false },
-   { label: '17:00', disabled: false },
-   { label: '18:00', disabled: false },
+    { label: '13:00', disabled: false },
+    { label: '14:00', disabled: false },
+    { label: '15:00', disabled: false },
+    { label: '16:00', disabled: false },
+    { label: '17:00', disabled: false },
+    { label: '18:00', disabled: false },
   ],
   noche: [
-   { label: '19:00', disabled: false },
-   { label: '20:00', disabled: false },
-   { label: '21:00', disabled: false },
-   { label: '22:00', disabled: false },
+    { label: '19:00', disabled: false },
+    { label: '20:00', disabled: false },
+    { label: '21:00', disabled: false },
+    { label: '22:00', disabled: false },
   ],
 };
 
@@ -53,6 +53,7 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   selectedSlot: TimeSlot | null = null;
   selectedSlotKey: string | null = null;
   selectedDateText = 'Selecciona una fecha';
+  fieldName = '';
   allSlots: Record<Tab, TimeSlot[]> = {
     mañana: DEFAULT_SLOTS.mañana.map(slot => ({ ...slot })),
     tarde: DEFAULT_SLOTS.tarde.map(slot => ({ ...slot })),
@@ -63,12 +64,13 @@ export class StepTimeSelection implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   bookingService = inject(BookingService);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.bookingStateService.draft$
       .pipe(takeUntil(this.destroy$))
       .subscribe((draft) => {
+        this.fieldName = [draft.spaceName, draft.spaceType].filter(Boolean).join(' • ') || 'Cancha';
         this.selectedDateText = this.formatSelectedDate(draft.startDateTime);
         if (draft.spaceId && draft.startDateTime) {
           this.getAvailability();

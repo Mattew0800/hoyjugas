@@ -1,13 +1,13 @@
-import {Component, inject, OnInit} from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectDateModal } from '../../components/select-date-modal/select-date-modal';
-import {BookingStateService} from '../../services/BookingStateService/booking-state-service';
-import {BookingService} from '../../services/BookingService/booking-service';
-import {DailyAvailabilityDTO} from '../../models/DailyAvailabilityDTO';
+import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
+import { BookingService } from '../../services/BookingService/booking-service';
+import { DailyAvailabilityDTO } from '../../models/DailyAvailabilityDTO';
 
 export interface DateCard {
   label: string;    // 'HOY' | 'AGO' | etc.
@@ -34,29 +34,33 @@ export class FieldSchedule implements OnInit {
 
   // ── Estado del modal ──────────────────────────────────────────────
   isModalOpen = false;
-  isClosing   = false;
+  isClosing = false;
 
   // ── Datos de fechas ───────────────────────────────────────────────
   dates: DateCard[] = [];
   selectedMoreDate: DateCard | null = null;
   selectedDate: DateCard | null = null;
+  fieldName = '';
 
   // ── Estado de carga ───────────────────────────────────────────────
   isLoading = true;
   loadError = false;
 
-  /** Respuesta completa del backend (30 días) para consultas del modal */
+
   private availabilityIndex = new Map<string, number>();
 
-  private bookingState  = inject(BookingStateService);
+  private bookingState = inject(BookingStateService);
   private bookingService = inject(BookingService);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
+    const draft = this.bookingState.snapshot;
+    this.fieldName = [draft.spaceName, draft.spaceType].filter(Boolean).join(' • ') || 'Cancha';
+
     this.bookingService.availabilityNext30Days().subscribe({
       next: (response) => {
-        // Indexamos por fecha normalizada para búsquedas O(1) en el modal
+
         this.availabilityIndex.clear();
         response.days.forEach(d => {
           const key = this.toDateKey(d.date);
@@ -77,15 +81,11 @@ export class FieldSchedule implements OnInit {
 
   private readonly monthLabels = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-  /**
-   * Normaliza cualquier formato de fecha del backend ("2026-09-25" o "2026-09-25T00:00:00")
-   * a una clave uniforme "YYYY-MM-DD" para el Map de búsqueda.
-   */
+
   private toDateKey(dateStr: string): string {
     return dateStr.substring(0, 10);
   }
 
-  /** Construye las DateCards para los primeros 7 días usando la respuesta real de la API */
   private buildDatesFromResponse(days: DailyAvailabilityDTO[]): DateCard[] {
     const today = new Date();
     const todayKey = this.toDateKey(today.toISOString());

@@ -82,7 +82,7 @@ public class SecurityConfig {
                                 "/bookings/availability",
                                 "/bookings/availability-next-30-days",
                                 "/bookings/get-deposit-value",
-                                "/webhooks/mp"
+                                "/webhooks/mp",
                                 "/bookings/availability-next-30-days",
                                 "/user/me"
                         ).permitAll()

@@ -8,7 +8,6 @@ import {Home} from './screens/home/home';
 import {Booking} from './screens/booking/booking';
 import {FieldSchedule} from './screens/field-schedule/field-schedule';
 import {BookingConfirmation} from './screens/booking-confirmation/booking-confirmation';
-import {PaymentSelection} from './screens/payment-selection/payment-selection';
 import {Profile} from './screens/profile/profile';
 import {ChangePassword} from './screens/password/password';
 import {HistoryBookings} from './screens/history-bookings/history-bookings';
@@ -31,22 +30,21 @@ export const routes: Routes = [
   {path:'onboarding', component:Onboarding,canActivate: [guestGuard]},
   {path:'sign-in', component:LogIn,canActivate: [guestGuard]},
   {path:'sign-up', component:SignUp,canActivate: [guestGuard]},
-  {path: 'home', component: Home, canActivate: [authGuard]},
+  {path:'home', component: Home, canActivate: [authGuard]},
   {path:'booking', component: Booking, canActivate: [authGuard]},
-  {path: 'field-schedule/date-selection', component: FieldSchedule, canActivate: [authGuard]},
-  {path: 'field-schedule/time-selection', component: StepTimeSelection, canActivate: [authGuard]},
-  {path: 'field-schedule/payment-selection', component: StepPaymentSelection, canActivate: [authGuard]},
-  {path: 'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
-  {path: 'booking-success', component: BookingSuccess, canActivate:[authGuard]},
-  {path: 'payment-selection', component: PaymentSelection, canActivate:[authGuard]},
+  {path:'field-schedule/date-selection', component: FieldSchedule, canActivate: [authGuard]},
+  {path:'field-schedule/time-selection', component: StepTimeSelection, canActivate: [authGuard]},
+  {path:'field-schedule/payment-selection', component: StepPaymentSelection, canActivate: [authGuard]},
+  {path:'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
+  {path:'booking-success', component: BookingSuccess, canActivate:[authGuard]},
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
   {path:'internal/login', component:InternalLogin},
-  {path: 'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
+  {path:'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard]},
-  {path: 'contact', component: Contact, canActivate: [authGuard]},
+  {path:'contact', component: Contact, canActivate: [authGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
   {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},

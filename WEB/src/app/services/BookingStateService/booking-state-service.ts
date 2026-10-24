@@ -4,6 +4,8 @@ import {BehaviorSubject} from 'rxjs';
 
 export interface BookingDraft{
   spaceId: number | null;
+  spaceName: string | null;
+  spaceType: string | null;
   startDateTime: string | null;
   paymentMethod: string | null;
   termsAccepted: boolean | null;
@@ -20,6 +22,8 @@ export class BookingStateService {
 
   private readonly _draft = new BehaviorSubject<BookingDraft>({
     spaceId: null,
+    spaceName: null,
+    spaceType: null,
     startDateTime: null,
     paymentMethod: null,
     termsAccepted: null,
@@ -42,6 +46,8 @@ export class BookingStateService {
   reset(){
     this._draft.next({
       spaceId: null,
+      spaceName: null,
+      spaceType: null,
       startDateTime: null,
       paymentMethod: null,
       termsAccepted: null,
