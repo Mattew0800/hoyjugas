@@ -121,6 +121,7 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
     const bookingRequest = {
       spaceId: draft.spaceId,
       startDatetime: draft.startDateTime,
+      paymentType: this.selectedPayment.id === 'full' ? 'PAGO_TOTAL' : 'SEÑA',
       paymentMethod: 'MERCADOPAGO' as const,
       termsAccepted: true,
       depositAmount: this.selectedPayment.amount,
