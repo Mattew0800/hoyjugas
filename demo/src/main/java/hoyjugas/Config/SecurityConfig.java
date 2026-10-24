@@ -81,6 +81,9 @@ public class SecurityConfig {
                                 "/bookings/space-card",
                                 "/bookings/availability",
                                 "/bookings/availability-next-30-days",
+                                "/bookings/get-deposit-value",
+                                "/webhooks/mp"
+                                "/bookings/availability-next-30-days",
                                 "/user/me"
                         ).permitAll()
                         .anyRequest().authenticated()

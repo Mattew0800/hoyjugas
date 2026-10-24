@@ -41,7 +41,7 @@ public class Payment {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Column(length = 100)
+    @Column(length = 100,unique=true)
     private String transactionId;
 
     @ManyToOne(fetch = FetchType.LAZY)

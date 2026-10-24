@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface BookingNotificationRepository extends JpaRepository<BookingNotification, Integer> {
-    List<BookingNotification> findByStatusAndType(NotificationStatus status,NotificationType type);
     boolean existsByBookingIdAndType(Long bookingId,NotificationType type);
-
+    List<BookingNotification> findByStatusAndTypeIn(NotificationStatus status, List<NotificationType> types);
 }

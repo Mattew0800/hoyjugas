@@ -48,33 +48,82 @@
 
     <form [formGroup]="form" (ngSubmit)="save()">
 
-      <div class="form-group">
-
-        <label for="clientId">
-          Cliente
-        </label>
+      <div class="form-group search-group">
+        <label for="clientSearch">Cliente (buscar por DNI)</label>
 
         <input
-          id="clientId"
-          type="number"
-          placeholder="ID del cliente"
-          formControlName="clientId">
+          id="clientSearch"
+          type="text"
+          placeholder="Ingresá el DNI"
+          [(ngModel)]="clientSearch"
+          (input)="searchClients()"
+          [ngModelOptions]="{standalone: true}"
+          [disabled]="clientsLoading || loading || previewLoading"
+          autocomplete="off">
 
+        @if (clientsLoading) {
+          <small>Cargando clientes...</small>
+        }
+
+        @if (filteredClients.length > 0) {
+          <div class="search-results">
+            @for (client of filteredClients; track client.id) {
+              <button
+                type="button"
+                class="search-result"
+                (click)="selectClient(client)">
+                <strong>{{ client.name }}</strong>
+                <span>DNI: {{ client.dni }}</span>
+                <span>{{ client.phone }}</span>
+              </button>
+            }
+          </div>
+        }
+
+        @if (selectedClient) {
+          <small class="selected-result">
+            Cliente seleccionado: {{ selectedClient.name }}
+          </small>
+        }
       </div>
 
 
-      <div class="form-group">
-
-        <label for="spaceId">
-          Cancha
-        </label>
+      <div class="form-group search-group">
+        <label for="spaceSearch">Espacio (buscar por nombre)</label>
 
         <input
-          id="spaceId"
-          type="number"
-          placeholder="ID de la cancha"
-          formControlName="spaceId">
+          id="spaceSearch"
+          type="text"
+          placeholder="Ej. Cancha 1"
+          [(ngModel)]="spaceSearch"
+          [ngModelOptions]="{standalone: true}"
+          (input)="searchSpaces()"
+          [disabled]="spacesLoading || loading || previewLoading"
+          autocomplete="off">
 
+        @if (spacesLoading) {
+          <small>Cargando espacios...</small>
+        }
+
+        @if (filteredSpaces.length > 0) {
+          <div class="search-results">
+            @for (space of filteredSpaces; track space.id) {
+              <button
+                type="button"
+                class="search-result"
+                (click)="selectSpace(space)">
+                <strong>{{ space.name }}</strong>
+                <span>{{ space.type }}</span>
+              </button>
+            }
+          </div>
+        }
+
+        @if (selectedSpace) {
+          <small class="selected-result">
+            Espacio seleccionado: {{ selectedSpace.name }}
+          </small>
+        }
       </div>
 
 

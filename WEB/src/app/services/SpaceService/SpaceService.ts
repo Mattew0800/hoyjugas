@@ -10,6 +10,7 @@ import {
 
 import { SpaceCardModel } from '../../screens/internal/models/space-card.model';
 import { SpaceListModel } from '../../screens/internal/models/space-list-model';
+import {SpaceScheduleResponseModel} from '../../screens/internal/models/space-schedule-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +43,17 @@ export class SpaceService {
       }
     );
   }
+
+  getAllActiveSpaces(): Observable<SpaceListModel[]> {
+    return this.http.post<SpaceListModel[]>(
+      `${this.adminSpaceApiUrl}/get-all-active`,
+      {},
+      {
+        withCredentials: true
+      }
+    );
+  }
+
 
   createSpace(space: any): Observable<any> {
     return this.http.post(
@@ -83,8 +95,10 @@ export class SpaceService {
     );
   }
 
-  getSchedulesBySpace(spaceId: number): Observable<any[]> {
-    return this.http.post<any[]>(
+  getSchedulesBySpace(
+    spaceId: number
+  ): Observable<SpaceScheduleResponseModel[]> {
+    return this.http.post<SpaceScheduleResponseModel[]>(
       `${this.adminSpaceApiUrl}/schedule/get-by-space`,
       { spaceId },
       {
@@ -123,11 +137,17 @@ export class SpaceService {
     );
   }
 
-  deleteSchedule(request: any): Observable<any> {
-    return this.http.delete(
+  deleteSchedule(
+    spaceId: number,
+    scheduleId: number
+  ): Observable<void> {
+    return this.http.delete<void>(
       `${this.adminSpaceApiUrl}/schedule/delete`,
       {
-        body: request,
+        body: {
+          spaceId,
+          scheduleId
+        },
         withCredentials: true
       }
     );
@@ -148,6 +168,22 @@ export class SpaceService {
       `${this.adminSpaceApiUrl}/pricing/delete`,
       {
         body: request,
+        withCredentials: true
+      }
+    );
+  }
+
+  toggleSpaceStatus(
+    spaceId: number,
+    isActive: boolean
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${this.adminSpaceApiUrl}/toggle-status`,
+      {
+        spaceId,
+        isActive
+      },
+      {
         withCredentials: true
       }
     );

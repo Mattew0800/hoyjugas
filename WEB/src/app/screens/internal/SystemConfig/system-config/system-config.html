@@ -12,15 +12,12 @@
     <div class="config-card">
 
       <div class="config-section">
-
         <h2>Configuracion del Sistema</h2>
 
         <div class="form-grid">
 
           <div class="form-field">
-            <label>
-              Horas límite para cancelar una reserva
-            </label>
+            <label>Horas límite para cancelar una reserva</label>
 
             <input
               type="number"
@@ -34,13 +31,10 @@
                 {{ cancellationHoursLimitError }}
               </span>
             }
-
           </div>
 
           <div class="form-field">
-            <label>
-              Horas antes de la reserva para enviar recordatorio
-            </label>
+            <label>Horas antes de la reserva para enviar recordatorio</label>
 
             <input
               type="number"
@@ -55,24 +49,19 @@
                 {{ reminderHoursBeforeBookingError }}
               </span>
             }
-
           </div>
 
         </div>
-
       </div>
 
 
       <div class="config-section">
-
         <h2>Reservas recurrentes</h2>
 
         <div class="form-grid">
 
           <div class="form-field">
-            <label>
-              Meses permitidos para reservas recurrentes
-            </label>
+            <label>Meses permitidos para reservas recurrentes</label>
 
             <input
               type="number"
@@ -87,13 +76,10 @@
                 {{ recurringMonthsAheadError }}
               </span>
             }
-
           </div>
 
           <div class="form-field">
-            <label>
-              Turnos iniciales de depósito recurrente
-            </label>
+            <label>Turnos iniciales de depósito recurrente</label>
 
             <input
               type="number"
@@ -107,13 +93,10 @@
                 {{ recurringInitialDepositTurnsError }}
               </span>
             }
-
           </div>
 
           <div class="form-field">
-            <label>
-              Multiplicador del depósito recurrente
-            </label>
+            <label>Multiplicador del depósito recurrente</label>
 
             <input
               type="number"
@@ -128,13 +111,10 @@
                 {{ recurringDepositMultiplierError }}
               </span>
             }
-
           </div>
 
           <div class="form-field">
-            <label>
-              Máximo de cancelaciones recurrentes
-            </label>
+            <label>Máximo de cancelaciones recurrentes</label>
 
             <input
               type="number"
@@ -148,24 +128,19 @@
                 {{ maxRecurringCancellationsError }}
               </span>
             }
-
           </div>
 
         </div>
-
       </div>
 
 
       <div class="config-section">
-
         <h2>Complejo</h2>
 
         <div class="form-grid">
 
           <div class="form-field readonly-field">
-            <label>
-              Nombre del complejo
-            </label>
+            <label>Nombre del complejo</label>
 
             <input
               type="text"
@@ -175,9 +150,7 @@
           </div>
 
           <div class="form-field readonly-field">
-            <label>
-              Dirección
-            </label>
+            <label>Dirección</label>
 
             <input
               type="text"
@@ -187,19 +160,97 @@
           </div>
 
         </div>
-
       </div>
 
 
       <div class="config-section">
 
+        <div class="schedule-section-header">
+
+          <h2>Horarios del complejo</h2>
+
+          <button
+            type="button"
+            class="add-schedule-button"
+            (click)="openScheduleModal()">
+            + Agregar horario
+          </button>
+
+        </div>
+
+        @if (schedulesLoading) {
+
+          <div class="schedule-message">
+            Cargando horarios...
+          </div>
+
+        } @else if (schedulesErrorMessage) {
+
+          <div class="schedule-message schedule-error">
+            {{ schedulesErrorMessage }}
+          </div>
+
+        } @else if (complexSchedules.length === 0) {
+
+          <div class="schedule-message">
+            No hay horarios configurados.
+          </div>
+
+        } @else {
+
+          <div class="schedule-list">
+
+            @for (schedule of complexSchedules; track schedule.id) {
+
+              <div class="schedule-item">
+
+                <div class="schedule-day">
+                  <span class="schedule-day-name">
+                    {{ getDayName(schedule.dayType) }}
+                  </span>
+                </div>
+
+                <div class="schedule-hours">
+                  <span class="schedule-time">
+                    {{ schedule.openingTime }} - {{ schedule.closingTime }}
+                  </span>
+                </div>
+
+                <div class="schedule-actions">
+
+                  <button
+                    type="button"
+                    class="schedule-action-button"
+                    (click)="editComplexSchedule(schedule)">
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="schedule-delete-button"
+                    (click)="confirmDeleteSchedule(schedule.id)">
+                    Eliminar
+                  </button>
+
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        }
+
+      </div>
+
+
+      <div class="config-section">
         <h2>Términos y condiciones</h2>
 
         <div class="form-field">
 
-          <label>
-            Términos y condiciones
-          </label>
+          <label>Términos y condiciones</label>
 
           <textarea
             rows="8"
@@ -214,7 +265,6 @@
           }
 
         </div>
-
       </div>
 
 
@@ -223,6 +273,7 @@
           {{ errorMessage }}
         </div>
       }
+
 
       @if (successMessage) {
         <div class="message success-message">
@@ -254,3 +305,206 @@
   </div>
 
 </div>
+
+
+@if (showScheduleModal) {
+
+  <div
+    class="schedule-modal-overlay"
+    (click)="closeScheduleModal()">
+
+    <div
+      class="schedule-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="schedule-modal-header">
+
+        <h2>
+          {{
+            editingScheduleId !== null
+              ? 'Editar horario'
+              : 'Agregar horario'
+          }}
+        </h2>
+
+        <button
+          type="button"
+          class="schedule-modal-close"
+          [disabled]="savingSchedule"
+          (click)="closeScheduleModal()">
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="schedule-modal-content">
+
+        <div class="schedule-form-field">
+
+          <label for="schedule-day">
+            Día
+          </label>
+
+          <select
+            id="schedule-day"
+            [(ngModel)]="scheduleDayType"
+            [class.input-error]="scheduleDayTypeError">
+
+            <option value="">
+              Seleccionar día
+            </option>
+
+            @for (day of dayTypes; track day.value) {
+
+              <option [value]="day.value">
+                {{ day.label }}
+              </option>
+
+            }
+
+          </select>
+
+          @if (scheduleDayTypeError) {
+            <span class="field-error">
+              {{ scheduleDayTypeError }}
+            </span>
+          }
+
+        </div>
+
+
+        <div class="schedule-form-field">
+
+          <label for="schedule-opening">
+            Hora de apertura
+          </label>
+
+          <input
+            id="schedule-opening"
+            type="time"
+            [(ngModel)]="scheduleOpeningTime"
+            [class.input-error]="scheduleOpeningTimeError"
+          />
+
+          @if (scheduleOpeningTimeError) {
+            <span class="field-error">
+              {{ scheduleOpeningTimeError }}
+            </span>
+          }
+
+        </div>
+
+
+        <div class="schedule-form-field">
+
+          <label for="schedule-closing">
+            Hora de cierre
+          </label>
+
+          <input
+            id="schedule-closing"
+            type="time"
+            [(ngModel)]="scheduleClosingTime"
+            [class.input-error]="scheduleClosingTimeError"
+          />
+
+          @if (scheduleClosingTimeError) {
+            <span class="field-error">
+              {{ scheduleClosingTimeError }}
+            </span>
+          }
+
+        </div>
+
+      </div>
+
+
+      <div class="schedule-modal-actions">
+
+        <button
+          type="button"
+          class="schedule-cancel-button"
+          [disabled]="savingSchedule"
+          (click)="closeScheduleModal()">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="schedule-save-button"
+          [disabled]="savingSchedule"
+          (click)="saveComplexSchedule()">
+
+          @if (savingSchedule) {
+            Guardando...
+          } @else {
+            {{
+              editingScheduleId !== null
+                ? 'Guardar cambios'
+                : 'Guardar'
+            }}
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}
+
+
+@if (confirmingScheduleId !== null) {
+
+  <div
+    class="schedule-confirmation-overlay"
+    (click)="cancelDeleteSchedule()">
+
+    <div
+      class="schedule-confirmation-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="schedule-confirmation-header">
+        <h2>Eliminar horario</h2>
+      </div>
+
+      <div class="schedule-confirmation-content">
+        <p>
+          ¿Estás seguro de que querés eliminar este horario?
+        </p>
+      </div>
+
+      <div class="schedule-confirmation-actions">
+
+        <button
+          type="button"
+          class="schedule-cancel-button"
+          [disabled]="processingScheduleDelete"
+          (click)="cancelDeleteSchedule()">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="schedule-delete-confirm-button"
+          [disabled]="processingScheduleDelete"
+          (click)="deleteComplexSchedule()">
+
+          @if (processingScheduleDelete) {
+            Eliminando...
+          } @else {
+            Eliminar
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}

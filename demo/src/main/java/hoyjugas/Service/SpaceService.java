@@ -1,10 +1,7 @@
 package hoyjugas.Service;
 
-import hoyjugas.DTO.Space.SpaceCardDTO;
-import hoyjugas.DTO.Space.SpaceListDTO;
+import hoyjugas.DTO.Space.*;
 import hoyjugas.DTO.SpacePricing.SpacePricingRequestDTO;
-import hoyjugas.DTO.Space.SpaceRequestDTO;
-import hoyjugas.DTO.Space.SpaceResponseDTO;
 import hoyjugas.Model.Space;
 import hoyjugas.Model.SpacePricing;
 import hoyjugas.Repository.SpacePricingRepository;
@@ -179,10 +176,14 @@ public class SpaceService {
 
     public SpaceCardDTO getSpaceCard(Long spaceId) {
         Space space = spaceRepository.findByIdAndIsActiveTrue(spaceId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Espacio no encontrado"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
         return SpaceCardDTO.fromEntity(space);
+    }
+
+    public SpaceSimpleResponseDTO getSpaceDepositValue(Long spaceId) {
+        Space space= spaceRepository.findByIdAndIsActiveTrue(spaceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado"));
+        return SpaceSimpleResponseDTO.fromEntity(space);
     }
 }
 

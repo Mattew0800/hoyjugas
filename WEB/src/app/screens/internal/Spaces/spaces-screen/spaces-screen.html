@@ -49,7 +49,9 @@
 
         <app-space-list-item
           [space]="space"
-          (edit)="editSpace($event)">
+          (edit)="editSpace($event)"
+          (toggleStatus)="toggleSpaceStatus($event)"
+        >
         </app-space-list-item>
 
       }
@@ -79,6 +81,62 @@
       (close)="closeModal($event)">
     </app-space-modal>
 
+  }
+
+  @if (confirmingSpaceId !== null && confirmingSpaceActive !== null) {
+    <div
+      class="confirmation-overlay"
+      (click)="cancelSpaceStatus()">
+
+      <div
+        class="confirmation-modal"
+        (click)="$event.stopPropagation()">
+
+        <div class="confirmation-header">
+          <h2>
+            {{ confirmingSpaceActive ? 'Activar espacio' : 'Desactivar espacio' }}
+          </h2>
+        </div>
+
+        <div class="confirmation-content">
+          <p>
+            {{
+              confirmingSpaceActive
+                ? '¿Estás seguro de que querés activar este espacio?'
+                : '¿Estás seguro de que querés desactivar este espacio?'
+            }}
+          </p>
+        </div>
+
+        <div class="confirmation-actions">
+
+          <button
+            type="button"
+            class="cancel-button"
+            [disabled]="processingStatusChange"
+            (click)="cancelSpaceStatus()">
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="confirm-button"
+            [disabled]="processingStatusChange"
+            (click)="executeSpaceStatusChange()">
+
+            {{
+              processingStatusChange
+                ? 'Procesando...'
+                : 'Confirmar'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
   }
 
 </div>

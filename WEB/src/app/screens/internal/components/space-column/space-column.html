@@ -27,22 +27,32 @@
     class="column-body"
     [style.height.px]="timelineHeight">
 
-    @for (
-      slot of space.slots;
-      track slot.id
-      ) {
+    @if (space.slots.length === 0 && !isPastDate) {
 
-      <div
-        class="positioned-slot"
-        [style.top.px]="getSlotTop(slot)"
-        [style.height.px]="getSlotHeight(slot)">
-
-        <app-space-slot
-          [slot]="slot"
-          (slotClick)="onSlotClick($event)">
-        </app-space-slot>
-
+      <div class="not-configured">
+        Este espacio no está configurado
       </div>
+
+    } @else {
+
+      @for (
+        slot of space.slots;
+        track slot.id
+        ) {
+
+        <div
+          class="positioned-slot"
+          [style.top.px]="getSlotTop(slot)"
+          [style.height.px]="getSlotHeight(slot)">
+
+          <app-space-slot
+            [slot]="slot"
+            (slotClick)="onSlotClick($event)">
+          </app-space-slot>
+
+        </div>
+
+      }
 
     }
 

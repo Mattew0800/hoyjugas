@@ -1,22 +1,24 @@
 import {
   Component,
-  ElementRef, OnDestroy,
+  ElementRef,
+  OnDestroy,
   OnInit,
   ViewChild
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 import { UserService } from '../../../../services/UserService/user-service';
 import { RoleService } from '../../../../services/RoleService/role-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
+import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
 
 import { CustomerModel } from '../../models/user-response';
 import { UserDetailModel } from '../../models/user-detail.model';
+import { RecurringBookingResponseModel } from '../../models/recurring-booking-response.model';
 
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
-
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-customers-screen',
@@ -40,13 +42,10 @@ export class CustomersScreen implements OnInit, OnDestroy {
   loading = false;
   isAdmin = false;
 
-  confirmingAction:
-    'desactivate' | 'activate' | null = null;
-
+  confirmingAction: 'desactivate' | 'activate' | null = null;
   confirmingCustomerId: number | null = null;
 
   errorMessage: string | null = null;
-
   processingAction = false;
 
   selectedCustomer: UserDetailModel | null = null;
@@ -54,15 +53,25 @@ export class CustomersScreen implements OnInit, OnDestroy {
   customerDetailLoading = false;
   customerDetailError = '';
 
+  showRecurringHistory = false;
+  recurringBookings: RecurringBookingResponseModel[] = [];
+  historyLoading = false;
+  historyError = false;
+  historyPage = 0;
+  historySize = 10;
+  historyTotalPages = 0;
+
   private customersSubscription?: Subscription;
   private customerDetailSubscription?: Subscription;
+  private recurringHistorySubscription?: Subscription;
   private customerDetailFocusTimeout?: ReturnType<typeof setTimeout>;
   private customerDetailTrigger: HTMLElement | null = null;
 
   constructor(
     private userService: UserService,
     private roleService: RoleService,
-    private errorHandler: ErrorHandlerService
+    private errorHandler: ErrorHandlerService,
+    private recurringBookingService: RecurringBookingService
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +82,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.customersSubscription?.unsubscribe();
     this.customerDetailSubscription?.unsubscribe();
+    this.recurringHistorySubscription?.unsubscribe();
 
     if (this.customerDetailFocusTimeout) {
       clearTimeout(this.customerDetailFocusTimeout);
@@ -95,18 +105,16 @@ export class CustomersScreen implements OnInit, OnDestroy {
       enabled = false;
     }
 
-    this.customersSubscription =
-      this.userService.getClients(enabled).subscribe({
-        next: customers => {
-          this.customers = customers;
-          this.loading = false;
-        },
-        error: error => {
-          this.loading = false;
-          this.errorMessage =
-            this.errorHandler.getMessage(error);
-        }
-      });
+    this.customersSubscription = this.userService.getClients(enabled).subscribe({
+      next: customers => {
+        this.customers = customers;
+        this.loading = false;
+      },
+      error: error => {
+        this.loading = false;
+        this.errorMessage = this.errorHandler.getMessage(error);
+      }
+    });
   }
 
   changeStatusFilter(
@@ -118,6 +126,8 @@ export class CustomersScreen implements OnInit, OnDestroy {
 
   openCustomerDetail(id: number): void {
     this.customerDetailSubscription?.unsubscribe();
+    this.recurringHistorySubscription?.unsubscribe();
+    this.recurringHistorySubscription = undefined;
 
     this.customerDetailTrigger =
       document.activeElement instanceof HTMLElement
@@ -128,6 +138,8 @@ export class CustomersScreen implements OnInit, OnDestroy {
     this.customerDetailError = '';
     this.selectedCustomer = null;
     this.showCustomerDetail = true;
+
+    this.resetRecurringHistory();
 
     if (this.customerDetailFocusTimeout) {
       clearTimeout(this.customerDetailFocusTimeout);
@@ -146,20 +158,85 @@ export class CustomersScreen implements OnInit, OnDestroy {
         },
         error: error => {
           this.customerDetailLoading = false;
-          this.customerDetailError =
-            this.errorHandler.getMessage(error);
+          this.customerDetailError = this.errorHandler.getMessage(error);
         }
       });
+  }
+
+  loadRecurringHistory(): void {
+    if (!this.selectedCustomer) {
+      return;
+    }
+
+    this.recurringHistorySubscription?.unsubscribe();
+
+    this.showRecurringHistory = true;
+    this.historyLoading = true;
+    this.historyError = false;
+    this.recurringBookings = [];
+    this.historyTotalPages = 0;
+
+    this.recurringHistorySubscription =
+      this.recurringBookingService
+        .getRecurringBookingsByClient({
+          clientId: this.selectedCustomer.id,
+          page: this.historyPage,
+          size: this.historySize,
+          sortBy: 'startDate',
+          sortDirection: 'desc'
+        })
+        .subscribe({
+          next: response => {
+            this.recurringBookings = response.content;
+            this.historyTotalPages = response.totalPages;
+            this.historyLoading = false;
+          },
+          error: error => {
+            this.historyError = true;
+            this.historyLoading = false;
+            console.error(
+              'Error al cargar el historial de reservas recurrentes:',
+              error
+            );
+          }
+        });
+  }
+
+  changeHistoryPage(page: number): void {
+    if (
+      page < 0 ||
+      page >= this.historyTotalPages ||
+      page === this.historyPage
+    ) {
+      return;
+    }
+
+    this.historyPage = page;
+    this.loadRecurringHistory();
+  }
+
+  resetRecurringHistory(): void {
+    this.showRecurringHistory = false;
+    this.recurringBookings = [];
+    this.historyLoading = false;
+    this.historyError = false;
+    this.historyPage = 0;
+    this.historyTotalPages = 0;
   }
 
   closeCustomerDetail(): void {
     this.customerDetailSubscription?.unsubscribe();
     this.customerDetailSubscription = undefined;
 
+    this.recurringHistorySubscription?.unsubscribe();
+    this.recurringHistorySubscription = undefined;
+
     this.showCustomerDetail = false;
     this.selectedCustomer = null;
     this.customerDetailLoading = false;
     this.customerDetailError = '';
+
+    this.resetRecurringHistory();
 
     if (this.customerDetailFocusTimeout) {
       clearTimeout(this.customerDetailFocusTimeout);
@@ -192,8 +269,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
     }
 
     const firstElement = focusableElements[0];
-    const lastElement =
-      focusableElements[focusableElements.length - 1];
+    const lastElement = focusableElements[focusableElements.length - 1];
 
     if (
       event.shiftKey &&
@@ -219,8 +295,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
         this.loadCustomers();
       },
       error: error => {
-        this.errorMessage =
-          this.errorHandler.getMessage(error);
+        this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
   }
@@ -231,8 +306,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
         this.loadCustomers();
       },
       error: error => {
-        this.errorMessage =
-          this.errorHandler.getMessage(error);
+        this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
   }
@@ -299,8 +373,7 @@ export class CustomersScreen implements OnInit, OnDestroy {
       error: error => {
         this.processingAction = false;
         this.cancelAction();
-        this.errorMessage =
-          this.errorHandler.getMessage(error);
+        this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
   }

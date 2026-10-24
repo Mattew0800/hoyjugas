@@ -7,12 +7,12 @@ import hoyjugas.DTO.ComplexSchedule.ComplexScheduleResponseDTO;
 import hoyjugas.DTO.Payment.CompleteBookingPaymentDTO;
 import hoyjugas.DTO.Space.SpaceCardDTO;
 import hoyjugas.DTO.Space.SpaceIdRequestDTO;
+import hoyjugas.DTO.Space.SpaceSimpleResponseDTO;
 import hoyjugas.Enum.Role;
 import hoyjugas.Model.User;
-import hoyjugas.Service.BookingService;
-import hoyjugas.Service.SpaceService;
-import hoyjugas.Service.UserService;
+import hoyjugas.Service.*;
 import jakarta.validation.Valid;
+import hoyjugas.Service.SpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
+    private final WhatsAppService whatsAppService;
     private final SpaceService spaceService;
 
     @PostMapping("/create")
@@ -45,8 +47,10 @@ public class BookingController {
 
     @PostMapping("/public/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> createBookingByClient(@Valid @RequestBody ClientBookingRequestDTO dto,@AuthenticationPrincipal UserDetailsImpl client) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBookingByClient(dto,userService.getClientById(client.getId())));
+    public ResponseEntity<BookingWebCreatedResponseDTO> createBookingByClient(@Valid @RequestBody ClientBookingRequestDTO dto, @AuthenticationPrincipal UserDetailsImpl client) {
+        User user = userService.getClientById(client.getId());
+        BookingWebCreatedResponseDTO result = bookingService.createBookingAndPayment(dto, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BookingWebCreatedResponseDTO(result.getBooking(), result.getMpUrl()));
     }
 
     @PostMapping("/detail")
@@ -109,7 +113,7 @@ public class BookingController {
 //    @PreAuthorize("hasRole('EMPLOYEE')")
 //    public ResponseEntity<BookingResponseDTO> processRefund(
 //            @Valid @RequestBody ProcessRefundRequestDTO dto) {
-//        User employee = userService.validateEmployeePin(dto.getEmployeePin());
+//        User employee = userService.validateStaffPin(dto.getEmployeePin());
 //        return ResponseEntity.ok(bookingService.processRefund(dto.getBookingId(), dto, employee));
 //    }
 
@@ -130,10 +134,23 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.rescheduleBooking(dto, employee));
     }
 
-    @GetMapping("/next")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
-        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
+    @PostMapping("/mark-absent")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<?> markAbsent(@Valid @RequestBody MarkAbsentRequestDTO dto) {
+        bookingService.markAbsent(dto.getBookingId(), userService.validateStaffPin(dto.getEmployeePin()));
+        return ResponseEntity.ok(Map.of("message","Reserva marcada como ausente exitosamente"));
+    }
+
+    @PostMapping("/test-reminder")
+    public ResponseEntity<Void>testReminder() {
+        whatsAppService.sendBookingReminder(bookingService.getBookingEntity(307L), BigDecimal.valueOf(120000));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("test-cancellation")
+    public ResponseEntity<Void>testCancellation() {
+        whatsAppService.sendCancellationNotification(bookingService.getBookingEntity(310L));
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/add-observation")
@@ -141,6 +158,12 @@ public class BookingController {
     public ResponseEntity<?> addObservation(@Valid @RequestBody BookingObservationRequestDTO dto) {
         bookingService.addObservations(dto.getBookingId(), dto.getContent());
         return ResponseEntity.ok(Map.of("message", "Observación agregada correctamente"));
+    }
+
+    @GetMapping("/next")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> getNextBooking(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
     }
 
     //endpoints publicos
@@ -172,5 +195,10 @@ public class BookingController {
     @GetMapping("/availability-next-30-days")
     public ResponseEntity<AvailabilitySummaryDTO> getAvailabilityNext30Days() {
         return ResponseEntity.ok(bookingService.getAvailabilityNext30Days());
+    }
+
+    @PostMapping("/get-deposit-value")
+    public ResponseEntity<SpaceSimpleResponseDTO>getDepositValue(@Valid @RequestBody SpaceIdRequestDTO dto){
+        return ResponseEntity.ok(spaceService.getSpaceDepositValue(dto.getSpaceId()));
     }
 }

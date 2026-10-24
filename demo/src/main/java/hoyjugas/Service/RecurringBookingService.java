@@ -5,6 +5,7 @@ import hoyjugas.DTO.RecurringBooking.*;
 import hoyjugas.Enum.*;
 import hoyjugas.Model.*;
 import hoyjugas.Repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class RecurringBookingService extends BaseBookingService{
 
     private final RecurringBookingRepository recurringBookingRepository;
@@ -29,6 +31,7 @@ public class RecurringBookingService extends BaseBookingService{
     private final UserRepository userRepository;
     private final PricingService pricingService;
     private final PaymentRepository paymentRepository;
+    private final WhatsAppService whatsAppService;
 
     public RecurringBookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -37,7 +40,7 @@ public class RecurringBookingService extends BaseBookingService{
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,PaymentRepository paymentRepository) {
+            PricingService pricingService, PaymentRepository paymentRepository, WhatsAppService whatsAppService) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.recurringBookingRepository = recurringBookingRepository;
         this.bookingRepository = bookingRepository;
@@ -45,6 +48,7 @@ public class RecurringBookingService extends BaseBookingService{
         this.userRepository = userRepository;
         this.pricingService = pricingService;
         this.paymentRepository = paymentRepository;
+        this.whatsAppService = whatsAppService;
     }
 
     @Transactional
@@ -52,7 +56,11 @@ public class RecurringBookingService extends BaseBookingService{
         User client = getClientOrThrow(dto.getClientId());
         Space space = getActiveSpaceOrThrow(dto.getSpaceId());
         SystemConfig config = getSystemConfig();
-
+        LocalDateTime startDatetime = LocalDateTime.of(dto.getStartDate(), dto.getStartTime());
+        LocalDateTime now = LocalDateTime.now();
+        if (startDatetime.isBefore(now)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede reservar en un horario que ya pasó");
+        }
         LocalDate endDate = dto.getEndDate() != null
                 ? dto.getEndDate()
                 : LocalDate.of(LocalDate.now().getYear(), 12, 31);
@@ -63,7 +71,6 @@ public class RecurringBookingService extends BaseBookingService{
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe un turno fijo activo para ese cliente, espacio y horario");
         }
-
         RecurringBooking recurring = new RecurringBooking();
         recurring.setClient(client);
         recurring.setSpace(space);
@@ -85,22 +92,13 @@ public class RecurringBookingService extends BaseBookingService{
                 b.setBookingNumber(bn);
             }
             Booking firstBooking = bookingsGenerated.get(0);
-            BigDecimal depositAmount = calculateRecurringDeposit(
-                    1, firstBooking.getTotalAmount(), space, config);
-            if (dto.getDepositAmount().compareTo(depositAmount) != 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El monto del deposito debe ser igual al necesario");
-            }
-            Payment deposit = buildPayment(
-                    firstBooking, dto.getPaymentMethod(), depositAmount,
-                    dto.getTransactionId(), employee, PaymentType.DEPOSITO);
+            BigDecimal depositAmount = calculateRecurringDeposit(1, firstBooking.getTotalAmount(), space, config);
+            Payment deposit = buildPayment(firstBooking, dto.getPaymentMethod(), depositAmount, dto.getTransactionId(), employee, PaymentType.DEPOSITO);
             paymentRepository.save(deposit);
-            firstBooking.setPaymentStatus(
-                    calculatePaymentStatus(firstBooking.getId(), firstBooking.getTotalAmount()));
+            firstBooking.setPaymentStatus(calculatePaymentStatus(firstBooking.getId(), firstBooking.getTotalAmount()));
             bookingRepository.save(firstBooking);
         }
-        RecurringBookingResponseDTO response = RecurringBookingResponseDTO
-                .fromEntity(saved, bookingsGenerated);
+        RecurringBookingResponseDTO response = RecurringBookingResponseDTO.fromEntity(saved, bookingsGenerated);
         response.setDepositLabel(String.format("Las primeras %d veces la seña mayor que el valor normal", config.getRecurringInitialDepositTurns()));
         response.setSlots(buildSlots(bookingsGenerated, config.getRecurringInitialDepositTurns()));
         return response;
@@ -216,7 +214,8 @@ public class RecurringBookingService extends BaseBookingService{
             recurring.setStatus(RecurringStatus.CANCELADO);
         }
         recurringBookingRepository.save(recurring);
-        scheduleNotification(booking, NotificationType.CANCELACION);
+        //scheduleNotification(booking, NotificationType.CANCELACION);
+        whatsAppService.sendCancellationNotification(booking);
         return new RecurringCancelResponseDTO(
                 bookingId,
                 completedCycle,

@@ -26,6 +26,8 @@ export class SpaceColumn {
   @Input()
   pixelsPerHalfHour = 61;
 
+  @Input() isPastDate = false;
+
   @Output()
   slotClick = new EventEmitter<SpaceSlotModel>();
 
