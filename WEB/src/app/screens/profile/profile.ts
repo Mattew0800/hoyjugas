@@ -29,6 +29,7 @@ export class Profile implements OnInit{
     email: ''
   };
 
+  selectedPhotoPreview: string | null = null;
   successMessage = '';
   errorMessage = '';
 
@@ -112,7 +113,30 @@ export class Profile implements OnInit{
   }
 
   changePhoto(): void {
-    console.log('Cambiar foto');
+    const photoInput = this.document.getElementById('profile-photo-input') as HTMLInputElement | null;
+    photoInput?.click();
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      console.warn('El archivo seleccionado no es una imagen válida.');
+      input.value = '';
+      return;
+    }
+
+    if (this.selectedPhotoPreview) {
+      URL.revokeObjectURL(this.selectedPhotoPreview);
+    }
+
+    this.selectedPhotoPreview = URL.createObjectURL(file);
+    input.value = '';
   }
 
   logout(): void {

@@ -9,9 +9,21 @@
 
       <div class="avatar">
 
-          <img src="/assets/icons/header/Profile.svg" alt="Perfil">
+          <img
+            [src]="selectedPhotoPreview || '/assets/icons/header/Profile.svg'"
+            [alt]="selectedPhotoPreview ? 'Foto de perfil seleccionada' : 'Perfil'"
+            [class.selected]="selectedPhotoPreview"
+          >
 
       </div>
+
+      <input
+        id="profile-photo-input"
+        type="file"
+        accept="image/*"
+        hidden
+        (change)="onPhotoSelected($event)"
+      >
 
       <button
         type="button"
