@@ -1,6 +1,5 @@
 package hoyjugas.DTO.CashMovement;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import hoyjugas.Enum.CashMovementType;
 import hoyjugas.Enum.PaymentMethod;
 import lombok.Data;
