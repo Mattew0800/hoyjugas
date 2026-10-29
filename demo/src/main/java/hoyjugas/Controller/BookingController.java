@@ -164,6 +164,12 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getNextBooking(me.getId()));
     }
 
+    @PostMapping("/verify-payment-status")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PaymentStatusDTO>verifyPaymentStatus(@AuthenticationPrincipal UserDetailsImpl me, @RequestBody @Valid BookingIdRequestDTO dto ){
+        return ResponseEntity.ok(bookingService.getPaymentStatus(dto.getId(), me.getId()));
+    }
+
     //endpoints publicos
     @GetMapping("/available-slots-today")
     public ResponseEntity<?> getAvailableSlotsToday() {
