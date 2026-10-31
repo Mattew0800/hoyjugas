@@ -911,7 +911,7 @@ export class Dashboard implements OnInit {
       amount: payment.amount
     }).subscribe({
       next: () => {
-        this.closeBookingModal();
+        this.bookingDetailModal?.onPaymentCompleted();
         this.loadBookings();
       },
       error: (error) => {

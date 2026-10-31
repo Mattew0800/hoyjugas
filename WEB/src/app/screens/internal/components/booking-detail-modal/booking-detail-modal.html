@@ -596,6 +596,36 @@
               <button
                 type="button"
                 class="secondary-button"
+                [disabled]="receiptLoading !== null"
+                (click)="printBookingReceipt()">
+
+                @if (receiptLoading === 'booking') {
+                  Generando PDF...
+                } @else {
+                  Ver comprobante de reserva
+                }
+
+              </button>
+
+              @if (isPaid) {
+                <button
+                  type="button"
+                  class="secondary-button"
+                  [disabled]="receiptLoading !== null"
+                  (click)="printPaymentReceipt()">
+
+                  @if (receiptLoading === 'payment') {
+                    Generando PDF...
+                  } @else {
+                    Ver comprobante de pago
+                  }
+
+                </button>
+              }
+
+              <button
+                type="button"
+                class="secondary-button"
                 (click)="closeModal()">
 
                 Cerrar
@@ -795,4 +825,61 @@
     (close)="closeClientProfile()">
   </app-client-profile-modal>
 
+}
+
+@if (showPaymentReceiptConfirmation) {
+  <div
+    class="receipt-confirmation-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="receipt-confirmation-title">
+
+    <section class="receipt-confirmation-modal">
+
+      <div class="receipt-success-icon">✓</div>
+
+      <h2 id="receipt-confirmation-title">
+        ¡Cobro registrado correctamente!
+      </h2>
+
+      <p>
+        El pago se confirmó. ¿Querés generar el comprobante de pago ahora?
+      </p>
+
+      @if (receiptError) {
+        <p class="receipt-error">
+          {{ receiptError }}
+        </p>
+      }
+
+      <div class="receipt-confirmation-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closePaymentReceiptConfirmation()">
+
+          Continuar sin imprimir
+
+        </button>
+
+        <button
+          type="button"
+          class="primary-button"
+          [disabled]="receiptLoading !== null"
+          (click)="printPaymentReceipt()">
+
+          @if (receiptLoading === 'payment') {
+            Generando PDF...
+          } @else {
+            Ver / imprimir comprobante
+          }
+
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
 }
