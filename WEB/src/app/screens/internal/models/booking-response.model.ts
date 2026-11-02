@@ -6,6 +6,7 @@ export interface BookingResponseModel {
   clientPhone: string;
   spaceId: number;
   spaceName: string;
+  spaceType?: string;
   startDatetime: string;
   endDatetime: string;
   totalAmount: number;
@@ -17,4 +18,13 @@ export interface BookingResponseModel {
   paymentCollectedByName?: string;
   observations?: string;
   recurring?: boolean;
+}
+
+export interface BookingWebCreatedResponseModel {
+  booking: BookingResponseModel;
+  mpUrl: string;
+}
+
+export interface PaymentStatusModel {
+  paymentStatus: string;
 }

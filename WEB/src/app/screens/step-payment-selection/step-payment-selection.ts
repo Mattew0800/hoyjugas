@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer, switchMap, filter, take, of, catchError } from 'rxjs';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 
@@ -33,6 +33,7 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
   selectedPayment: PaymentOption = { id: '', title: '', description: '', amount: 0 };
   selectedFieldText = 'Cargando...';
   fieldName = '';
+  isProcessing = false;
 
   ngOnInit(): void {
     this.bookingState.draft$
@@ -75,6 +76,7 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
   }
 
   selectPayment(option: PaymentOption): void {
+    if (this.isProcessing) return;
     this.selectedPayment = option;
   }
 
@@ -105,10 +107,12 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
 
   // ── Navegación y Confirmación Final ───────────────────────────────
   goBack(): void {
+    if (this.isProcessing) return;
     this.router.navigate(['/field-schedule/date-selection']);
   }
 
   confirmBooking(): void {
+    if (this.isProcessing) return;
     if (!this.selectedPayment || !this.selectedPayment.id) return;
 
     const draft = this.bookingState.snapshot;
@@ -135,15 +139,52 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
       slots: bookingRequest.slots,
     });
 
-    this.bookingService.createPublicBooking(bookingRequest).subscribe({
-      next: () => {
-        this.bookingState.reset();
-        this.router.navigate(['/booking-success']);
-      },
-      error: (error) => {
-        console.error('No se pudo crear el turno:', error);
-        alert(error?.error?.message || 'No se pudo crear el turno.');
-      }
-    });
+    this.isProcessing = true;
+
+    this.bookingService.createPublicBooking(bookingRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.mpUrl) {
+            window.open(res.mpUrl, '_blank');
+          }
+
+          const bookingId = res.booking.id;
+
+          // Polling cada 3 segundos hasta que el pago sea PAGADO o RESERVADO
+          timer(0, 3000)
+            .pipe(
+              switchMap(() =>
+                this.bookingService.verifyBookingPayment(bookingId).pipe(
+                  catchError((err) => {
+                    console.warn('Error temporal verificando estado de pago:', err);
+                    return of(null);
+                  })
+                )
+              ),
+              filter((statusRes): statusRes is { paymentStatus: string } =>
+                statusRes !== null &&
+                (statusRes.paymentStatus === 'PAGADO' || statusRes.paymentStatus === 'RESERVADO')
+              ),
+              take(1),
+              takeUntil(this.destroy$)
+            )
+            .subscribe({
+              next: () => {
+                this.isProcessing = false;
+                this.router.navigate(['/booking-success']);
+              },
+              error: (err) => {
+                this.isProcessing = false;
+                console.error('Error al verificar pago:', err);
+              },
+            });
+        },
+        error: (error) => {
+          this.isProcessing = false;
+          console.error('No se pudo crear el turno:', error);
+          alert(error?.error?.message || 'No se pudo crear el turno.');
+        },
+      });
   }
 }

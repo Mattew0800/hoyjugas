@@ -14,7 +14,7 @@ import { BookingListModel }
 import { SpaceAvailabilityModel }
   from '../../screens/internal/models/space-availability.model';
 import {InternalBookingRequestModel} from '../../screens/internal/models/internal-booking-request.model';
-import { BookingResponseModel} from '../../screens/internal/models/booking-response.model';
+import { BookingResponseModel, BookingWebCreatedResponseModel, PaymentStatusModel } from '../../screens/internal/models/booking-response.model';
 import {AuthService} from '../AuthService/auth-service';
 import {BookingListDTO, Page} from '../../models/booking.model';
 import {AvailabilitySummaryDTO} from '../../models/AvailabilitySummaryDTO';
@@ -176,8 +176,8 @@ export class BookingService {
     termsAccepted: boolean;
     depositAmount: number;
     slots?: number;
-  }): Observable<BookingResponseModel> {
-    return this.http.post<BookingResponseModel>(
+  }): Observable<BookingWebCreatedResponseModel> {
+    return this.http.post<BookingWebCreatedResponseModel>(
       `${this.bookingApiUrl}/public/create`,
       request,
       {
@@ -220,5 +220,25 @@ export class BookingService {
       { withCredentials: true }
     );
   }
+
+  verifyBookingPayment(
+    bookingId: number
+  ): Observable<PaymentStatusModel> {
+    return this.http.post<PaymentStatusModel>(
+      `${this.bookingApiUrl}/verify-payment-status`,
+      {
+        id: bookingId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+
+
+
+
+
 
 }
