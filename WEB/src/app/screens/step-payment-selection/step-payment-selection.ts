@@ -306,7 +306,7 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
 
                 this.isProcessing = false;
 
-                this.router.navigate(['/booking-success']);
+                this.router.navigate(['/booking-success'], { queryParams: { bookingId } });
               },
 
               error: (err) => {

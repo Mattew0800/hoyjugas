@@ -1,9 +1,11 @@
 import { Component, ElementRef, AfterViewInit, ViewChild, OnDestroy, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import lottie, { AnimationItem } from 'lottie-web';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { BookingStateService } from '../../services/BookingStateService/booking-state-service';
+import { BookingService } from '../../services/BookingService/booking-service';
 
 @Component({
   selector: 'app-booking-success',
@@ -13,7 +15,10 @@ import { BookingStateService } from '../../services/BookingStateService/booking-
 })
 export class BookingSuccess implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private bookingState = inject(BookingStateService);
+  private bookingService = inject(BookingService);
+  private readonly destroy$ = new Subject<void>();
 
   @ViewChild('lottieContainer', { static: true }) lottieContainer!: ElementRef;
   private animationItem?: AnimationItem;
@@ -22,8 +27,49 @@ export class BookingSuccess implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     const draft = this.bookingState.snapshot;
-    this.fieldName = [draft.spaceName, draft.spaceType].filter(Boolean).join(' • ') || 'Cancha';
-    this.selectedFieldText = this.formatSelectedDateTime(draft.startDateTime);
+    if (draft.spaceName || draft.startDateTime) {
+      this.fieldName = [draft.spaceName, draft.spaceType].filter(Boolean).join(' • ') || 'Cancha';
+      this.selectedFieldText = this.formatSelectedDateTime(draft.startDateTime);
+    }
+
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        const rawId = params.get('bookingId') ?? params.get('external_reference');
+        if (rawId) {
+          const bookingId = Number(rawId);
+          if (!isNaN(bookingId)) {
+            if (!draft.spaceName && !draft.startDateTime) {
+              this.fieldName = 'Cargando reserva...';
+              this.selectedFieldText = 'Obteniendo detalles...';
+            }
+
+            this.bookingService
+              .getBookingDetail({ bookingId })
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (res) => {
+                  this.fieldName =
+                    [res.spaceName, res.spaceType].filter(Boolean).join(' • ') || 'Cancha';
+                  this.selectedFieldText = this.formatSelectedDateTime(res.startDatetime);
+                  this.bookingState.patch({
+                    spaceId: res.spaceId,
+                    spaceName: res.spaceName,
+                    spaceType: res.spaceType,
+                    startDateTime: res.startDatetime,
+                  });
+                },
+                error: (err) => {
+                  console.error('Error al recuperar detalles de la reserva:', err);
+                  if (this.fieldName === 'Cargando reserva...') {
+                    this.fieldName = 'Cancha';
+                    this.selectedFieldText = 'Reserva confirmada';
+                  }
+                },
+              });
+          }
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -38,6 +84,8 @@ export class BookingSuccess implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.animationItem?.destroy();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   goToReservations() {
