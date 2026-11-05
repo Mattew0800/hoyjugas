@@ -1,7 +1,18 @@
+
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, timer, switchMap, filter, take, of, catchError } from 'rxjs';
+import {
+  Subject,
+  takeUntil,
+  timer,
+  switchMap,
+  filter,
+  take,
+  of,
+  catchError,
+} from 'rxjs';
+
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 
@@ -30,17 +41,31 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   paymentOptions: PaymentOption[] = [];
-  selectedPayment: PaymentOption = { id: '', title: '', description: '', amount: 0 };
+  selectedPayment: PaymentOption = {
+    id: '',
+    title: '',
+    description: '',
+    amount: 0,
+  };
+
   selectedFieldText = 'Cargando...';
   fieldName = '';
   isProcessing = false;
+
+  private paymentWindow: Window | null = null;
 
   ngOnInit(): void {
     this.bookingState.draft$
       .pipe(takeUntil(this.destroy$))
       .subscribe((draft) => {
-        this.fieldName = [draft.spaceName, draft.spaceType].filter(Boolean).join(' • ') || 'Cancha';
-        this.selectedFieldText = this.formatSelectedDateTime(draft.startDateTime);
+        this.fieldName = [draft.spaceName, draft.spaceType]
+          .filter(Boolean)
+          .join(' • ') || 'Cancha';
+
+        this.selectedFieldText = this.formatSelectedDateTime(
+          draft.startDateTime
+        );
+
         this.refreshPaymentOptions();
       });
   }
@@ -52,7 +77,9 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
 
   private refreshPaymentOptions(): void {
     const draft = this.bookingState.snapshot;
+
     const totalAmount = draft.slotPrice ?? 0;
+
     const partialAmount = draft.spaceDeposit != null
       ? Math.min(draft.spaceDeposit, totalAmount)
       : totalAmount;
@@ -72,7 +99,12 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
       },
     ];
 
-    this.selectedPayment = this.paymentOptions[0] ?? { id: '', title: '', description: '', amount: 0 };
+    this.selectedPayment = this.paymentOptions[0] ?? {
+      id: '',
+      title: '',
+      description: '',
+      amount: 0,
+    };
   }
 
   selectPayment(option: PaymentOption): void {
@@ -81,38 +113,76 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
   }
 
   // ── Formato de fecha y hora ───────────────────────────────────────
+
   private formatSelectedDateTime(dateTimeString: string | null): string {
     if (!dateTimeString) return 'Selecciona un horario';
 
-    const normalized = dateTimeString.includes('T') ? dateTimeString : `${dateTimeString}T00:00:00`;
+    const normalized = dateTimeString.includes('T')
+      ? dateTimeString
+      : `${dateTimeString}T00:00:00`;
+
     const [datePart, timePart] = normalized.split('T');
     const [year, month, day] = datePart.split('-').map(Number);
 
-    if (!year || !month || !day) return 'Selecciona un horario';
+    if (!year || !month || !day) {
+      return 'Selecciona un horario';
+    }
 
     const date = new Date(year, month - 1, day);
-    const weekday = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][date.getDay()];
-    const monthName = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][date.getMonth()];
 
-    const timeLabel = timePart ? timePart.substring(0, 5) + ' hs' : '';
+    const weekday = [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ][date.getDay()];
+
+    const monthName = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ][date.getMonth()];
+
+    const timeLabel = timePart
+      ? timePart.substring(0, 5) + ' hs'
+      : '';
+
     return timeLabel
       ? `${weekday} ${day} de ${monthName} · ${timeLabel}`
       : `${weekday} ${day} de ${monthName}`;
   }
 
   // ── Formato de moneda ─────────────────────────────────────────────
+
   formatAmount(amount: number): string {
     return `$${amount.toLocaleString('es-AR')}`;
   }
 
-  // ── Navegación y Confirmación Final ───────────────────────────────
+  // ── Navegación ────────────────────────────────────────────────────
+
   goBack(): void {
     if (this.isProcessing) return;
+
     this.router.navigate(['/field-schedule/date-selection']);
   }
 
+  // ── Confirmación y pago ───────────────────────────────────────────
+
   confirmBooking(): void {
     if (this.isProcessing) return;
+
     if (!this.selectedPayment || !this.selectedPayment.id) return;
 
     const draft = this.bookingState.snapshot;
@@ -125,7 +195,9 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
     const bookingRequest = {
       spaceId: draft.spaceId,
       startDatetime: draft.startDateTime,
-      paymentType: this.selectedPayment.id === 'full' ? 'PAGO_TOTAL' : 'SEÑA',
+      paymentType: this.selectedPayment.id === 'full'
+        ? 'PAGO_TOTAL'
+        : 'SEÑA',
       paymentMethod: 'MERCADOPAGO' as const,
       termsAccepted: true,
       depositAmount: this.selectedPayment.amount,
@@ -141,50 +213,134 @@ export class StepPaymentSelection implements OnInit, OnDestroy {
 
     this.isProcessing = true;
 
+    // IMPORTANTE:
+    // Abrimos la ventana durante el clic del usuario,
+    // antes de ejecutar cualquier petición HTTP.
+    // Esto evita el bloqueo de popups de Safari.
+
+    this.paymentWindow = window.open('about:blank', '_blank');
+
+    // Crear reserva en el backend.
+
     this.bookingService.createPublicBooking(bookingRequest)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
+
         next: (res) => {
-          if (res.mpUrl) {
-            window.open(res.mpUrl, '_blank');
+
+          // Verificar que Mercado Pago haya devuelto una URL.
+
+          if (!res.mpUrl) {
+            this.paymentWindow?.close();
+            this.paymentWindow = null;
+
+            this.isProcessing = false;
+
+            console.error(
+              'Mercado Pago no devolvió una URL de pago.'
+            );
+
+            return;
+          }
+
+          // Navegar la ventana previamente abierta hacia Mercado Pago.
+
+          if (this.paymentWindow && !this.paymentWindow.closed) {
+
+            this.paymentWindow.location.href = res.mpUrl;
+
+          } else {
+
+            // Fallback si Safari bloqueó la ventana emergente.
+            // Se utiliza la pestaña actual.
+
+            window.location.assign(res.mpUrl);
+            return;
           }
 
           const bookingId = res.booking.id;
 
-          // Polling cada 3 segundos hasta que el pago sea PAGADO o RESERVADO
+          // Polling cada 3 segundos hasta detectar el pago.
+
           timer(0, 3000)
             .pipe(
               switchMap(() =>
                 this.bookingService.verifyBookingPayment(bookingId).pipe(
                   catchError((err) => {
-                    console.warn('Error temporal verificando estado de pago:', err);
+                    console.warn(
+                      'Error temporal verificando estado de pago:',
+                      err
+                    );
+
                     return of(null);
                   })
                 )
               ),
-              filter((statusRes): statusRes is { paymentStatus: string } =>
-                statusRes !== null &&
-                (statusRes.paymentStatus === 'PAGADO' || statusRes.paymentStatus === 'RESERVADO')
+
+              filter(
+                (statusRes): statusRes is { paymentStatus: string } =>
+                  statusRes !== null &&
+                  (
+                    statusRes.paymentStatus === 'PAGADO' ||
+                    statusRes.paymentStatus === 'RESERVADO'
+                  )
               ),
+
               take(1),
               takeUntil(this.destroy$)
             )
             .subscribe({
+
               next: () => {
+
+                // Cerrar automáticamente la pestaña de Mercado Pago.
+
+                if (
+                  this.paymentWindow &&
+                  !this.paymentWindow.closed
+                ) {
+                  this.paymentWindow.close();
+                }
+
+                this.paymentWindow = null;
+
                 this.isProcessing = false;
+
                 this.router.navigate(['/booking-success']);
               },
+
               error: (err) => {
                 this.isProcessing = false;
-                console.error('Error al verificar pago:', err);
+
+                console.error(
+                  'Error al verificar pago:',
+                  err
+                );
               },
+
             });
         },
+
         error: (error) => {
+
+          // Cerrar la pestaña vacía si falla la creación.
+
+          if (this.paymentWindow && !this.paymentWindow.closed) {
+            this.paymentWindow.close();
+          }
+
+          this.paymentWindow = null;
+
           this.isProcessing = false;
+
           console.error('No se pudo crear el turno:', error);
-          alert(error?.error?.message || 'No se pudo crear el turno.');
+
+          alert(
+            error?.error?.message ||
+            'No se pudo crear el turno.'
+          );
         },
+
       });
   }
 }

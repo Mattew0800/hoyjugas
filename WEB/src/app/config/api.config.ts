@@ -1,42 +1,44 @@
+
+function getApiBaseUrl(): string {
+  const hostname = window.location.hostname;
+
+  // Entorno local: Angular (4200) → Spring Boot (8080)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8080/hoyjugas';
+  }
+
+  // Entorno público (ngrok/deploy): utiliza el mismo dominio y protocolo
+  return `${window.location.origin}/hoyjugas`;
+}
+
 export function getAuthApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/auth`;
+  return `${getApiBaseUrl()}/auth`;
 }
 
 export function getUserApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/user`;
+  return `${getApiBaseUrl()}/user`;
 }
 
 export function getBookingApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/bookings`;
+  return `${getApiBaseUrl()}/bookings`;
 }
 
 export function getSpaceApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/internal/spaces`;
+  return `${getApiBaseUrl()}/internal/spaces`;
 }
 
 export function getAdminSpaceApiUrl(): string {
-
-  const host = window.location.hostname;
-
-  return `http://${host}:8080/hoyjugas/admin/spaces`;
-
+  return `${getApiBaseUrl()}/admin/spaces`;
 }
 
 export function getAdminConfigApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/admin/config`;
+  return `${getApiBaseUrl()}/admin/config`;
 }
 
 export function getComplexScheduleApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/complex-schedule`;
+  return `${getApiBaseUrl()}/complex-schedule`;
 }
 
 export function getRecurringBookingApiUrl(): string {
-  const host = window.location.hostname;
-  return `http://${host}:8080/hoyjugas/recurring-bookings`;
+  return `${getApiBaseUrl()}/recurring-bookings`;
 }
