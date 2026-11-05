@@ -203,20 +203,24 @@ export class Dashboard implements OnInit {
 
         if (this.isPastDate(this.selectedDate)) {
 
+          const historicalBookings = bookings.content.filter(
+            booking => booking.status !== 'CANCELADO'
+          );
+
           this.spaces = this.mapSpaces(
             spaces,
-            bookings.content,
+            historicalBookings,
             []
           );
 
           this.updateTimelineRange();
 
           this.stats = this.buildStats(
-            bookings.content
+            historicalBookings
           );
 
           this.updateHeader(
-            bookings.content
+            historicalBookings
           );
 
           return;
