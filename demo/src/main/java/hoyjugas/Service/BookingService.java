@@ -22,10 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
@@ -792,4 +789,18 @@ public class BookingService extends BaseBookingService {
         }
     }
 
+    public PaymentStatusDTO getPaymentStatus(Long bookingId, Long userId) {
+        Booking booking = getBookingOrThrow(bookingId);
+        User requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        boolean isClient = Objects.equals(booking.getClient().getId(), userId);
+        boolean isAdmin = requester.getRole() == Role.ADMIN;
+        boolean isEmployee = requester.getRole() == Role.EMPLOYEE;
+        if (!isClient && !isAdmin && !isEmployee) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permisos para ver el estado de esta reserva");
+        }
+        PaymentStatusDTO paymentStatusDTO = new PaymentStatusDTO();
+        paymentStatusDTO.setPaymentStatus(booking.getPaymentStatus().toString());
+        return paymentStatusDTO;
+    }
 }
