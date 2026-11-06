@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../../services/BookingService/booking-service';
 import { RecurringBookingService } from '../../../../services/RecurringBookingService/recurring-booking-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
-
+import{ReceiptService} from '../../../../services/ReciptService/recipt-service';
 import { BookingListModel } from '../../models/booking-list.model';
 import { BookingResponseModel } from '../../models/booking-response.model';
 import { RecurringBookingDetailModel } from '../../models/recurring-booking-detail.model';
@@ -74,6 +74,12 @@ export class BookingDetailModal implements OnChanges {
 
   cancellationLoading = false;
 
+  showPaymentReceiptConfirmation = false;
+
+  receiptLoading: 'booking' | 'payment' | null = null;
+
+  receiptError = '';
+
   showClientProfile = false;
 
   selectedClient: any = null;
@@ -101,6 +107,7 @@ export class BookingDetailModal implements OnChanges {
   constructor(
     private bookingService: BookingService,
     private recurringBookingService: RecurringBookingService,
+    private reciptService: ReceiptService,
     private errorHandler: ErrorHandlerService
   ) {}
 
@@ -732,5 +739,66 @@ export class BookingDetailModal implements OnChanges {
     }
 
     this.close.emit();
+  }
+
+  onPaymentCompleted(): void {
+    this.paymentLoading = false;
+    this.paymentEmployeePin = '';
+    this.showPaymentReceiptConfirmation = true;
+
+    this.loadBookingDetail();
+  }
+
+  closePaymentReceiptConfirmation(): void {
+    this.showPaymentReceiptConfirmation = false;
+  }
+
+  printBookingReceipt(): void {
+    this.openReceipt('booking');
+  }
+
+  printPaymentReceipt(): void {
+    this.openReceipt('payment');
+  }
+
+  private openReceipt(type: 'booking' | 'payment'): void {
+    if (!this.booking?.id || this.receiptLoading) {
+      return;
+    }
+
+    this.receiptError = '';
+
+    const receiptWindow = window.open('', '_blank');
+
+    if (!receiptWindow) {
+      this.receiptError =
+        'El navegador bloqueó la ventana del comprobante. Permití las ventanas emergentes e intentá nuevamente.';
+      return;
+    }
+
+    receiptWindow.document.title = 'Generando comprobante';
+    receiptWindow.document.body.textContent =
+      'Generando comprobante...';
+
+    this.receiptLoading = type;
+
+    const request = type === 'booking'
+      ? this.reciptService.getBookingReceipt(this.booking.id)
+      : this.reciptService.getPaymentReceipt(this.booking.id);
+
+    request.subscribe({
+      next: (pdf: Blob) => {
+        this.receiptLoading = null;
+
+        const url = URL.createObjectURL(pdf);
+        receiptWindow.location.href = url;
+      },
+      error: (error) => {
+        this.receiptLoading = null;
+        receiptWindow.close();
+
+        this.receiptError = this.errorHandler.getMessage(error);
+      }
+    });
   }
 }
