@@ -1,5 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
+import{map} from 'rxjs/operators';
 
 import { InternalHeader } from '../components/internal-header/internal-header';
 import { InternalSideBar } from '../components/internal-side-bar/internal-side-bar';
@@ -11,6 +12,7 @@ import { SpaceModel } from '../models/space-column.model';
 import { BookingListModel } from '../models/booking-list.model';
 import { SpaceSlotModel } from '../models/space-slot.model';
 import { SpaceCardModel } from '../models/space-card.model';
+import{PageResponse} from '../models/page-response.model';
 
 import { BookingService } from '../../../services/BookingService/booking-service';
 import { SpaceService } from '../../../services/SpaceService/SpaceService';
@@ -178,6 +180,36 @@ export class Dashboard implements OnInit {
 
   }
 
+private getAllBookings(
+  date: string,
+  firstPage: PageResponse<BookingListModel>
+): Observable<BookingListModel[]> {
+
+  const remainingPages = Array.from(
+    { length: Math.max(firstPage.totalPages - 1, 0) },
+    (_, index) =>
+      this.bookingService.getBookings({
+        dateFrom: `${date}T00:00:00`,
+        dateTo: `${date}T23:59:59`,
+        page: index + 1,
+        size: 100,
+        sortBy: 'startDatetime',
+        sortDirection: 'asc'
+      })
+  );
+
+  if (remainingPages.length === 0) {
+    return of(firstPage.content);
+  }
+
+  return forkJoin(remainingPages).pipe(
+    map(pages => [
+      ...firstPage.content,
+      ...pages.flatMap(page => page.content)
+    ])
+  );
+}
+
   private loadBookings(): void {
 
     this.errorMessage='';
@@ -201,30 +233,45 @@ export class Dashboard implements OnInit {
 
       next: ({ spaces, bookings }) => {
 
-        if (this.isPastDate(this.selectedDate)) {
+       if (this.isPastDate(this.selectedDate)) {
 
-          const historicalBookings = bookings.content.filter(
-            booking => booking.status !== 'CANCELADO'
-          );
+         this.getAllBookings(date, bookings).subscribe({
 
-          this.spaces = this.mapSpaces(
-            spaces,
-            historicalBookings,
-            []
-          );
+           next: allBookings => {
 
-          this.updateTimelineRange();
+             const historicalBookings = allBookings.filter(
+               booking => booking.status !== 'CANCELADO'
+             );
 
-          this.stats = this.buildStats(
-            historicalBookings
-          );
+             this.spaces = this.mapSpaces(
+               spaces,
+               historicalBookings,
+               []
+             );
 
-          this.updateHeader(
-            historicalBookings
-          );
+             this.updateTimelineRange();
 
-          return;
-        }
+             this.stats = this.buildStats(
+               historicalBookings
+             );
+
+             this.updateHeader(
+               historicalBookings
+             );
+
+           },
+
+           error: error => {
+
+             this.errorMessage =
+               this.errorHandler.getMessage(error);
+
+           }
+
+         });
+
+         return;
+       }
 
         const availabilityRequests = spaces.map(
           space =>
