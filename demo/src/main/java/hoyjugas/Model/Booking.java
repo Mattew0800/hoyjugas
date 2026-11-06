@@ -92,6 +92,10 @@ public class Booking {
     @Column(nullable = false)
     private Integer slots = 1;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "marked_absent_by")
+    private User markedAbsentBy;
+
     @Column(length = 1000)
     private String observations;
     public boolean isRecurring() {

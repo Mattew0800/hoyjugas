@@ -31,6 +31,7 @@ public class RecurringBookingService extends BaseBookingService{
     private final UserRepository userRepository;
     private final PricingService pricingService;
     private final PaymentRepository paymentRepository;
+    private final WhatsAppService whatsAppService;
 
     public RecurringBookingService(
             BookingNotificationRepository bookingNotificationRepository,
@@ -39,7 +40,7 @@ public class RecurringBookingService extends BaseBookingService{
             BookingRepository bookingRepository,
             SpaceRepository spaceRepository,
             UserRepository userRepository,
-            PricingService pricingService,PaymentRepository paymentRepository) {
+            PricingService pricingService, PaymentRepository paymentRepository, WhatsAppService whatsAppService) {
         super(bookingNotificationRepository, systemConfigRepository,userRepository,spaceRepository,paymentRepository,bookingRepository);
         this.recurringBookingRepository = recurringBookingRepository;
         this.bookingRepository = bookingRepository;
@@ -47,6 +48,7 @@ public class RecurringBookingService extends BaseBookingService{
         this.userRepository = userRepository;
         this.pricingService = pricingService;
         this.paymentRepository = paymentRepository;
+        this.whatsAppService = whatsAppService;
     }
 
     @Transactional
@@ -212,7 +214,8 @@ public class RecurringBookingService extends BaseBookingService{
             recurring.setStatus(RecurringStatus.CANCELADO);
         }
         recurringBookingRepository.save(recurring);
-        scheduleNotification(booking, NotificationType.CANCELACION);
+        //scheduleNotification(booking, NotificationType.CANCELACION);
+        whatsAppService.sendCancellationNotification(booking);
         return new RecurringCancelResponseDTO(
                 bookingId,
                 completedCycle,

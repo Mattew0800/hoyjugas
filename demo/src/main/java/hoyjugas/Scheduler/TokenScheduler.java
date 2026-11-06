@@ -15,6 +15,6 @@ public class TokenScheduler {
     @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void cleanTokens() {
-        passwordResetTokenRepository.deleteByExpiryDateBefore(LocalDateTime.now().minusMinutes(5));
+        passwordResetTokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
     }
 }

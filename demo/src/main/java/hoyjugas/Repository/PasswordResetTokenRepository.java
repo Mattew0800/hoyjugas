@@ -1,5 +1,6 @@
 package hoyjugas.Repository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import hoyjugas.Model.PasswordResetToken;
 import hoyjugas.Model.User;
@@ -14,13 +15,7 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     Optional<PasswordResetToken> findByToken(String token);
     void deleteByUser(User user);
-    @Query("""
-    SELECT t FROM PasswordResetToken t 
-    WHERE t.user = :user 
-    AND t.used = false 
-    AND t.expiryDate > :now
-""")
     @Modifying
-    @Transactional
-    void deleteByExpiryDateBefore(LocalDateTime now);
+    @Query("DELETE FROM PasswordResetToken t WHERE t.expiryDate < :now")
+    void deleteByExpiryDateBefore(@Param("now") LocalDateTime now);
 }
