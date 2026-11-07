@@ -40,3 +40,18 @@ export function getRecurringBookingApiUrl(): string {
   const host = window.location.hostname;
   return `http://${host}:8080/hoyjugas/recurring-bookings`;
 }
+
+export function getProductApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/product`;
+}
+
+export function getCategoryApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/category`;
+}
+
+export function getSupplierApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/suppliers`;
+}

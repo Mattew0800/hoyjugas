@@ -1,0 +1,224 @@
+
+<app-internal-header />
+
+<div class="layout">
+  <app-internal-side-bar />
+
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <h1>Productos</h1>
+        <p>Administración de productos y stock disponible.</p>
+      </div>
+
+      <button
+        class="new-product-button"
+        (click)="openCreateModal()">
+        + Nuevo producto
+      </button>
+    </div>
+
+    <div class="search-container">
+      <form (ngSubmit)="searchProducts()">
+        <input
+          type="text"
+          name="search"
+          [(ngModel)]="searchTerm"
+          placeholder="Buscar producto por nombre o código...">
+
+        <button type="submit" class="search-button">
+          Buscar
+        </button>
+
+        @if (searchTerm) {
+        <button
+          type="button"
+          class="clear-button"
+          (click)="clearSearch()">
+          Limpiar
+        </button>
+        }
+      </form>
+    </div>
+
+    <div class="stock-filter">
+      <label>
+        <input
+          type="checkbox"
+          [(ngModel)]="lowStockOnly"
+          (change)="onLowStockChange()">
+        Mostrar solamente productos con stock bajo
+      </label>
+    </div>
+
+    @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+    }
+
+    <div class="products-summary">
+      <span>{{ totalElements }} productos registrados</span>
+    </div>
+
+    @if (loading) {
+
+    <div class="product-placeholder">
+      Cargando productos...
+    </div>
+
+    } @else if (products.length === 0) {
+    <div class="product-placeholder">{{      lowStockOnly
+      ? 'No hay productos con stock bajo.'
+      : searchTerm.trim()
+      ? 'No se encontraron productos.'
+      : 'No hay productos registrados.'
+      }}
+    </div>
+
+    } @else {
+
+    <div class="products-table-container">
+
+      <table class="products-table">
+
+        <thead>
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Costo</th>
+          <th>Precio de venta</th>
+          <th>Stock actual</th>
+          <th>Stock mínimo</th>
+          <th>Estado de stock</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        @for (product of products; track product.id) {
+        <tr>
+
+          <td class="code-cell">
+            {{ product.internalCode }}
+          </td>
+
+          <td class="name-cell">
+            {{ product.name }}
+          </td>
+
+          <td>
+            {{ product.categoryName }}
+          </td>
+
+          <td>
+            {{ product.cost | currency:'ARS':'symbol':'1.2-2' }}
+          </td>
+
+          <td class="price-cell">
+            {{ product.salePrice | currency:'ARS':'symbol':'1.2-2' }}
+          </td>
+
+          <td>
+                  <span
+                    class="stock-badge"
+                    [class.low-stock]="product.lowStock"
+                    [class.no-stock]="product.stock === 0">
+                    {{ product.stock }}
+                  </span>
+          </td>
+
+          <td>
+            {{ product.minimumStock }}
+          </td>
+
+          <td>
+                  <span
+                    class="inventory-status"
+                    [class.available]="product.stock > 0 && !product.lowStock"
+                    [class.low]="product.stock > 0 && product.lowStock"
+                    [class.empty]="product.stock === 0">
+
+                    {{
+                      product.stock === 0
+                        ? 'Sin stock'
+                        : product.lowStock
+                          ? 'Stock bajo'
+                          : 'Disponible'
+                    }}
+
+                  </span>
+          </td>
+
+          <td>
+                  <span
+                    class="status-badge"
+                    [class.active]="product.isActive"
+                    [class.inactive]="!product.isActive">
+                    {{ product.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+          </td>
+
+          <td class="actions-cell">
+
+            <button
+              class="edit-button"
+              (click)="openEditModal(product.id)">
+              Editar
+            </button>
+
+            <button
+              class="toggle-button"
+              [class.activate]="!product.isActive"
+              (click)="toggleProductStatus(product)">
+              {{ product.isActive ? 'Desactivar' : 'Activar' }}
+            </button>
+
+          </td>
+
+        </tr>
+        }
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <div class="pagination">
+
+        <span>
+          Página {{ currentPage + 1 }} de {{ totalPages }}
+        </span>
+
+      <div class="pagination-actions">
+
+        <button
+          [disabled]="currentPage === 0 || loading"
+          (click)="previousPage()">
+          Anterior
+        </button>
+
+        <button
+          [disabled]="currentPage + 1 >= totalPages || loading"
+          (click)="nextPage()">
+          Siguiente
+        </button>
+
+      </div>
+
+    </div>
+    }
+
+  </main>
+
+  @if (showModal) {
+  <app-product-modal
+    [productId]="selectedProductId"
+    (close)="closeModal($event)">
+  </app-product-modal>
+  }
+
+</div>

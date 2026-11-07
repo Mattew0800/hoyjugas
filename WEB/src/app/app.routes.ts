@@ -21,7 +21,9 @@ import {guestGuard} from './auth/GuestGuard';
 import {internalAuthGuard} from './auth/InternalAuthGuard';
 import {CustomersScreen} from './screens/internal/Customers/customers-screen/customers-screen';
 import {SystemConfigScreen} from './screens/internal/SystemConfig/system-config/system-config';
-
+import { ProductsScreen } from './screens/internal/Products/products-screen/products-screen';
+import {CategoriesScreen} from'./screens/internal/Categories/categories-screen/categories-screen';
+import {SuppliersScreen} from'./screens/internal/Suppliers/suppliers-screen/suppliers-screen';
 export const routes: Routes = [
   {path:'', component:SplashComponent},
   {path:'onboarding', component:Onboarding,canActivate: [guestGuard]},
@@ -41,6 +43,10 @@ export const routes: Routes = [
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
   {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},
   {path:'internal/config', component:SystemConfigScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN']}},
-  {path:'**', component:Error}
+ {path: 'internal/products', component: ProductsScreen, canActivate: [internalAuthGuard], data: { roles: ['ADMIN'] }},
+  {path: 'internal/categories', component: CategoriesScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
+   {path: 'internal/suppliers', component: SuppliersScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
+
+  {path:'**', component: Error}
 
 ];

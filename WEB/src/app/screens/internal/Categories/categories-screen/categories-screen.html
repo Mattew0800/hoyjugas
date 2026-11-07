@@ -1,0 +1,126 @@
+
+<app-internal-header />
+
+<div class="layout">
+  <app-internal-side-bar />
+
+  <main class="content">
+    <div class="page-header">
+      <div>
+        <h1>Categorías</h1>
+        <p>Administrá las categorías de productos del inventario.</p>
+      </div>
+
+      <button class="btn-primary" (click)="openCreateModal()">
+        <span>+</span>
+        Nueva categoría
+      </button>
+    </div>
+
+    <section class="categories-container">
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            placeholder="Buscar por código o nombre..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="filterCategories()"
+          />
+        </div>
+
+        <span class="results-count">
+          {{ filteredCategories.length }}
+          {{ filteredCategories.length === 1 ? 'categoría' : 'categorías' }}
+        </span>
+      </div>
+
+      @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+      }
+
+      @if (loading) {
+      <div class="empty-state">
+        Cargando categorías...
+      </div>
+      } @else if (filteredCategories.length === 0) {
+      <div class="empty-state">
+        @if (searchTerm) {
+        No se encontraron categorías para "{{ searchTerm }}".
+        } @else {
+        Todavía no hay categorías registradas.
+        }
+      </div>
+      } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>CÓDIGO</th>
+            <th>NOMBRE</th>
+            <th>ESTADO</th>
+            <th class="actions-column">ACCIONES</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          @for (category of filteredCategories; track category.id) {
+          <tr>
+            <td>
+                    <span class="category-code">
+                      {{ category.code }}
+                    </span>
+            </td>
+
+            <td class="category-name">
+              {{ category.name }}
+            </td>
+
+            <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="category.isActive"
+                      [class.inactive]="!category.isActive"
+                    >
+                      {{ category.isActive ? 'Activa' : 'Inactiva' }}
+                    </span>
+            </td>
+
+            <td class="actions-column">
+              <div class="actions">
+                <button
+                  class="btn-action edit"
+                  title="Editar categoría"
+                  (click)="openEditModal(category)"
+                >
+                  Editar
+                </button>
+
+                <button
+                  class="btn-action"
+                  [class.activate]="!category.isActive"
+                  [class.deactivate]="category.isActive"
+                  (click)="toggleCategoryStatus(category)"
+                >
+                  {{ category.isActive ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+      }
+    </section>
+  </main>
+</div>
+
+@if (showModal) {
+<app-category-modal
+  [categoryId]="selectedCategoryId"
+  (close)="closeModal($event)"
+/>
+}

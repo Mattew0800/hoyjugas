@@ -1,0 +1,145 @@
+
+<app-internal-header />
+
+<div class="layout">
+  <app-internal-side-bar />
+
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <h1>Proveedores</h1>
+        <p>Administrá los proveedores de mercadería del complejo.</p>
+      </div>
+
+      <button class="btn-primary" (click)="openCreateModal()">
+        <span>+</span>
+        Nuevo proveedor
+      </button>
+    </div>
+
+    <section class="suppliers-container">
+
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+
+          <input
+            type="text"
+            placeholder="Buscar por número, nombre, CUIT o categoría..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="filterSuppliers()"
+          />
+        </div>
+
+        <span class="results-count">
+          {{ filteredSuppliers.length }}
+          {{ filteredSuppliers.length === 1 ? 'proveedor' : 'proveedores' }}
+        </span>
+      </div>
+
+      @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+      }
+
+      @if (loading) {
+      <div class="empty-state">
+        Cargando proveedores...
+      </div>
+      } @else if (filteredSuppliers.length === 0) {
+      <div class="empty-state">
+        @if (searchTerm) {
+        No se encontraron proveedores para "{{ searchTerm }}".
+        } @else {
+        Todavía no hay proveedores registrados.
+        }
+      </div>
+      } @else {
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>NÚMERO</th>
+            <th>PROVEEDOR</th>
+            <th>CUIT</th>
+            <th>TELÉFONO</th>
+            <th>CATEGORÍA</th>
+            <th>ESTADO</th>
+            <th class="actions-column">ACCIONES</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          @for (supplier of filteredSuppliers; track supplier.id) {
+          <tr>
+
+            <td>
+                    <span class="supplier-number">
+                      {{ supplier.supplierNumber }}
+                    </span>
+            </td>
+
+            <td class="supplier-name">
+              {{ supplier.name }}
+            </td>
+
+            <td>{{ supplier.cuit }}</td>
+
+            <td>{{ supplier.phone }}</td>
+
+            <td>
+              {{ supplier.categoryName || 'Sin categoría' }}
+            </td>
+
+            <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="supplier.isActive"
+                      [class.inactive]="!supplier.isActive"
+                    >
+                      {{ supplier.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+            </td>
+
+            <td class="actions-column">
+              <div class="actions">
+
+                <button
+                  class="btn-action edit"
+                  title="Editar proveedor"
+                  (click)="openEditModal(supplier)"
+                >
+                  Editar
+                </button>
+
+                <button
+                  class="btn-action"
+                  [class.activate]="!supplier.isActive"
+                  [class.deactivate]="supplier.isActive"
+                  (click)="toggleSupplierStatus(supplier)"
+                >
+                  {{ supplier.isActive ? 'Desactivar' : 'Activar' }}
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+      }
+
+    </section>
+  </main>
+</div>
+@if (showModal) {
+<app-suppliers-modal
+  [supplierId]="selectedSupplierId"
+  (close)="closeModal($event)"
+/>
+}

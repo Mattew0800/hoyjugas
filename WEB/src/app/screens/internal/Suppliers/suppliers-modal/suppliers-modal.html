@@ -1,0 +1,230 @@
+
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2>{{ supplierId ? 'Editar proveedor' : 'Nuevo proveedor' }}</h2>
+        <p>
+          {{ supplierId
+          ? 'Modificá los datos del proveedor.'
+          : 'Completá los datos para registrar un proveedor.' }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-close"
+        (click)="cancel()"
+        [disabled]="saving"
+        aria-label="Cerrar"
+      >
+        &times;
+      </button>
+    </div>
+
+    @if (loading) {
+    <div class="loading-state">
+      Cargando información...
+    </div>
+    } @else {
+
+    <form (ngSubmit)="saveSupplier()">
+
+      <div class="modal-body">
+
+        @if (errorMessage) {
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+        }
+
+        <div class="form-section">
+          <h3>Datos generales</h3>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label for="supplierNumber">Número de proveedor *</label>
+              <input
+                id="supplierNumber"
+                type="text"
+                name="supplierNumber"
+                [(ngModel)]="supplierNumber"
+                placeholder="Ej. PROV-001"
+                required
+                [disabled]="saving"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="supplierName">Nombre / Razón social *</label>
+              <input
+                id="supplierName"
+                type="text"
+                name="name"
+                [(ngModel)]="name"
+                placeholder="Nombre del proveedor"
+                required
+                [disabled]="saving"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="supplierPhone">Teléfono *</label>
+              <input
+                id="supplierPhone"
+                type="tel"
+                name="phone"
+                [(ngModel)]="phone"
+                placeholder="Ej. 2234567890"
+                minlength="10"
+                maxlength="20"
+                required
+                [disabled]="saving"
+              />
+              <span class="field-hint">Entre 10 y 20 caracteres.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="supplierCuit">CUIT *</label>
+              <input
+                id="supplierCuit"
+                type="text"
+                name="cuit"
+                [(ngModel)]="cuit"
+                placeholder="Ej. 20123456789"
+                minlength="11"
+                maxlength="13"
+                required
+                [disabled]="saving"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label for="supplierCategory">Categoría *</label>
+              <select
+                id="supplierCategory"
+                name="categoryId"
+                [(ngModel)]="categoryId"
+                required
+                [disabled]="saving"
+              >
+                <option [ngValue]="null" disabled>
+                  Seleccioná una categoría
+                </option>
+
+                @for (category of categories; track category.id) {
+                <option [ngValue]="category.id">
+                  {{ category.name }}
+                </option>
+                }
+              </select>
+
+              @if (categories.length === 0) {
+              <span class="field-hint">
+                    No hay categorías activas disponibles.
+                  </span>
+              }
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Datos bancarios</h3>
+          <p class="section-description">
+            Información opcional para gestionar los pagos al proveedor.
+          </p>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label for="supplierBank">Banco</label>
+              <input
+                id="supplierBank"
+                type="text"
+                name="bank"
+                [(ngModel)]="bank"
+                placeholder="Nombre del banco"
+                [disabled]="saving"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="supplierAccountNumber">Número de cuenta</label>
+              <input
+                id="supplierAccountNumber"
+                type="text"
+                name="accountNumber"
+                [(ngModel)]="accountNumber"
+                placeholder="Número de cuenta"
+                [disabled]="saving"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="supplierAccountType">Tipo de cuenta</label>
+              <select
+                id="supplierAccountType"
+                name="accountType"
+                [(ngModel)]="accountType"
+                [disabled]="saving"
+              >
+                <option value="">Seleccionar tipo</option>
+
+                @for (type of accountTypes; track type.value) {
+                <option [value]="type.value">
+                  {{ type.label }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="supplierPaymentTerm">Plazo de pago (días)</label>
+              <input
+                id="supplierPaymentTerm"
+                type="number"
+                name="paymentTermDays"
+                [(ngModel)]="paymentTermDays"
+                min="0"
+                step="1"
+                placeholder="Ej. 30"
+                [disabled]="saving"
+              />
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="cancel()"
+          [disabled]="saving"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="saving || categories.length === 0"
+        >
+          @if (saving) {
+          Guardando...
+          } @else {
+          {{ supplierId ? 'Guardar cambios' : 'Crear proveedor' }}
+          }
+        </button>
+      </div>
+
+    </form>
+    }
+
+  </div>
+</div>
