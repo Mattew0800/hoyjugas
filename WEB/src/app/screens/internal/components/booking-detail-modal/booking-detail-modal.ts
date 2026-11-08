@@ -145,6 +145,9 @@ export class BookingDetailModal implements OnChanges {
     this.receivedAmount = 0;
     this.paymentEmployeePin = '';
     this.paymentLoading = false;
+    this.showPaymentReceiptConfirmation = false;
+    this.receiptLoading = false;
+    this.receiptError = '';
 
     this.internalObservation = '';
     this.observationError = '';
@@ -792,6 +795,9 @@ export class BookingDetailModal implements OnChanges {
 
         const url = URL.createObjectURL(pdf);
         receiptWindow.location.href = url;
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 10000);
       },
       error: (error) => {
         this.receiptLoading = null;
