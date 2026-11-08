@@ -394,7 +394,18 @@
 
 .footer-cancellation-actions,
 .footer-actions {
-  display: contents;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.footer-cancellation-actions {
+  justify-content: flex-start;
+}
+
+.footer-actions {
+  justify-content: flex-end;
 }
 
 .secondary-button {
@@ -525,6 +536,17 @@
 .cancel-cycle-button:disabled {
   opacity: .55;
   cursor: not-allowed;
+}
+
+.cancel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.65);
 }
 
 .cancel-modal {
@@ -794,10 +816,13 @@
 
   .footer-cancellation-actions {
     width: 100%;
+    justify-content: flex-start;
   }
 
   .footer-actions {
-    margin-left: auto;
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
   }
 }
 

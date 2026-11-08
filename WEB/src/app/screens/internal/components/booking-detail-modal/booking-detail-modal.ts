@@ -146,7 +146,7 @@ export class BookingDetailModal implements OnChanges {
     this.paymentEmployeePin = '';
     this.paymentLoading = false;
     this.showPaymentReceiptConfirmation = false;
-    this.receiptLoading = false;
+    this.receiptLoading = null;
     this.receiptError = '';
 
     this.internalObservation = '';
