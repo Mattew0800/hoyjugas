@@ -962,7 +962,7 @@ private getAllBookings(
       amount: payment.amount
     }).subscribe({
       next: () => {
-        this.closeBookingModal();
+        this.bookingDetailModal?.onPaymentCompleted();
         this.loadBookings();
       },
       error: (error) => {
