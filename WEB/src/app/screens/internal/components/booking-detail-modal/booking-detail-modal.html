@@ -593,6 +593,12 @@
 
             <div class="footer-actions">
 
+              @if (receiptError) {
+              <div class="receipt-error">
+                {{ receiptError }}
+              </div>
+              }
+
               <button
                 type="button"
                 class="secondary-button"

@@ -9,7 +9,7 @@
 }
 
 .modal-container {
-  width: 1101px;
+  width: 1100px;
   max-width: 92vw;
   max-height: 90vh;
   display: flex;
@@ -794,7 +794,11 @@
 }
 
 .receipt-error {
+  width: 100%;
   color: #ff8b8b !important;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: right;
 }
 
 @media (max-width: 900px) {
