@@ -55,3 +55,10 @@ export function getSupplierApiUrl(): string {
   const host = window.location.hostname;
   return `http://${host}:8080/hoyjugas/suppliers`;
 }
+
+export function getInventoryApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/inventory`;
+}
+
+

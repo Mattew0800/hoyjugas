@@ -1,0 +1,245 @@
+<app-internal-header />
+
+<div class="layout">
+  <app-internal-side-bar />
+
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <h1>Inventario</h1>
+        <p>Controlá los insumos y las cantidades disponibles del complejo.</p>
+      </div>
+
+      <div class="header-actions">
+        <button
+          class="refresh-button"
+          (click)="loadInventory()">
+          ↻ Actualizar
+        </button>
+
+        <button
+          class="create-button"
+          (click)="openCreateModal()">
+          + Nuevo artículo
+        </button>
+      </div>
+    </div>
+
+    <section class="summary">
+
+      <article class="summary-card">
+        <span>Total de artículos</span>
+        <strong>{{ totalItems }}</strong>
+      </article>
+
+      <article class="summary-card warning">
+        <span>Stock bajo</span>
+        <strong>{{ lowStockItems }}</strong>
+      </article>
+
+      <article class="summary-card inactive">
+        <span>Artículos inactivos</span>
+        <strong>{{ inactiveItems }}</strong>
+      </article>
+
+    </section>
+
+    <section class="inventory-container">
+
+      <div class="toolbar">
+
+        <input
+          type="text"
+          placeholder="Buscar por nombre o categoría..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="filterItems()">
+
+        <label class="stock-filter">
+          <input
+            type="checkbox"
+            [(ngModel)]="lowStockOnly"
+            (change)="filterItems()">
+
+          Mostrar solamente stock bajo
+        </label>
+
+        <span class="results-count">
+          {{ filteredItems.length }}
+          {{ filteredItems.length === 1 ? 'artículo' : 'artículos' }}
+        </span>
+
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (loading) {
+
+        <div class="empty-state">
+          Cargando inventario...
+        </div>
+
+      } @else if (filteredItems.length === 0) {
+
+        <div class="empty-state">
+
+          @if (searchTerm || lowStockOnly) {
+            No se encontraron artículos con esos filtros.
+          } @else {
+            Todavía no hay artículos registrados en el inventario.
+          }
+
+        </div>
+
+      } @else {
+
+        <!-- TABLA -->
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+            <tr>
+              <th>ARTÍCULO</th>
+              <th>CATEGORÍA</th>
+              <th>CANTIDAD ACTUAL</th>
+              <th>CANTIDAD MÍNIMA</th>
+              <th>ESTADO DE STOCK</th>
+              <th>ESTADO</th>
+              <th>ACCIONES</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+              @for (item of filteredItems; track item.id) {
+                <tr>
+
+                  <td class="item-name">
+                    <strong>{{ item.name }}</strong>
+
+                    @if (item.description) {
+                      <small>{{ item.description }}</small>
+                    }
+                  </td>
+
+                  <td>
+                    {{ item.categoryName || 'Sin categoría' }}
+                  </td>
+
+                  <td>
+                    <span
+                      class="quantity-badge"
+                      [class.low]="item.lowStock"
+                      [class.empty]="item.quantity === 0">
+
+                      {{ item.quantity }}
+
+                    </span>
+                  </td>
+
+                  <td>
+                    {{ item.minimumQuantity }}
+                  </td>
+
+                  <td>
+                    <span
+                      class="stock-status"
+                      [class.available]="!item.lowStock"
+                      [class.low]="item.lowStock && item.quantity > 0"
+                      [class.empty]="item.quantity === 0">
+
+                      {{
+                        item.quantity === 0
+                          ? 'Sin stock'
+                          : item.lowStock
+                            ? 'Stock bajo'
+                            : 'Disponible'
+                      }}
+
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="item.isActive"
+                      [class.inactive]="!item.isActive">
+
+                      {{ item.isActive ? 'Activo' : 'Inactivo' }}
+
+                    </span>
+                  </td>
+
+                  <td class="actions-cell">
+
+                    <button
+                      class="edit-button"
+                      (click)="openEditModal(item)">
+                      Editar
+                    </button>
+
+                    <button
+                      class="toggle-button"
+                      [class.activate]="!item.isActive"
+                      (click)="toggleItemStatus(item)">
+
+                      {{ item.isActive ? 'Desactivar' : 'Activar' }}
+
+                    </button>
+
+                    <button
+                      class="movement-button"
+                      (click)="openMovementModal(item)">
+                      Movimiento
+                    </button>
+
+                    <button
+                      type="button"
+                      class="history-button"
+                      (click)="openHistoryModal(item)">
+                      Historial
+                    </button>
+
+                  </td>
+
+                </tr>
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+
+  </main>
+</div>
+
+@if (showModal) {
+  <app-inventory-modal
+    [item]="selectedItem"
+    (close)="onModalClose($event)">
+  </app-inventory-modal>
+}
+
+@if (showMovementModal && selectedMovementItem) {
+  <app-inventory-movement-modal
+    [item]="selectedMovementItem"
+    (close)="onMovementModalClose($event)">
+  </app-inventory-movement-modal>
+}
+
+@if (showHistoryModal && selectedHistoryItem) {
+  <app-inventory-history-modal
+    [item]="selectedHistoryItem"
+    (close)="onHistoryModalClose()">
+  </app-inventory-history-modal>
+}

@@ -106,7 +106,6 @@ export class ProductModal implements OnInit {
     });
   }
 
-  // CARGA DE PRODUCTO PARA EDICIÓN
 
   private loadProductData(product: ProductDetailModel): void {
     this.product = {
@@ -131,7 +130,6 @@ export class ProductModal implements OnInit {
     }
   }
 
-  // BUSCAR CATEGORÍA POR NOMBRE
 
   private findCategoryId(
     categoryName: string | null | undefined
@@ -150,7 +148,6 @@ export class ProductModal implements OnInit {
     return category?.id ?? 0;
   }
 
-  // BUSCAR PROVEEDOR POR NOMBRE
 
   private findSupplierId(
     supplierName: string | null | undefined
@@ -169,7 +166,6 @@ export class ProductModal implements OnInit {
     return supplier?.id;
   }
 
-  // CERRAR MODAL
 
   closeModal(): void {
     if (!this.saving) {
@@ -177,7 +173,6 @@ export class ProductModal implements OnInit {
     }
   }
 
-  // GUARDAR
 
   save(): void {
     this.errorMessage = '';
@@ -198,7 +193,6 @@ export class ProductModal implements OnInit {
     this.updateProduct();
   }
 
-  // VALIDACIONES
 
   private validateForm(): boolean {
 
@@ -271,7 +265,6 @@ export class ProductModal implements OnInit {
     return true;
   }
 
-  // CONSTRUIR REQUEST
 
   private buildRequest(): ProductRequestModel {
 
@@ -295,7 +288,6 @@ export class ProductModal implements OnInit {
     return request;
   }
 
-  // CREAR PRODUCTO
 
   private createProduct(): void {
 
@@ -317,7 +309,6 @@ export class ProductModal implements OnInit {
       });
   }
 
-  // ACTUALIZAR PRODUCTO
 
   private updateProduct(): void {
 

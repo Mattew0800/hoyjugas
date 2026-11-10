@@ -86,8 +86,6 @@ export class SuppliersModal implements OnInit {
         this.phone = supplier.phone;
         this.cuit = supplier.cuit;
 
-        // El backend devuelve categoryName, pero no categoryId.
-        // Se busca la categoría por nombre para poder seleccionarla.
         const category = this.categories.find(
           item => item.name === supplier.categoryName
         );

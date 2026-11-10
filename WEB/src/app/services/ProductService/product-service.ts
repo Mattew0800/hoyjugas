@@ -24,7 +24,6 @@ export class ProductService {
     private http: HttpClient
   ) {}
 
-  // Listado administrativo con filtros y paginación
   getAllProducts(
     filter: ProductFilterModel
   ): Observable<ProductPageModel> {
@@ -35,7 +34,6 @@ export class ProductService {
     );
   }
 
-  // Obtener detalle de un producto
   getProduct(id: number): Observable<ProductDetailModel> {
     return this.http.post<ProductDetailModel>(
       `${this.productApiUrl}/get`,
@@ -44,7 +42,6 @@ export class ProductService {
     );
   }
 
-  // Crear producto
   createProduct(
     product: ProductRequestModel
   ): Observable<ProductDetailModel> {
@@ -55,7 +52,6 @@ export class ProductService {
     );
   }
 
-  // Actualizar producto
   updateProduct(
     product: ProductUpdateRequestModel
   ): Observable<ProductDetailModel> {
@@ -66,7 +62,6 @@ export class ProductService {
     );
   }
 
-  // Buscar productos por código, nombre o código de barras
   searchProducts(query: string): Observable<ProductListModel[]> {
     return this.http.post<ProductListModel[]>(
       `${this.productApiUrl}/search`,
@@ -75,7 +70,6 @@ export class ProductService {
     );
   }
 
-  // Buscar producto por código de barras
   getProductByBarcode(
     barcode: string
   ): Observable<ProductListModel> {
@@ -86,7 +80,6 @@ export class ProductService {
     );
   }
 
-  // Activar o desactivar producto
   toggleProductStatus(id: number): Observable<any> {
     return this.http.post(
       `${this.productApiUrl}/toggle-status`,

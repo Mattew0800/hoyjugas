@@ -1,0 +1,214 @@
+
+<div class="history-overlay" (click)="closeModal()">
+
+  <div class="history-modal" (click)="$event.stopPropagation()">
+
+    <header class="history-header">
+      <div>
+        <h2>Historial de movimientos</h2>
+        <p>{{ item.name }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="history-close"
+        (click)="closeModal()">
+        ✕
+      </button>
+    </header>
+
+    <div class="history-body">
+
+      <div class="history-summary">
+
+        <div>
+          <span>Stock actual</span>
+          <strong>{{ item.quantity }}</strong>
+        </div>
+
+        <div>
+          <span>Total de movimientos</span>
+          <strong>{{ movements.length }}</strong>
+        </div>
+
+      </div>
+
+      <div class="history-filters">
+
+        <div class="filter-group">
+          <label for="history-type">Tipo de movimiento</label>
+
+          <select
+            id="history-type"
+            [(ngModel)]="typeFilter">
+
+            <option value="TODOS">Todos</option>
+            <option value="INGRESO">Ingresos</option>
+            <option value="EGRESO">Egresos</option>
+            <option value="AJUSTE">Ajustes</option>
+
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="history-search">Número de movimiento</label>
+
+          <input
+            id="history-search"
+            type="text"
+            [(ngModel)]="searchMovement"
+            placeholder="Ej. INV-00000001">
+        </div>
+
+        <div class="filter-group">
+          <label for="history-date-from">Desde</label>
+
+          <input
+            id="history-date-from"
+            type="date"
+            [(ngModel)]="dateFrom"
+            [max]="dateTo || null">
+        </div>
+
+        <div class="filter-group">
+          <label for="history-date-to">Hasta</label>
+
+          <input
+            id="history-date-to"
+            type="date"
+            [(ngModel)]="dateTo"
+            [min]="dateFrom || null">
+        </div>
+
+        <button
+          type="button"
+          class="clear-filters-button"
+          (click)="clearFilters()">
+          Limpiar filtros
+        </button>
+
+      </div>
+
+      @if (loading) {
+
+        <div class="history-empty">
+          Cargando historial...
+        </div>
+
+      } @else if (errorMessage) {
+
+        <div class="history-error">
+          {{ errorMessage }}
+        </div>
+
+      } @else if (movements.length === 0) {
+
+        <div class="history-empty">
+          <strong>Sin movimientos registrados</strong>
+          <span>Este artículo todavía no tiene movimientos de stock.</span>
+        </div>
+
+      } @else if (filteredMovements.length === 0) {
+
+        <div class="history-empty">
+          <strong>No se encontraron movimientos</strong>
+          <span>Probá modificando los filtros de búsqueda.</span>
+        </div>
+
+      } @else {
+
+        <div class="history-results-count">
+          Mostrando {{ filteredMovements.length }}
+          de {{ movements.length }} movimientos
+        </div>
+
+        <div class="history-list">
+
+          @for (movement of filteredMovements; track movement.id) {
+
+            <article class="movement-card">
+
+              <div class="movement-card-header">
+
+                <div>
+                  <strong>{{ movement.movementNumber }}</strong>
+
+                  <span>
+                    {{ movement.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </div>
+
+                <span
+                  class="movement-type"
+                  [class.income]="movement.type === 'INGRESO'"
+                  [class.outcome]="movement.type === 'EGRESO'"
+                  [class.adjustment]="movement.type === 'AJUSTE'">
+
+                  {{
+                    movement.type === 'INGRESO'
+                      ? 'Ingreso'
+                      : movement.type === 'EGRESO'
+                        ? 'Egreso'
+                        : 'Ajuste'
+                  }}
+
+                </span>
+
+              </div>
+
+              <div class="movement-quantities">
+
+                <div>
+                  <span>Cantidad</span>
+                  <strong>{{ movement.quantity }}</strong>
+                </div>
+
+                <div>
+                  <span>Stock anterior</span>
+                  <strong>{{ movement.quantityBefore }}</strong>
+                </div>
+
+                <div>
+                  <span>Stock posterior</span>
+                  <strong>{{ movement.quantityAfter }}</strong>
+                </div>
+
+              </div>
+
+              <div class="movement-details">
+
+                <div>
+                  <span>Motivo</span>
+                  <p>{{ movement.reason || 'Sin nota' }}</p>
+                </div>
+
+                <div>
+                  <span>Responsable</span>
+                  <p>{{ movement.registeredByName }}</p>
+                </div>
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    </div>
+
+    <footer class="history-footer">
+
+      <button
+        type="button"
+        (click)="closeModal()">
+        Cerrar
+      </button>
+
+    </footer>
+
+  </div>
+
+</div>

@@ -1,0 +1,150 @@
+<div class="inventory-modal-overlay">
+
+  <div class="inventory-modal">
+
+    <div class="inventory-modal-header">
+      <h2>
+        {{ item === null ? 'Nuevo artículo' : 'Editar artículo' }}
+      </h2>
+
+      <button
+        type="button"
+        class="inventory-modal-close"
+        (click)="closeModal()"
+        [disabled]="saving">
+        ✕
+      </button>
+    </div>
+
+    <div class="inventory-modal-body">
+
+      @if (loading) {
+        <div class="inventory-loading">
+          Cargando información del artículo...
+        </div>
+      } @else {
+
+        <section class="inventory-section">
+
+          <h3>Información general</h3>
+
+          <div class="inventory-form-group inventory-form-full">
+            <label for="inventory-name">Nombre del artículo</label>
+
+            <input
+              id="inventory-name"
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="Ej. Pelotas de fútbol"
+              maxlength="150"
+              [disabled]="saving">
+          </div>
+
+          <div class="inventory-form-group inventory-form-full">
+            <label for="inventory-category">Categoría</label>
+
+            <select
+              id="inventory-category"
+              [(ngModel)]="form.categoryId"
+              [disabled]="saving">
+
+              <option [ngValue]="null">
+                Sin categoría
+              </option>
+
+              @for (category of categories; track category.id) {
+                <option [ngValue]="category.id">
+                  {{ category.name }}
+                </option>
+              }
+
+            </select>
+          </div>
+
+          <div class="inventory-form-group inventory-form-full">
+            <label for="inventory-description">Descripción</label>
+
+            <textarea
+              id="inventory-description"
+              [(ngModel)]="form.description"
+              placeholder="Descripción opcional del artículo..."
+              rows="4"
+              [disabled]="saving">
+            </textarea>
+          </div>
+
+        </section>
+
+        <div class="inventory-divider"></div>
+
+        <section class="inventory-section">
+
+          <h3>Configuración de stock</h3>
+
+          <p class="inventory-description">
+            Definí la cantidad mínima que querés mantener disponible.
+            El stock actual se administra mediante movimientos.
+          </p>
+
+          <div class="inventory-form-group inventory-form-full">
+            <label for="inventory-minimum">
+              Stock mínimo
+            </label>
+
+            <input
+              id="inventory-minimum"
+              type="number"
+              min="0"
+              step="1"
+              [(ngModel)]="form.minimumQuantity"
+              placeholder="Ej. 10"
+              [disabled]="saving">
+          </div>
+
+        </section>
+
+        @if (warningMessage) {
+          <div class="inventory-warning-message">
+            {{ warningMessage }}
+          </div>
+        }
+
+        @if (errorMessage) {
+          <div class="inventory-error-message">
+            {{ errorMessage }}
+          </div>
+        }
+
+      }
+
+    </div>
+
+    <div class="inventory-modal-footer">
+
+      <button
+        type="button"
+        class="inventory-cancel-button"
+        (click)="closeModal()"
+        [disabled]="saving">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="inventory-save-button"
+        (click)="save()"
+        [disabled]="saving || loading">
+
+        @if (saving) {
+          Guardando...
+        } @else {
+          {{ item === null ? 'Crear artículo' : 'Guardar cambios' }}
+        }
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
