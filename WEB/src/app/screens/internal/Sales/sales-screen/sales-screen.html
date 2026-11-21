@@ -25,7 +25,6 @@
 
     <div class="sales-columns">
 
-      <!-- COLUMNA DE PRODUCTOS -->
       <section class="products-panel">
         <div class="panel-header">
           <div>
@@ -41,6 +40,7 @@
             [(ngModel)]="searchTerm"
             (ngModelChange)="onSearchChange()"
             placeholder="Buscar por nombre o código..."
+            [disabled]="submitting"
           >
         </div>
 
@@ -74,7 +74,7 @@
                   <button
                     type="button"
                     class="add-product-button"
-                    [disabled]="product.stock <= 0"
+                    [disabled]="product.stock <= 0 || submitting"
                     (click)="addToCart(product)"
                   >
                     +
@@ -86,7 +86,6 @@
         }
       </section>
 
-      <!-- COLUMNA DEL CARRITO -->
       <aside class="cart-panel">
         <div class="cart-header">
           <div>
@@ -119,21 +118,34 @@
 
                 <div class="cart-item-actions">
                   <div class="quantity-control">
-                    <button type="button" (click)="decreaseQuantity(item)">−</button>
-                    <span>{{ item.quantity }}</span>
                     <button
                       type="button"
-                      [disabled]="item.quantity >= item.product.stock"
+                      [disabled]="submitting"
+                      (click)="decreaseQuantity(item)"
+                    >
+                      −
+                    </button>
+
+                    <span>{{ item.quantity }}</span>
+
+                    <button
+                      type="button"
+                      [disabled]="item.quantity >= item.product.stock || submitting"
                       (click)="increaseQuantity(item)"
-                    >+</button>
+                    >
+                      +
+                    </button>
                   </div>
 
                   <button
                     type="button"
                     class="remove-item"
+                    [disabled]="submitting"
                     (click)="removeFromCart(item)"
                     aria-label="Eliminar producto"
-                  >✕</button>
+                  >
+                    ✕
+                  </button>
                 </div>
               </article>
             }
@@ -143,14 +155,20 @@
         <div class="cart-form">
           <div class="form-group">
             <label for="sale-client">Cliente</label>
-            <select id="sale-client" [(ngModel)]="selectedClientId">
+            <select
+              id="sale-client"
+              [(ngModel)]="selectedClientId"
+              [disabled]="submitting"
+            >
               <option [ngValue]="null">Mostrador</option>
+
               @for (client of clients; track client.id) {
                 <option [ngValue]="client.id">
                   {{ client.name }} - {{ client.dni }}
                 </option>
               }
             </select>
+
             @if (loadingClients) {
               <small>Cargando clientes...</small>
             }
@@ -158,9 +176,15 @@
 
           <div class="form-group">
             <label for="payment-method">Medio de pago</label>
-            <select id="payment-method" [(ngModel)]="paymentMethod">
+            <select
+              id="payment-method"
+              [(ngModel)]="paymentMethod"
+              [disabled]="submitting"
+            >
               @for (method of paymentMethods; track method.value) {
-                <option [value]="method.value">{{ method.label }}</option>
+                <option [value]="method.value">
+                  {{ method.label }}
+                </option>
               }
             </select>
           </div>
@@ -172,6 +196,7 @@
               [(ngModel)]="notes"
               rows="2"
               placeholder="Observaciones opcionales..."
+              [disabled]="submitting"
             ></textarea>
           </div>
 
@@ -184,6 +209,7 @@
               inputmode="numeric"
               autocomplete="off"
               placeholder="Ingresá tu PIN"
+              [disabled]="submitting"
             >
           </div>
         </div>
@@ -206,7 +232,6 @@
   </main>
 </div>
 
-<!-- COMPROBANTE DE VENTA -->
 @if (completedSale) {
   <div class="sale-success-overlay">
     <div class="sale-success-modal">
@@ -219,14 +244,17 @@
           <span>Cliente</span>
           <strong>{{ completedSale.clientName }}</strong>
         </div>
+
         <div>
           <span>Medio de pago</span>
           <strong>{{ completedSale.paymentMethod }}</strong>
         </div>
+
         <div>
           <span>Fecha</span>
           <strong>{{ completedSale.date | date:'dd/MM/yyyy HH:mm' }}</strong>
         </div>
+
         <div>
           <span>Total</span>
           <strong>{{ completedSale.totalAmount | currency:'ARS':'symbol':'1.2-2' }}</strong>
@@ -245,6 +273,7 @@
         <button type="button" (click)="closeCompletedSale()">
           Cerrar
         </button>
+
         <button type="button" class="new-sale-button" (click)="newSale()">
           Nueva venta
         </button>

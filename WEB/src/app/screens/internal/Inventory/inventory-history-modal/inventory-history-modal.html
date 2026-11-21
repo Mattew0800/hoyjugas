@@ -1,18 +1,27 @@
 
-<div class="history-overlay" (click)="closeModal()">
+<div class="history-overlay">
 
-  <div class="history-modal" (click)="$event.stopPropagation()">
+  <div
+    #dialogElement
+    class="history-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="history-dialog-title"
+    tabindex="-1"
+    (keydown)="onDialogKeydown($event)">
 
     <header class="history-header">
       <div>
-        <h2>Historial de movimientos</h2>
+        <h2 id="history-dialog-title">Historial de movimientos</h2>
         <p>{{ item.name }}</p>
       </div>
 
       <button
+        #initialFocus
         type="button"
         class="history-close"
-        (click)="closeModal()">
+        (click)="closeModal()"
+        aria-label="Cerrar historial">
         ✕
       </button>
     </header>
@@ -20,7 +29,6 @@
     <div class="history-body">
 
       <div class="history-summary">
-
         <div>
           <span>Stock actual</span>
           <strong>{{ item.quantity }}</strong>
@@ -30,7 +38,6 @@
           <span>Total de movimientos</span>
           <strong>{{ movements.length }}</strong>
         </div>
-
       </div>
 
       <div class="history-filters">
@@ -38,15 +45,11 @@
         <div class="filter-group">
           <label for="history-type">Tipo de movimiento</label>
 
-          <select
-            id="history-type"
-            [(ngModel)]="typeFilter">
-
+          <select id="history-type" [(ngModel)]="typeFilter">
             <option value="TODOS">Todos</option>
             <option value="INGRESO">Ingresos</option>
             <option value="EGRESO">Egresos</option>
             <option value="AJUSTE">Ajustes</option>
-
           </select>
         </div>
 

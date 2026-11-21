@@ -1,18 +1,24 @@
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { GoodsReciptModal } from './goods-receipt-modal';
+import { GoodsReceiptModal } from './goods-receipt-modal';
 
-describe('GoodsReciptModal', () => {
-  let component: GoodsReciptModal;
-  let fixture: ComponentFixture<GoodsReciptModal>;
+describe('GoodsReceiptModal', () => {
+  let component: GoodsReceiptModal;
+  let fixture: ComponentFixture<GoodsReceiptModal>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GoodsReciptModal]
-    })
-    .compileComponents();
+      imports: [GoodsReceiptModal],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(GoodsReciptModal);
+    fixture = TestBed.createComponent(GoodsReceiptModal);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

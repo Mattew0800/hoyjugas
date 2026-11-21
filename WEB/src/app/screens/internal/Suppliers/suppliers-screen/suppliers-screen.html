@@ -39,107 +39,111 @@
       </div>
 
       @if (errorMessage) {
-      <div class="error-message">
-        {{ errorMessage }}
-      </div>
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
       }
 
       @if (loading) {
-      <div class="empty-state">
-        Cargando proveedores...
-      </div>
+        <div class="empty-state">
+          Cargando proveedores...
+        </div>
       } @else if (filteredSuppliers.length === 0) {
-      <div class="empty-state">
-        @if (searchTerm) {
-        No se encontraron proveedores para "{{ searchTerm }}".
-        } @else {
-        Todavía no hay proveedores registrados.
-        }
-      </div>
+        <div class="empty-state">
+          @if (searchTerm) {
+            No se encontraron proveedores para "{{ searchTerm }}".
+          } @else {
+            Todavía no hay proveedores registrados.
+          }
+        </div>
       } @else {
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-          <tr>
-            <th>NÚMERO</th>
-            <th>PROVEEDOR</th>
-            <th>CUIT</th>
-            <th>TELÉFONO</th>
-            <th>CATEGORÍA</th>
-            <th>ESTADO</th>
-            <th class="actions-column">ACCIONES</th>
-          </tr>
-          </thead>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+            <tr>
+              <th>NÚMERO</th>
+              <th>PROVEEDOR</th>
+              <th>CUIT</th>
+              <th>TELÉFONO</th>
+              <th>CATEGORÍA</th>
+              <th>ESTADO</th>
+              <th class="actions-column">ACCIONES</th>
+            </tr>
+            </thead>
 
-          <tbody>
-          @for (supplier of filteredSuppliers; track supplier.id) {
-          <tr>
+            <tbody>
+              @for (supplier of filteredSuppliers; track supplier.id) {
+                <tr>
 
-            <td>
+                  <td>
                     <span class="supplier-number">
                       {{ supplier.supplierNumber }}
                     </span>
-            </td>
+                  </td>
 
-            <td class="supplier-name">
-              {{ supplier.name }}
-            </td>
+                  <td class="supplier-name">
+                    {{ supplier.name }}
+                  </td>
 
-            <td>{{ supplier.cuit }}</td>
+                  <td>{{ supplier.cuit }}</td>
 
-            <td>{{ supplier.phone }}</td>
+                  <td>{{ supplier.phone }}</td>
 
-            <td>
-              {{ supplier.categoryName || 'Sin categoría' }}
-            </td>
+                  <td>
+                    {{ supplier.categoryName || 'Sin categoría' }}
+                  </td>
 
-            <td>
+                  <td>
                     <span
                       class="status-badge"
                       [class.active]="supplier.isActive"
-                      [class.inactive]="!supplier.isActive"
-                    >
+                      [class.inactive]="!supplier.isActive">
                       {{ supplier.isActive ? 'Activo' : 'Inactivo' }}
                     </span>
-            </td>
+                  </td>
 
-            <td class="actions-column">
-              <div class="actions">
+                  <td class="actions-column">
+                    <div class="actions">
 
-                <button
-                  class="btn-action edit"
-                  title="Editar proveedor"
-                  (click)="openEditModal(supplier)"
-                >
-                  Editar
-                </button>
+                      <button
+                        class="btn-action edit"
+                        title="Editar proveedor"
+                        (click)="openEditModal(supplier)">
+                        Editar
+                      </button>
 
-                <button
-                  class="btn-action"
-                  [class.activate]="!supplier.isActive"
-                  [class.deactivate]="supplier.isActive"
-                  (click)="toggleSupplierStatus(supplier)"
-                >
-                  {{ supplier.isActive ? 'Desactivar' : 'Activar' }}
-                </button>
+                      <button
+                        class="btn-action"
+                        [class.activate]="!supplier.isActive"
+                        [class.deactivate]="supplier.isActive"
+                        [disabled]="pendingStatusIds.has(supplier.id)"
+                        (click)="toggleSupplierStatus(supplier)">
+                        {{ pendingStatusIds.has(supplier.id)
+                        ? 'Procesando...'
+                        : supplier.isActive
+                          ? 'Desactivar'
+                          : 'Activar'
+                        }}
+                      </button>
 
-              </div>
-            </td>
+                    </div>
+                  </td>
 
-          </tr>
-          }
-          </tbody>
-        </table>
-      </div>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
 
     </section>
   </main>
 </div>
+
 @if (showModal) {
-<app-suppliers-modal
-  [supplierId]="selectedSupplierId"
-  (close)="closeModal($event)"
-/>
+  <app-suppliers-modal
+    [supplierId]="selectedSupplierId"
+    (close)="closeModal($event)"
+  />
 }

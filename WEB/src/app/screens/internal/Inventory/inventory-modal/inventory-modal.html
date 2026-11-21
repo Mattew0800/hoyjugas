@@ -1,3 +1,4 @@
+
 <div class="inventory-modal-overlay">
 
   <div class="inventory-modal">
@@ -46,7 +47,7 @@
             <select
               id="inventory-category"
               [(ngModel)]="form.categoryId"
-              [disabled]="saving">
+              [disabled]="saving || !categoriesLoaded">
 
               <option [ngValue]="null">
                 Sin categoría
@@ -59,6 +60,13 @@
               }
 
             </select>
+
+            @if (categoriesLoadFailed) {
+              <span class="inventory-description">
+                No se pudieron cargar las categorías.
+                Podés reintentar sin perder los datos ingresados.
+              </span>
+            }
           </div>
 
           <div class="inventory-form-group inventory-form-full">
@@ -113,6 +121,16 @@
           <div class="inventory-error-message">
             {{ errorMessage }}
           </div>
+        }
+
+        @if (categoriesLoadFailed) {
+          <button
+            type="button"
+            class="inventory-cancel-button"
+            (click)="retryCategories()"
+            [disabled]="loading || saving">
+            Reintentar cargar categorías
+          </button>
         }
 
       }

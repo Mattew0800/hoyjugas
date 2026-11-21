@@ -1,13 +1,15 @@
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { InventoryItemModel } from '../../models/inventory.model';
 import { InventoryService } from '../../../../services/InventoryService/inventory-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
-import {InventoryModal} from '../inventory-modal/inventory-modal';
+
+import { InventoryModal } from '../inventory-modal/inventory-modal';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
-import {InventoryMovementModal} from '../inventory-movement-modal/inventory-movement-modal';
+import { InventoryMovementModal } from '../inventory-movement-modal/inventory-movement-modal';
 import { InventoryHistoryModal } from '../inventory-history-modal/inventory-history-modal';
 
 @Component({
@@ -44,6 +46,8 @@ export class InventoryScreen implements OnInit {
   showHistoryModal = false;
   selectedHistoryItem: InventoryItemModel | null = null;
 
+  private inventoryRequestId = 0;
+
   constructor(
     private inventoryService: InventoryService,
     private errorHandler: ErrorHandlerService
@@ -54,16 +58,26 @@ export class InventoryScreen implements OnInit {
   }
 
   loadInventory(): void {
+    const requestId = ++this.inventoryRequestId;
+
     this.loading = true;
     this.errorMessage = '';
 
     this.inventoryService.getAllItems().subscribe({
       next: response => {
+        if (requestId !== this.inventoryRequestId) {
+          return;
+        }
+
         this.items = response;
         this.filterItems();
         this.loading = false;
       },
       error: error => {
+        if (requestId !== this.inventoryRequestId) {
+          return;
+        }
+
         this.errorMessage = this.errorHandler.getMessage(error);
         this.loading = false;
       }

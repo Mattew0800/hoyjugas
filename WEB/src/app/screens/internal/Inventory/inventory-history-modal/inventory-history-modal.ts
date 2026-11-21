@@ -1,5 +1,17 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { DatePipe } from '@angular/common';
+
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+  Inject
+} from '@angular/core';
+
+import { DOCUMENT, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import {
@@ -17,27 +29,47 @@ import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/er
   templateUrl: './inventory-history-modal.html',
   styleUrl: './inventory-history-modal.scss',
 })
-export class InventoryHistoryModal implements OnInit {
+export class InventoryHistoryModal implements OnInit, AfterViewInit {
 
   @Input({ required: true }) item!: InventoryItemModel;
   @Output() close = new EventEmitter<void>();
+
+  @ViewChild('dialogElement')
+  dialogElement!: ElementRef<HTMLElement>;
+
+  @ViewChild('initialFocus')
+  initialFocus!: ElementRef<HTMLButtonElement>;
 
   movements: InventoryMovementResponseModel[] = [];
   loading = false;
   errorMessage = '';
 
-  typeFilter: string = 'TODOS';
+  typeFilter = 'TODOS';
   dateFrom = '';
   dateTo = '';
   searchMovement = '';
 
+  private openerElement: HTMLElement | null = null;
+  private closed = false;
+
   constructor(
     private inventoryService: InventoryService,
-    private errorHandler: ErrorHandlerService
-  ) {}
+    private errorHandler: ErrorHandlerService,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+    const activeElement = this.document.activeElement;
+
+    if (activeElement instanceof HTMLElement) {
+      this.openerElement = activeElement;
+    }
+  }
 
   ngOnInit(): void {
     this.loadMovements();
+  }
+
+  ngAfterViewInit(): void {
+    this.initialFocus.nativeElement.focus();
   }
 
   get filteredMovements(): InventoryMovementResponseModel[] {
@@ -67,6 +99,43 @@ export class InventoryHistoryModal implements OnInit {
         matchesSearch
       );
     });
+  }
+
+  onDialogKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeModal();
+      return;
+    }
+
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const focusableElements = this.dialogElement.nativeElement.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      this.dialogElement.nativeElement.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    const activeElement = this.document.activeElement;
+
+    if (event.shiftKey && activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+      return;
+    }
+
+    if (!event.shiftKey && activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
   }
 
   clearFilters(): void {
@@ -99,6 +168,12 @@ export class InventoryHistoryModal implements OnInit {
   }
 
   closeModal(): void {
+    if (this.closed) {
+      return;
+    }
+
+    this.closed = true;
+    this.openerElement?.focus();
     this.close.emit();
   }
 }

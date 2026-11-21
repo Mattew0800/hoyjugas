@@ -1,3 +1,4 @@
+
 import {
   Component,
   EventEmitter,
@@ -44,6 +45,8 @@ export class InventoryModal implements OnInit {
 
   saving = false;
   loading = false;
+  categoriesLoaded = false;
+  categoriesLoadFailed = false;
 
   errorMessage = '';
   warningMessage = '';
@@ -72,26 +75,48 @@ export class InventoryModal implements OnInit {
   }
 
   private loadInitialData(): void {
-    this.loading = true;
     this.errorMessage = '';
     this.warningMessage = '';
+
+    if (this.item !== null) {
+      this.loadItemData(this.item);
+    }
+
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.loading = true;
+    this.categoriesLoadFailed = false;
+    this.errorMessage = '';
 
     this.categoryService.getActiveCategories().subscribe({
       next: categories => {
         this.categories = categories;
-
-        if (this.item !== null) {
-          this.loadItemData(this.item);
-        }
-
+        this.categoriesLoaded = true;
+        this.categoriesLoadFailed = false;
         this.loading = false;
+
+        if (this.item !== null && this.form.categoryId === null) {
+          this.loadItemCategory(this.item);
+        }
       },
 
       error: error => {
         this.loading = false;
+        this.categoriesLoaded = false;
+        this.categoriesLoadFailed = true;
         this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
+  }
+
+  retryCategories(): void {
+    if (this.loading || this.saving) {
+      return;
+    }
+
+    this.loadCategories();
   }
 
   private loadItemData(item: InventoryItemModel): void {
@@ -99,12 +124,18 @@ export class InventoryModal implements OnInit {
       name: item.name ?? '',
       minimumQuantity: Number(item.minimumQuantity ?? 0),
       description: item.description ?? '',
-      categoryId: this.findCategoryId(item.categoryName)
+      categoryId: null
     };
+  }
+
+  private loadItemCategory(item: InventoryItemModel): void {
+    this.form.categoryId = this.findCategoryId(item.categoryName);
 
     if (item.categoryName && this.form.categoryId === null) {
       this.warningMessage =
-        'No se pudo identificar la categoría actual. Podés seleccionarla nuevamente o dejar el artículo sin categoría.';
+        'No se pudo identificar la categoría actual. Seleccioná una categoría válida antes de guardar.';
+    } else {
+      this.warningMessage = '';
     }
   }
 
@@ -136,6 +167,20 @@ export class InventoryModal implements OnInit {
 
     if (this.loading || this.saving) {
       return;
+    }
+
+    if (this.item !== null && this.item.categoryName) {
+      if (!this.categoriesLoaded) {
+        this.errorMessage =
+          'No se pudo verificar la categoría actual. Reintentá cargar las categorías antes de guardar.';
+        return;
+      }
+
+      if (this.form.categoryId === null) {
+        this.errorMessage =
+          'Seleccioná una categoría para reemplazar la categoría actual antes de guardar.';
+        return;
+      }
     }
 
     if (!this.validateForm()) {

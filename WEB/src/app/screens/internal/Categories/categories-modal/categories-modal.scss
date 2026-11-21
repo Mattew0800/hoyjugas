@@ -9,17 +9,21 @@
   padding: 20px;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(3px);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .modal-container {
   width: 100%;
   max-width: 480px;
+  max-height: calc(100vh - 40px);
   background: #1a1c1f;
   border: 1px solid #2b2e34;
   border-radius: 14px;
-  overflow: hidden;
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   animation: modalAppear 0.2s ease-out;
+  box-sizing: border-box;
 }
 
 .modal-header {

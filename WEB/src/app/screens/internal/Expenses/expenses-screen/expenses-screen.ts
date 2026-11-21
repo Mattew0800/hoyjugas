@@ -37,7 +37,9 @@ export class ExpensesScreen implements OnInit {
 
   expenses: ExpenseModel[] = [];
   concepts: ExpenseConceptModel[] = [];
+
   suppliers: SupplierModel[] = [];
+  activeSuppliers: SupplierModel[] = [];
 
   loading = false;
   saving = false;
@@ -62,6 +64,8 @@ export class ExpensesScreen implements OnInit {
 
   conceptName = '';
   conceptIsExtra = false;
+
+  private expensesRequestId = 0;
 
   readonly paymentMethods: {
     value: PaymentMethod;
@@ -88,6 +92,8 @@ export class ExpensesScreen implements OnInit {
   }
 
   loadExpenses(): void {
+    const requestId = ++this.expensesRequestId;
+
     this.loading = true;
     this.errorMessage = '';
 
@@ -106,12 +112,20 @@ export class ExpensesScreen implements OnInit {
       sortDirection: 'desc'
     }).subscribe({
       next: response => {
+        if (requestId !== this.expensesRequestId) {
+          return;
+        }
+
         this.expenses = response.content;
         this.totalPages = response.totalPages;
         this.totalElements = response.totalElements;
         this.loading = false;
       },
       error: error => {
+        if (requestId !== this.expensesRequestId) {
+          return;
+        }
+
         this.errorMessage = this.errorHandler.getMessage(error);
         this.loading = false;
       }
@@ -130,9 +144,12 @@ export class ExpensesScreen implements OnInit {
   }
 
   loadSuppliers(): void {
-    this.supplierService.getActiveSuppliers().subscribe({
+    this.supplierService.getAllSuppliers().subscribe({
       next: response => {
         this.suppliers = response;
+        this.activeSuppliers = response.filter(
+          supplier => supplier.isActive
+        );
       },
       error: error => {
         this.errorMessage = this.errorHandler.getMessage(error);

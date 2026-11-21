@@ -1,18 +1,27 @@
 
 <div class="receipt-overlay">
-  <div class="receipt-modal">
+
+  <div
+    class="receipt-modal"
+    #dialog
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="receipt-dialog-title"
+    tabindex="-1"
+    (keydown)="handleDialogKeydown($event)">
 
     @if (successReceipt === null) {
       <header class="receipt-header">
         <div>
-          <h2>Ingresar mercadería</h2>
+          <h2 id="receipt-dialog-title">Ingresar mercadería</h2>
           <p>Registrá la compra y actualizá el stock.</p>
         </div>
 
         <button
           type="button"
           (click)="closeModal()"
-          [disabled]="submitting">
+          [disabled]="submitting"
+          aria-label="Cerrar ventana">
           ✕
         </button>
       </header>
@@ -20,7 +29,7 @@
       <div class="receipt-body">
 
         @if (errorMessage) {
-          <div class="receipt-error">
+          <div class="receipt-error" role="alert">
             {{ errorMessage }}
           </div>
         }
@@ -31,9 +40,11 @@
           <div class="receipt-form-grid">
 
             <div class="receipt-field">
-              <label>Proveedor *</label>
+              <label for="receipt-supplier">Proveedor *</label>
 
               <select
+                id="receipt-supplier"
+                data-dialog-initial-focus
                 [(ngModel)]="selectedSupplierId"
                 [disabled]="loading || submitting">
 
@@ -54,9 +65,10 @@
             </div>
 
             <div class="receipt-field">
-              <label>Número de comprobante</label>
+              <label for="receipt-voucher">Número de comprobante</label>
 
               <input
+                id="receipt-voucher"
                 type="text"
                 [(ngModel)]="voucher"
                 [disabled]="submitting"
@@ -64,9 +76,10 @@
             </div>
 
             <div class="receipt-field">
-              <label>Medio de pago *</label>
+              <label for="receipt-payment">Medio de pago *</label>
 
               <select
+                id="receipt-payment"
                 [(ngModel)]="paymentMethod"
                 [disabled]="submitting">
 
@@ -79,9 +92,10 @@
             </div>
 
             <div class="receipt-field">
-              <label>Observaciones</label>
+              <label for="receipt-notes">Observaciones</label>
 
               <input
+                id="receipt-notes"
                 type="text"
                 [(ngModel)]="notes"
                 [disabled]="submitting"
@@ -96,13 +110,12 @@
         <section>
           <h3>Productos</h3>
 
-
-
           <div class="receipt-autocomplete">
             <div class="receipt-field">
-              <label>Buscar producto</label>
+              <label for="receipt-product-search">Buscar producto</label>
 
               <input
+                id="receipt-product-search"
                 type="text"
                 [(ngModel)]="productSearch"
                 (ngModelChange)="filterProducts()"
@@ -176,9 +189,10 @@
                   <div class="receipt-item-fields">
 
                     <div class="receipt-field">
-                      <label>Cantidad *</label>
+                      <label [for]="'receipt-quantity-' + item.product.id">Cantidad *</label>
 
                       <input
+                        [id]="'receipt-quantity-' + item.product.id"
                         type="number"
                         min="1"
                         step="1"
@@ -187,9 +201,10 @@
                     </div>
 
                     <div class="receipt-field">
-                      <label>Costo unitario *</label>
+                      <label [for]="'receipt-cost-' + item.product.id">Costo unitario *</label>
 
                       <input
+                        [id]="'receipt-cost-' + item.product.id"
                         type="number"
                         min="0.01"
                         step="0.01"
@@ -198,9 +213,10 @@
                     </div>
 
                     <div class="receipt-field">
-                      <label>Descuento</label>
+                      <label [for]="'receipt-discount-' + item.product.id">Descuento</label>
 
                       <input
+                        [id]="'receipt-discount-' + item.product.id"
                         type="number"
                         min="0"
                         step="0.01"
@@ -210,9 +226,10 @@
                     </div>
 
                     <div class="receipt-field">
-                      <label>Precio de venta</label>
+                      <label [for]="'receipt-sale-price-' + item.product.id">Precio de venta</label>
 
                       <input
+                        [id]="'receipt-sale-price-' + item.product.id"
                         type="number"
                         min="0.01"
                         step="0.01"
@@ -239,7 +256,6 @@
 
         <div class="receipt-divider"></div>
 
-        <!-- RESUMEN -->
         <section class="receipt-summary">
 
           <div>
@@ -262,11 +278,11 @@
 
         </section>
 
-        <!-- PIN -->
         <div class="receipt-field receipt-pin">
-          <label>PIN del empleado *</label>
+          <label for="receipt-pin">PIN del empleado *</label>
 
           <input
+            id="receipt-pin"
             type="password"
             [(ngModel)]="employeePin"
             [disabled]="submitting"
@@ -277,7 +293,6 @@
 
       </div>
 
-      <!-- ACCIONES -->
       <footer class="receipt-footer">
 
         <button
@@ -302,12 +317,11 @@
 
     } @else {
 
-      <!-- CONFIRMACIÓN -->
       <div class="receipt-success">
 
-        <div class="receipt-success-icon">✓</div>
+        <div class="receipt-success-icon" aria-hidden="true">✓</div>
 
-        <h2>Ingreso registrado</h2>
+        <h2 id="receipt-dialog-title">Ingreso registrado</h2>
 
         <strong>{{ successReceipt.movementNumber }}</strong>
 
@@ -325,6 +339,7 @@
         </p>
 
         <button
+          data-dialog-success-focus
           type="button"
           class="receipt-submit"
           (click)="finish()">

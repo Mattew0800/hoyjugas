@@ -1,11 +1,11 @@
 
 import { Component, OnInit } from '@angular/core';
-import {CurrencyPipe, DatePipe} from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { ProductListModel } from '../../models/product.model';
 import { CustomerModel } from '../../models/user-response';
-import {PaymentMethod,SaleResponseModel} from '../../models/sale.mode';
+import { PaymentMethod, SaleResponseModel } from '../../models/sale.mode';
 
 import { ProductService } from '../../../../services/ProductService/product-service';
 import { UserService } from '../../../../services/UserService/user-service';
@@ -77,21 +77,29 @@ export class SalesScreen implements OnInit {
     this.loadClients();
   }
 
-  loadProducts(): void {
+  loadProducts(preserveError = false): void {
+    if (this.submitting) {
+      return;
+    }
+
     const requestId = ++this.productRequestId;
     const search = this.searchTerm.trim();
 
     this.loadingProducts = true;
-    this.errorMessage = '';
 
-    this.loadProductPage(search, 0, [], requestId);
+    if (!preserveError) {
+      this.errorMessage = '';
+    }
+
+    this.loadProductPage(search, 0, [], requestId, preserveError);
   }
 
   private loadProductPage(
     search: string,
     page: number,
     accumulated: ProductListModel[],
-    requestId: number
+    requestId: number,
+    preserveError: boolean
   ): void {
     this.productService.getAllProducts({
       ...(search ? { search } : {}),
@@ -102,7 +110,6 @@ export class SalesScreen implements OnInit {
       sortDirection: 'ASC'
     }).subscribe({
       next: response => {
-        // Ignorar respuestas de búsquedas anteriores.
         if (requestId !== this.productRequestId) {
           return;
         }
@@ -114,12 +121,14 @@ export class SalesScreen implements OnInit {
             search,
             page + 1,
             products,
-            requestId
+            requestId,
+            preserveError
           );
           return;
         }
 
         this.products = products;
+        this.reconcileCartWithProducts(products);
         this.loadingProducts = false;
       },
       error: error => {
@@ -127,11 +136,63 @@ export class SalesScreen implements OnInit {
           return;
         }
 
-        this.errorMessage = this.errorHandler.getMessage(error);
+        if (!preserveError) {
+          this.errorMessage = this.errorHandler.getMessage(error);
+        }
+
         this.loadingProducts = false;
-        this.products = [];
       }
     });
+  }
+
+  private reconcileCartWithProducts(
+    refreshedProducts: ProductListModel[]
+  ): void {
+    const updatedCart: CartItem[] = [];
+    const adjustments: string[] = [];
+
+    for (const cartItem of this.cart) {
+      const refreshedProduct = refreshedProducts.find(
+        product => product.id === cartItem.product.id
+      );
+
+      if (!refreshedProduct) {
+        updatedCart.push(cartItem);
+        continue;
+      }
+
+      if (refreshedProduct.stock <= 0) {
+        adjustments.push(
+          `${refreshedProduct.name} fue retirado del carrito porque no tiene stock.`
+        );
+        continue;
+      }
+
+      const updatedQuantity = Math.min(
+        cartItem.quantity,
+        refreshedProduct.stock
+      );
+
+      if (updatedQuantity < cartItem.quantity) {
+        adjustments.push(
+          `La cantidad de ${refreshedProduct.name} se ajustó a ${updatedQuantity} por disponibilidad de stock.`
+        );
+      }
+
+      updatedCart.push({
+        product: refreshedProduct,
+        quantity: updatedQuantity
+      });
+    }
+
+    this.cart = updatedCart;
+
+    if (adjustments.length > 0) {
+      this.errorMessage = [
+        this.errorMessage,
+        ...adjustments
+      ].filter(Boolean).join(' ');
+    }
   }
 
   loadClients(): void {
@@ -149,10 +210,18 @@ export class SalesScreen implements OnInit {
   }
 
   onSearchChange(): void {
+    if (this.submitting) {
+      return;
+    }
+
     this.loadProducts();
   }
 
   addToCart(product: ProductListModel): void {
+    if (this.submitting) {
+      return;
+    }
+
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -179,6 +248,10 @@ export class SalesScreen implements OnInit {
   }
 
   increaseQuantity(item: CartItem): void {
+    if (this.submitting) {
+      return;
+    }
+
     if (item.quantity >= item.product.stock) {
       this.errorMessage = `Stock máximo disponible: ${item.product.stock}.`;
       return;
@@ -189,6 +262,10 @@ export class SalesScreen implements OnInit {
   }
 
   decreaseQuantity(item: CartItem): void {
+    if (this.submitting) {
+      return;
+    }
+
     if (item.quantity > 1) {
       item.quantity--;
     } else {
@@ -199,6 +276,10 @@ export class SalesScreen implements OnInit {
   }
 
   removeFromCart(item: CartItem): void {
+    if (this.submitting) {
+      return;
+    }
+
     this.cart = this.cart.filter(
       cartItem => cartItem.product.id !== item.product.id
     );
@@ -223,6 +304,10 @@ export class SalesScreen implements OnInit {
   }
 
   confirmSale(): void {
+    if (this.submitting) {
+      return;
+    }
+
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -265,7 +350,7 @@ export class SalesScreen implements OnInit {
       error: error => {
         this.errorMessage = this.errorHandler.getMessage(error);
         this.submitting = false;
-        this.loadProducts();
+        this.loadProducts(true);
       }
     });
   }

@@ -35,6 +35,8 @@ export class SuppliersScreen implements OnInit {
   showModal = false;
   selectedSupplierId: number | null = null;
 
+  pendingStatusIds = new Set<number>();
+
   constructor(
     private supplierService: SupplierService,
     private errorHandler: ErrorHandlerService
@@ -49,12 +51,12 @@ export class SuppliersScreen implements OnInit {
     this.errorMessage = '';
 
     this.supplierService.getAllSuppliers().subscribe({
-      next: (response) => {
+      next: response => {
         this.suppliers = response;
         this.filterSuppliers();
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         this.errorMessage = this.errorHandler.getMessage(error);
         this.loading = false;
       }
@@ -92,6 +94,10 @@ export class SuppliersScreen implements OnInit {
   }
 
   toggleSupplierStatus(supplier: SupplierModel): void {
+    if (this.pendingStatusIds.has(supplier.id)) {
+      return;
+    }
+
     const action = supplier.isActive ? 'desactivar' : 'activar';
 
     if (!confirm(
@@ -100,9 +106,15 @@ export class SuppliersScreen implements OnInit {
       return;
     }
 
+    this.pendingStatusIds.add(supplier.id);
+
     this.supplierService.toggleSupplierStatus(supplier.id).subscribe({
-      next: () => this.loadSuppliers(),
-      error: (error) => {
+      next: () => {
+        this.pendingStatusIds.delete(supplier.id);
+        this.loadSuppliers();
+      },
+      error: error => {
+        this.pendingStatusIds.delete(supplier.id);
         this.errorMessage = this.errorHandler.getMessage(error);
       }
     });

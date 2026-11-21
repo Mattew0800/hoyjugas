@@ -1,5 +1,14 @@
 
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnInit,
+  AfterViewInit,
+  Output,
+  ViewChild
+} from '@angular/core';
+
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -22,6 +31,7 @@ interface ReceiptCartItem {
   quantity: number;
   unitCost: number;
   discount: number | null;
+  originalSalePrice: number;
   newSalePrice: number | null;
 }
 
@@ -32,9 +42,14 @@ interface ReceiptCartItem {
   templateUrl: './goods-receipt-modal.html',
   styleUrl: './goods-receipt-modal.scss'
 })
-export class GoodsReceiptModal implements OnInit {
+export class GoodsReceiptModal implements OnInit, AfterViewInit {
+
+  @ViewChild('dialog', { static: true })
+  dialogElement!: ElementRef<HTMLElement>;
 
   @Output() close = new EventEmitter<boolean>();
+
+  private previousFocus: HTMLElement | null = null;
 
   suppliers: SupplierModel[] = [];
   products: ProductDetailModel[] = [];
@@ -78,11 +93,81 @@ export class GoodsReceiptModal implements OnInit {
     private supplierService: SupplierService,
     private receiptService: GoodsReceiptService,
     private errorHandler: ErrorHandlerService
-  ) {}
+  ) {
+    this.previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+  }
 
   ngOnInit(): void {
     this.loadSuppliers();
     this.loadProducts();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.focusInitialElement();
+    });
+  }
+
+  private focusInitialElement(): void {
+    const dialog = this.dialogElement.nativeElement;
+
+    const initialElement = dialog.querySelector<HTMLElement>(
+      '[data-dialog-initial-focus]'
+    );
+
+    if (initialElement && !initialElement.hasAttribute('disabled')) {
+      initialElement.focus();
+    } else {
+      dialog.focus();
+    }
+  }
+
+  handleDialogKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const dialog = this.dialogElement.nativeElement;
+
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(element => element.offsetParent !== null);
+
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (
+      event.shiftKey &&
+      document.activeElement === firstElement
+    ) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (
+      !event.shiftKey &&
+      document.activeElement === lastElement
+    ) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
+
+  private restoreFocus(): void {
+    setTimeout(() => {
+      if (this.previousFocus?.isConnected) {
+        this.previousFocus.focus();
+      }
+    });
   }
 
   private loadSuppliers(): void {
@@ -191,12 +276,15 @@ export class GoodsReceiptModal implements OnInit {
       return;
     }
 
+    const originalSalePrice = Number(product.salePrice);
+
     this.cart.push({
       product,
       quantity: 1,
       unitCost: Number(product.cost),
       discount: null,
-      newSalePrice: Number(product.salePrice)
+      originalSalePrice,
+      newSalePrice: originalSalePrice
     });
 
     this.productSearch = '';
@@ -291,19 +379,25 @@ export class GoodsReceiptModal implements OnInit {
       paymentMethod: this.paymentMethod,
       employeePin: this.employeePin.trim(),
 
-      items: this.cart.map(item => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-        unitCost: Number(item.unitCost),
+      items: this.cart.map(item => {
+        const priceChanged =
+          item.newSalePrice !== null &&
+          Number(item.newSalePrice) !== item.originalSalePrice;
 
-        ...(item.discount !== null
-          ? { discount: Number(item.discount) }
-          : {}),
+        return {
+          productId: item.product.id,
+          quantity: item.quantity,
+          unitCost: Number(item.unitCost),
 
-        ...(item.newSalePrice !== null
-          ? { newSalePrice: Number(item.newSalePrice) }
-          : {})
-      }))
+          ...(item.discount !== null
+            ? { discount: Number(item.discount) }
+            : {}),
+
+          ...(priceChanged
+            ? { newSalePrice: Number(item.newSalePrice) }
+            : {})
+        };
+      })
     };
 
     if (this.voucher.trim()) {
@@ -320,6 +414,15 @@ export class GoodsReceiptModal implements OnInit {
       next: response => {
         this.successReceipt = response;
         this.submitting = false;
+
+        setTimeout(() => {
+          const successButton =
+            this.dialogElement.nativeElement.querySelector<HTMLElement>(
+              '[data-dialog-success-focus]'
+            );
+
+          successButton?.focus();
+        });
       },
       error: error => {
         this.errorMessage = this.errorHandler.getMessage(error);
@@ -331,10 +434,12 @@ export class GoodsReceiptModal implements OnInit {
   closeModal(): void {
     if (!this.submitting) {
       this.close.emit(false);
+      this.restoreFocus();
     }
   }
 
   finish(): void {
     this.close.emit(true);
+    this.restoreFocus();
   }
 }

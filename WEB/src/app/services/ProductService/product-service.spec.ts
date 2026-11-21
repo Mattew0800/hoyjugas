@@ -1,13 +1,22 @@
+
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { ProductServiceTs } from './product-service.ts';
+import { ProductService } from './product-service';
 
-describe('ProductServiceTs', () => {
-  let service: ProductServiceTs;
+describe('ProductService', () => {
+  let service: ProductService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(ProductServiceTs);
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    });
+
+    service = TestBed.inject(ProductService);
   });
 
   it('should be created', () => {

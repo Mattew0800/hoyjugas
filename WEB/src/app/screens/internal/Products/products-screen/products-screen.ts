@@ -1,20 +1,30 @@
 
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 
 import { ProductService } from '../../../../services/ProductService/product-service';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
-import { CurrencyPipe } from '@angular/common';
+
 import { ProductDetailModel } from '../../models/product.model';
+
 import { ProductModal } from '../product-modal/product-modal';
+import { GoodsReceiptModal } from '../../components/goods-receipt-modal/goods-receipt-modal';
+
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
-import {GoodsReceiptModal} from '../../components/goods-receipt-modal/goods-receipt-modal';
 
 @Component({
   selector: 'app-products-screen',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, ProductModal,GoodsReceiptModal, InternalHeader, InternalSideBar],
+  imports: [
+    FormsModule,
+    CurrencyPipe,
+    ProductModal,
+    GoodsReceiptModal,
+    InternalHeader,
+    InternalSideBar
+  ],
   templateUrl: './products-screen.html',
   styleUrl: './products-screen.scss'
 })
@@ -37,6 +47,9 @@ export class ProductsScreen implements OnInit {
   totalPages = 0;
   totalElements = 0;
 
+  private togglingProductIds = new Set<number>();
+  private productsRequestId = 0;
+
   constructor(
     private productService: ProductService,
     private errorHandler: ErrorHandlerService
@@ -47,6 +60,8 @@ export class ProductsScreen implements OnInit {
   }
 
   loadProducts(): void {
+    const requestId = ++this.productsRequestId;
+
     this.loading = true;
     this.errorMessage = '';
 
@@ -65,12 +80,20 @@ export class ProductsScreen implements OnInit {
 
     this.productService.getAllProducts(filters).subscribe({
       next: response => {
+        if (requestId !== this.productsRequestId) {
+          return;
+        }
+
         this.products = response.content;
         this.totalPages = response.totalPages;
         this.totalElements = response.totalElements;
         this.loading = false;
       },
       error: error => {
+        if (requestId !== this.productsRequestId) {
+          return;
+        }
+
         this.loading = false;
         this.errorMessage = this.errorHandler.getMessage(error);
       }
@@ -82,10 +105,10 @@ export class ProductsScreen implements OnInit {
     this.loadProducts();
   }
 
-onLowStockChange(): void {
-  this.currentPage = 0;
-  this.loadProducts();
-}
+  onLowStockChange(): void {
+    this.currentPage = 0;
+    this.loadProducts();
+  }
 
   clearSearch(): void {
     this.searchTerm = '';
@@ -126,16 +149,32 @@ onLowStockChange(): void {
     }
   }
 
+  isProductStatusPending(productId: number): boolean {
+    return this.togglingProductIds.has(productId);
+  }
+
   toggleProductStatus(product: ProductDetailModel): void {
+    if (this.isProductStatusPending(product.id)) {
+      return;
+    }
+
     const action = product.isActive ? 'desactivar' : 'activar';
 
     if (!confirm(`¿Querés ${action} el producto "${product.name}"?`)) {
       return;
     }
 
+    this.togglingProductIds.add(product.id);
+    this.errorMessage = '';
+
     this.productService.toggleProductStatus(product.id).subscribe({
-      next: () => this.loadProducts(),
+      next: () => {
+        product.isActive = !product.isActive;
+        this.togglingProductIds.delete(product.id);
+        this.loadProducts();
+      },
       error: error => {
+        this.togglingProductIds.delete(product.id);
         this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
