@@ -9,11 +9,12 @@ import { ProductDetailModel } from '../../models/product.model';
 import { ProductModal } from '../product-modal/product-modal';
 import { InternalHeader } from '../../components/internal-header/internal-header';
 import { InternalSideBar } from '../../components/internal-side-bar/internal-side-bar';
+import {GoodsReceiptModal} from '../../components/goods-receipt-modal/goods-receipt-modal';
 
 @Component({
   selector: 'app-products-screen',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, ProductModal, InternalHeader, InternalSideBar],
+  imports: [FormsModule, CurrencyPipe, ProductModal,GoodsReceiptModal, InternalHeader, InternalSideBar],
   templateUrl: './products-screen.html',
   styleUrl: './products-screen.scss'
 })
@@ -28,6 +29,8 @@ export class ProductsScreen implements OnInit {
   lowStockOnly = false;
   showModal = false;
   selectedProductId: number | null = null;
+
+  showGoodsReceiptModal = false;
 
   currentPage = 0;
   pageSize = 10;
@@ -58,7 +61,7 @@ export class ProductsScreen implements OnInit {
       ...(this.lowStockOnly
         ? { lowStock: true }
         : {})
-    };;
+    };
 
     this.productService.getAllProducts(filters).subscribe({
       next: response => {
@@ -136,5 +139,17 @@ onLowStockChange(): void {
         this.errorMessage = this.errorHandler.getMessage(error);
       }
     });
+  }
+
+  openGoodsReceiptModal(): void {
+    this.showGoodsReceiptModal = true;
+  }
+
+  closeGoodsReceiptModal(reload: boolean): void {
+    this.showGoodsReceiptModal = false;
+
+    if (reload) {
+      this.loadProducts();
+    }
   }
 }

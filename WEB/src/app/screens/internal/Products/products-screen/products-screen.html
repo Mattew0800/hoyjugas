@@ -12,11 +12,22 @@
         <p>Administración de productos y stock disponible.</p>
       </div>
 
-      <button
-        class="new-product-button"
-        (click)="openCreateModal()">
-        + Nuevo producto
-      </button>
+      <div class="page-header-actions">
+        <button
+          class="goods-receipt-button"
+          type="button"
+          (click)="openGoodsReceiptModal()">
+          <span>+</span>
+          Ingresar mercadería
+        </button>
+
+        <button
+          class="new-product-button"
+          type="button"
+          (click)="openCreateModal()">
+          + Nuevo producto
+        </button>
+      </div>
     </div>
 
     <div class="search-container">
@@ -219,6 +230,12 @@
     [productId]="selectedProductId"
     (close)="closeModal($event)">
   </app-product-modal>
+  }
+
+  @if (showGoodsReceiptModal) {
+    <app-goods-receipt-modal
+      (close)="closeGoodsReceiptModal($event)">
+    </app-goods-receipt-modal>
   }
 
 </div>

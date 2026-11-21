@@ -21,6 +21,8 @@ export class InternalSideBar implements OnInit{
 
   showManagementMenu = false;
 
+  showAdministrationMenu = false;
+
   menuItems = [
 
     {
@@ -31,9 +33,9 @@ export class InternalSideBar implements OnInit{
     },
 
     {
-      label: 'Calendario',
-      icon: '/assets/emojis/calendario.svg',
-      route: '/internal/calendar',
+      label: 'Ventas',
+      icon: '/assets/emojis/report.svg',
+      route: '/internal/sales',
       active: false
     },
 
@@ -43,7 +45,18 @@ export class InternalSideBar implements OnInit{
       route: '',
       active: false,
       adminOnly: true,
-      hasSubmenu: true
+      hasSubmenu: true,
+      submenuType: 'management'
+    },
+
+    {
+      label: 'Administración',
+      icon: '/assets/emojis/settings.svg',
+      route: '',
+      active: false,
+      adminOnly: true,
+      hasSubmenu: true,
+      submenuType: 'administration'
     },
 
     {
@@ -70,6 +83,29 @@ export class InternalSideBar implements OnInit{
 
   ];
 
+  administrationItems = [
+    {
+      label: 'Productos',
+      route: '/internal/products'
+    },
+    {
+      label: 'Categorías',
+      route: '/internal/categories'
+    },
+    {
+      label: 'Inventario',
+      route: '/internal/inventory'
+    },
+    {
+      label: 'Proveedores',
+      route: '/internal/suppliers'
+    },
+    {
+      label: 'Gastos',
+      route: '/internal/expenses'
+    }
+  ];
+
 
   ngOnInit(): void {
 
@@ -83,10 +119,20 @@ export class InternalSideBar implements OnInit{
 
   navigate(item: any): void {
 
-    if (item.hasSubmenu) {
+    if (item.submenuType === 'management') {
       this.showManagementMenu = !this.showManagementMenu;
+      this.showAdministrationMenu = false;
       return;
     }
+
+    if (item.submenuType === 'administration') {
+      this.showAdministrationMenu = !this.showAdministrationMenu;
+      this.showManagementMenu = false;
+      return;
+    }
+
+    this.showManagementMenu = false;
+    this.showAdministrationMenu = false;
 
     this.router.navigate([item.route]);
   }
@@ -99,6 +145,11 @@ export class InternalSideBar implements OnInit{
   goToEmployees(): void {
     this.router.navigate(['/internal/employees']);
     this.showManagementMenu = false;
+  }
+
+  goToAdministration(route: string): void {
+    this.router.navigate([route]);
+    this.showAdministrationMenu = false;
   }
 
   logout(): void {

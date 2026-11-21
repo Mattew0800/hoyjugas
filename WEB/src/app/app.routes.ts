@@ -25,6 +25,8 @@ import { ProductsScreen } from './screens/internal/Products/products-screen/prod
 import {CategoriesScreen} from'./screens/internal/Categories/categories-screen/categories-screen';
 import {SuppliersScreen} from'./screens/internal/Suppliers/suppliers-screen/suppliers-screen';
 import { InventoryScreen } from './screens/internal/Inventory/inventory-screen/inventory-screen';
+import { SalesScreen } from './screens/internal/Sales/sales-screen/sales-screen';
+import { ExpensesScreen } from './screens/internal/Expenses/expenses-screen/expenses-screen';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -49,6 +51,8 @@ export const routes: Routes = [
   {path: 'internal/categories', component: CategoriesScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
   {path: 'internal/suppliers', component: SuppliersScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
   {path: 'internal/inventory', component: InventoryScreen,canActivate:[internalAuthGuard], data:{roles:['ADMIN']}},
+  {path:'internal/sales', component:SalesScreen,canActivate:[internalAuthGuard]},
+  {path:'internal/expenses', component:ExpensesScreen,canActivate:[internalAuthGuard],data:{roles: ['ADMIN']}},
   {path:'**', component: Error}
 
 ];

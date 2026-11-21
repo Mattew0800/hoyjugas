@@ -62,3 +62,17 @@ export function getInventoryApiUrl(): string {
 }
 
 
+export function getSaleApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/sales`;
+}
+
+export function getGoodsReceiptApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/goods-receipt`;
+}
+
+export function getExpenseApiUrl(): string {
+  const host = window.location.hostname;
+  return `http://${host}:8080/hoyjugas/expenses`;
+}
