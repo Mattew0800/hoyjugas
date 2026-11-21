@@ -48,6 +48,9 @@ export class InventoryModal implements OnInit {
   categoriesLoaded = false;
   categoriesLoadFailed = false;
 
+  categoryResolutionFailed = false;
+  categorySelectionMade = false;
+
   errorMessage = '';
   warningMessage = '';
 
@@ -97,7 +100,7 @@ export class InventoryModal implements OnInit {
         this.categoriesLoadFailed = false;
         this.loading = false;
 
-        if (this.item !== null && this.form.categoryId === null) {
+        if (this.item !== null) {
           this.loadItemCategory(this.item);
         }
       },
@@ -126,14 +129,20 @@ export class InventoryModal implements OnInit {
       description: item.description ?? '',
       categoryId: null
     };
+
+    this.categoryResolutionFailed = false;
+    this.categorySelectionMade = false;
   }
 
   private loadItemCategory(item: InventoryItemModel): void {
     this.form.categoryId = this.findCategoryId(item.categoryName);
 
-    if (item.categoryName && this.form.categoryId === null) {
+    this.categoryResolutionFailed =
+      !!item.categoryName && this.form.categoryId === null;
+
+    if (this.categoryResolutionFailed) {
       this.warningMessage =
-        'No se pudo identificar la categoría actual. Seleccioná una categoría válida antes de guardar.';
+        'No se pudo identificar la categoría actual. Reintentá cargar las categorías antes de guardar.';
     } else {
       this.warningMessage = '';
     }
@@ -156,6 +165,12 @@ export class InventoryModal implements OnInit {
     return category?.id ?? null;
   }
 
+  onCategoryChange(categoryId: number | null): void {
+    this.form.categoryId = categoryId;
+    this.categorySelectionMade = true;
+    this.errorMessage = '';
+  }
+
   closeModal(): void {
     if (!this.saving) {
       this.close.emit(false);
@@ -169,16 +184,16 @@ export class InventoryModal implements OnInit {
       return;
     }
 
-    if (this.item !== null && this.item.categoryName) {
-      if (!this.categoriesLoaded) {
+    if (this.item !== null) {
+      if (!this.categoriesLoaded || this.categoriesLoadFailed) {
         this.errorMessage =
           'No se pudo verificar la categoría actual. Reintentá cargar las categorías antes de guardar.';
         return;
       }
 
-      if (this.form.categoryId === null) {
+      if (this.categoryResolutionFailed) {
         this.errorMessage =
-          'Seleccioná una categoría para reemplazar la categoría actual antes de guardar.';
+          'No se pudo identificar la categoría original del artículo. No es posible guardar los cambios hasta verificarla.';
         return;
       }
     }
@@ -240,8 +255,11 @@ export class InventoryModal implements OnInit {
       request.description = this.form.description;
     }
 
-    if (this.form.categoryId !== null) {
-      request.categoryId = Number(this.form.categoryId);
+    if (
+      this.form.categoryId !== null ||
+      this.categorySelectionMade
+    ) {
+      request.categoryId = this.form.categoryId;
     }
 
     return request;

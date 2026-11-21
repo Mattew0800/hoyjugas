@@ -1,4 +1,7 @@
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { SuppliersScreen } from './suppliers-screen';
 
@@ -8,9 +11,12 @@ describe('SuppliersScreen', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SuppliersScreen]
-    })
-    .compileComponents();
+      imports: [SuppliersScreen],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SuppliersScreen);
     component = fixture.componentInstance;

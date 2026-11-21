@@ -1,4 +1,7 @@
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { ExpensesModal } from './expenses-modal';
 
@@ -8,9 +11,12 @@ describe('ExpensesModal', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExpensesModal]
-    })
-    .compileComponents();
+      imports: [ExpensesModal],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ExpensesModal);
     component = fixture.componentInstance;

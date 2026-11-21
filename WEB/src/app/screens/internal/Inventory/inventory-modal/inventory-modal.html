@@ -1,6 +1,5 @@
 
 <div class="inventory-modal-overlay">
-
   <div class="inventory-modal">
 
     <div class="inventory-modal-header">
@@ -47,6 +46,7 @@
             <select
               id="inventory-category"
               [(ngModel)]="form.categoryId"
+              (ngModelChange)="onCategoryChange($event)"
               [disabled]="saving || !categoriesLoaded">
 
               <option [ngValue]="null">
@@ -151,7 +151,7 @@
         type="button"
         class="inventory-save-button"
         (click)="save()"
-        [disabled]="saving || loading">
+        [disabled]="saving || loading || !categoriesLoaded">
 
         @if (saving) {
           Guardando...
@@ -164,5 +164,4 @@
     </div>
 
   </div>
-
 </div>

@@ -125,6 +125,7 @@ export class GoodsReceiptModal implements OnInit, AfterViewInit {
     }
   }
 
+
   handleDialogKeydown(event: KeyboardEvent): void {
     if (event.key !== 'Tab') {
       return;
@@ -149,6 +150,15 @@ export class GoodsReceiptModal implements OnInit, AfterViewInit {
 
     if (
       event.shiftKey &&
+      document.activeElement === dialog
+    ) {
+      event.preventDefault();
+      lastElement.focus();
+      return;
+    }
+
+    if (
+      event.shiftKey &&
       document.activeElement === firstElement
     ) {
       event.preventDefault();
@@ -161,6 +171,7 @@ export class GoodsReceiptModal implements OnInit, AfterViewInit {
       firstElement.focus();
     }
   }
+
 
   private restoreFocus(): void {
     setTimeout(() => {
