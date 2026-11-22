@@ -1,0 +1,211 @@
+<div class="product-modal-overlay">
+
+  <div class="product-modal">
+
+    <div class="product-modal-header">
+      <h2>
+        {{ productId === null ? 'Nuevo producto' : 'Editar producto' }}
+      </h2>
+
+      <button
+        type="button"
+        class="product-modal-close"
+        (click)="closeModal()"
+        [disabled]="saving">
+        ✕
+      </button>
+    </div>
+
+    <div class="product-modal-body">
+
+      @if (loading) {
+      <div class="product-loading">
+        Cargando información del producto...
+      </div>
+      } @else {
+
+      <section class="product-section">
+
+        <h3>Información general</h3>
+
+        <div class="product-form-row">
+
+          <div class="product-form-group">
+            <label for="product-code">Código interno</label>
+            <input
+              id="product-code"
+              type="text"
+              [(ngModel)]="product.internalCode"
+              placeholder="Ej. AGUA-500"
+              [disabled]="saving">
+          </div>
+
+          <div class="product-form-group">
+            <label for="product-barcode">Código de barras</label>
+            <input
+              id="product-barcode"
+              type="text"
+              [(ngModel)]="product.barcode"
+              placeholder="Opcional"
+              [disabled]="saving">
+          </div>
+
+        </div>
+
+        <div class="product-form-group product-form-full">
+          <label for="product-name">Nombre del producto</label>
+          <input
+            id="product-name"
+            type="text"
+            [(ngModel)]="product.name"
+            placeholder="Ej. Agua mineral 500 ml"
+            [disabled]="saving">
+        </div>
+
+        <div class="product-form-row">
+
+          <div class="product-form-group">
+            <label for="product-category">Categoría</label>
+
+            <select
+              id="product-category"
+              [(ngModel)]="product.categoryId"
+              [disabled]="saving">
+
+              <option [ngValue]="0" disabled>
+                Seleccionar categoría
+              </option>
+
+              @for (category of categories; track category.id) {
+              <option [ngValue]="category.id">
+                {{ category.name }}
+              </option>
+              }
+
+            </select>
+          </div>
+
+          <div class="product-form-group">
+            <label for="product-supplier">Proveedor</label>
+
+            <select
+              id="product-supplier"
+              [(ngModel)]="product.supplierId"
+              [disabled]="saving">
+
+              <option [ngValue]="undefined">
+                Sin proveedor
+              </option>
+
+              @for (supplier of suppliers; track supplier.id) {
+              <option [ngValue]="supplier.id">
+                {{ supplier.name }}
+              </option>
+              }
+
+            </select>
+          </div>
+
+        </div>
+
+      </section>
+
+      <div class="product-divider"></div>
+
+      <section class="product-section">
+
+        <h3>Precios y stock</h3>
+
+        <p class="product-description">
+          Configurá el costo, el precio de venta y el nivel mínimo de existencias.
+        </p>
+
+        <div class="product-form-row">
+
+          <div class="product-form-group">
+            <label for="product-cost">Costo</label>
+            <input
+              id="product-cost"
+              type="number"
+              min="0"
+              step="0.01"
+              [(ngModel)]="product.cost"
+              placeholder="0.00"
+              [disabled]="saving">
+          </div>
+
+          <div class="product-form-group">
+            <label for="product-price">Precio de venta</label>
+            <input
+              id="product-price"
+              type="number"
+              min="0"
+              step="0.01"
+              [(ngModel)]="product.salePrice"
+              placeholder="0.00"
+              [disabled]="saving">
+          </div>
+
+        </div>
+
+        <div class="product-form-group product-form-full">
+          <label for="product-minimum-stock">Stock mínimo</label>
+          <input
+            id="product-minimum-stock"
+            type="number"
+            min="0"
+            step="1"
+            [(ngModel)]="product.minimumStock"
+            placeholder="Ej. 10"
+            [disabled]="saving">
+        </div>
+
+      </section>
+
+      @if (warningMessage) {
+      <div class="product-warning-message">
+        {{ warningMessage }}
+      </div>
+      }
+
+      @if (errorMessage) {
+      <div class="product-error-message">
+        {{ errorMessage }}
+      </div>
+      }
+
+      }
+
+    </div>
+
+    <div class="product-modal-footer">
+
+      <button
+        type="button"
+        class="product-cancel-button"
+        (click)="closeModal()"
+        [disabled]="saving">
+
+        Cancelar
+
+      </button>
+
+      <button
+        type="button"
+        class="product-save-button"
+        (click)="save()"
+        [disabled]="saving || loading">
+
+        @if (saving) {
+        Guardando...
+        } @else {
+        {{ productId === null ? 'Crear producto' : 'Guardar cambios' }}
+        }
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

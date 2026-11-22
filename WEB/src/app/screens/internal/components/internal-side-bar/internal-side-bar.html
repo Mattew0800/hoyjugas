@@ -32,7 +32,7 @@
 
         </button>
 
-        @if (item.hasSubmenu && showManagementMenu) {
+        @if (item.submenuType === 'management' && showManagementMenu) {
 
           <div class="management-submenu">
 
@@ -46,6 +46,23 @@
               class="submenu-item"
               (click)="goToEmployees()">
               Empleados
+            </button>
+
+          </div>
+
+        }
+
+        @if (item.submenuType === 'administration' && showAdministrationMenu) {
+
+          <div class="management-submenu">
+
+            <button
+              *ngFor="let subItem of administrationItems"
+              class="submenu-item"
+              (click)="goToAdministration(subItem.route)">
+
+              {{ subItem.label }}
+
             </button>
 
           </div>

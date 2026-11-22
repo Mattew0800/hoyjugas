@@ -1,0 +1,354 @@
+
+<div class="receipt-overlay">
+
+  <div
+    class="receipt-modal"
+    #dialog
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="receipt-dialog-title"
+    tabindex="-1"
+    (keydown)="handleDialogKeydown($event)">
+
+    @if (successReceipt === null) {
+      <header class="receipt-header">
+        <div>
+          <h2 id="receipt-dialog-title">Ingresar mercadería</h2>
+          <p>Registrá la compra y actualizá el stock.</p>
+        </div>
+
+        <button
+          type="button"
+          (click)="closeModal()"
+          [disabled]="submitting"
+          aria-label="Cerrar ventana">
+          ✕
+        </button>
+      </header>
+
+      <div class="receipt-body">
+
+        @if (errorMessage) {
+          <div class="receipt-error" role="alert">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <section>
+          <h3>Información del ingreso</h3>
+
+          <div class="receipt-form-grid">
+
+            <div class="receipt-field">
+              <label for="receipt-supplier">Proveedor *</label>
+
+              <select
+                id="receipt-supplier"
+                data-dialog-initial-focus
+                [(ngModel)]="selectedSupplierId"
+                [disabled]="loading || submitting">
+
+                <option [ngValue]="null">
+                  Seleccionar proveedor
+                </option>
+
+                @for (supplier of suppliers; track supplier.id) {
+                  <option [ngValue]="supplier.id">
+                    {{ supplier.name }}
+                  </option>
+                }
+              </select>
+
+              @if (loading) {
+                <small>Cargando proveedores...</small>
+              }
+            </div>
+
+            <div class="receipt-field">
+              <label for="receipt-voucher">Número de comprobante</label>
+
+              <input
+                id="receipt-voucher"
+                type="text"
+                [(ngModel)]="voucher"
+                [disabled]="submitting"
+                placeholder="Remito o factura">
+            </div>
+
+            <div class="receipt-field">
+              <label for="receipt-payment">Medio de pago *</label>
+
+              <select
+                id="receipt-payment"
+                [(ngModel)]="paymentMethod"
+                [disabled]="submitting">
+
+                @for (method of paymentMethods; track method.value) {
+                  <option [value]="method.value">
+                    {{ method.label }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="receipt-field">
+              <label for="receipt-notes">Observaciones</label>
+
+              <input
+                id="receipt-notes"
+                type="text"
+                [(ngModel)]="notes"
+                [disabled]="submitting"
+                placeholder="Opcional">
+            </div>
+
+          </div>
+        </section>
+
+        <div class="receipt-divider"></div>
+
+        <section>
+          <h3>Productos</h3>
+
+          <div class="receipt-autocomplete">
+            <div class="receipt-field">
+              <label for="receipt-product-search">Buscar producto</label>
+
+              <input
+                id="receipt-product-search"
+                type="text"
+                [(ngModel)]="productSearch"
+                (ngModelChange)="filterProducts()"
+                (focus)="filterProducts()"
+                [disabled]="submitting"
+                placeholder="Escribí el nombre, código o código de barras...">
+            </div>
+
+            @if (showProductSuggestions && productSearch.trim()) {
+              <div class="receipt-suggestions">
+
+                @for (product of filteredProducts; track product.id) {
+                  <button
+                    type="button"
+                    class="receipt-suggestion"
+                    [disabled]="submitting"
+                    (click)="addProduct(product)">
+
+                    <div class="suggestion-info">
+                      <strong>{{ product.name }}</strong>
+                      <span>{{ product.internalCode }}</span>
+                    </div>
+
+                    <div class="suggestion-right">
+                      <strong>
+                        {{ product.salePrice | currency:'ARS':'symbol':'1.2-2' }}
+                      </strong>
+                      <span>Seleccionar</span>
+                    </div>
+
+                  </button>
+                }
+
+                @if (filteredProducts.length === 0) {
+                  <div class="receipt-no-results">
+                    <span>No se encontraron productos</span>
+                    <small>Probá con otro nombre o código.</small>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+
+          @if (cart.length === 0) {
+            <div class="receipt-empty">
+              Todavía no agregaste productos.
+            </div>
+          } @else {
+
+            <div class="receipt-items">
+
+              @for (item of cart; track item.product.id) {
+                <article class="receipt-item">
+
+                  <div class="receipt-item-heading">
+                    <div>
+                      <strong>{{ item.product.name }}</strong>
+                      <small>{{ item.product.internalCode }}</small>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="receipt-remove"
+                      [disabled]="submitting"
+                      (click)="removeProduct(item)">
+                      Eliminar
+                    </button>
+                  </div>
+
+                  <div class="receipt-item-fields">
+
+                    <div class="receipt-field">
+                      <label [for]="'receipt-quantity-' + item.product.id">Cantidad *</label>
+
+                      <input
+                        [id]="'receipt-quantity-' + item.product.id"
+                        type="number"
+                        min="1"
+                        step="1"
+                        [(ngModel)]="item.quantity"
+                        [disabled]="submitting">
+                    </div>
+
+                    <div class="receipt-field">
+                      <label [for]="'receipt-cost-' + item.product.id">Costo unitario *</label>
+
+                      <input
+                        [id]="'receipt-cost-' + item.product.id"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [(ngModel)]="item.unitCost"
+                        [disabled]="submitting">
+                    </div>
+
+                    <div class="receipt-field">
+                      <label [for]="'receipt-discount-' + item.product.id">Descuento</label>
+
+                      <input
+                        [id]="'receipt-discount-' + item.product.id"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [(ngModel)]="item.discount"
+                        [disabled]="submitting"
+                        placeholder="Opcional">
+                    </div>
+
+                    <div class="receipt-field">
+                      <label [for]="'receipt-sale-price-' + item.product.id">Precio de venta</label>
+
+                      <input
+                        [id]="'receipt-sale-price-' + item.product.id"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [(ngModel)]="item.newSalePrice"
+                        [disabled]="submitting">
+                    </div>
+
+                  </div>
+
+                  <div class="receipt-item-subtotal">
+                    <span>Subtotal:</span>
+
+                    <strong>
+                      {{ getSubtotal(item) | currency:'ARS':'symbol':'1.2-2' }}
+                    </strong>
+                  </div>
+
+                </article>
+              }
+
+            </div>
+          }
+        </section>
+
+        <div class="receipt-divider"></div>
+
+        <section class="receipt-summary">
+
+          <div>
+            <span>Productos</span>
+            <strong>{{ cart.length }}</strong>
+          </div>
+
+          <div>
+            <span>Unidades</span>
+            <strong>{{ totalUnits }}</strong>
+          </div>
+
+          <div class="receipt-total">
+            <span>Total del ingreso</span>
+
+            <strong>
+              {{ totalAmount | currency:'ARS':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+
+        </section>
+
+        <div class="receipt-field receipt-pin">
+          <label for="receipt-pin">PIN del empleado *</label>
+
+          <input
+            id="receipt-pin"
+            type="password"
+            [(ngModel)]="employeePin"
+            [disabled]="submitting"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="Ingresá tu PIN">
+        </div>
+
+      </div>
+
+      <footer class="receipt-footer">
+
+        <button
+          type="button"
+          class="receipt-cancel"
+          (click)="closeModal()"
+          [disabled]="submitting">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="receipt-submit"
+          (click)="submit()"
+          [disabled]="submitting || loadingProducts || loading">
+
+          {{ submitting ? 'Registrando...' : 'Confirmar ingreso' }}
+
+        </button>
+
+      </footer>
+
+    } @else {
+
+      <div class="receipt-success">
+
+        <div class="receipt-success-icon" aria-hidden="true">✓</div>
+
+        <h2 id="receipt-dialog-title">Ingreso registrado</h2>
+
+        <strong>{{ successReceipt.movementNumber }}</strong>
+
+        <p>
+          Proveedor: {{ successReceipt.supplierName }}
+        </p>
+
+        <p>
+          Total:
+          {{ successReceipt.totalAmount | currency:'ARS':'symbol':'1.2-2' }}
+        </p>
+
+        <p>
+          {{ successReceipt.items.length }} productos ingresados
+        </p>
+
+        <button
+          data-dialog-success-focus
+          type="button"
+          class="receipt-submit"
+          (click)="finish()">
+          Finalizar
+        </button>
+
+      </div>
+
+    }
+
+  </div>
+</div>
