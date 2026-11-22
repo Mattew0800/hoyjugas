@@ -1,5 +1,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, Subject } from 'rxjs';
 
 import { SalesScreen } from './sales-screen';
@@ -52,11 +54,16 @@ describe('SalesScreen', () => {
 
     userService.getClients.and.returnValue(of([]));
 
-    errorHandler.getMessage.and.returnValue('Error al registrar la venta.');
+    errorHandler.getMessage.and.returnValue(
+      'Error al registrar la venta.'
+    );
 
     await TestBed.configureTestingModule({
       imports: [SalesScreen],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+
         { provide: ProductService, useValue: productService },
         { provide: UserService, useValue: userService },
         { provide: SaleService, useValue: saleService },
@@ -154,11 +161,19 @@ describe('SalesScreen', () => {
 
     component.cart = [
       {
-        product: createProduct(1, 'Producto con stock actualizado', 10),
+        product: createProduct(
+          1,
+          'Producto con stock actualizado',
+          10
+        ),
         quantity: 5
       },
       {
-        product: createProduct(2, 'Producto sin stock', 4),
+        product: createProduct(
+          2,
+          'Producto sin stock',
+          4
+        ),
         quantity: 2
       }
     ];
@@ -181,9 +196,11 @@ describe('SalesScreen', () => {
     expect(component.cart[0].product.id).toBe(1);
     expect(component.cart[0].quantity).toBe(3);
     expect(component.cart[0].product.stock).toBe(3);
+
     expect(component.errorMessage).toContain(
       'La cantidad de Producto con stock actualizado se ajustó a 3'
     );
+
     expect(component.errorMessage).toContain(
       'Producto sin stock fue retirado del carrito'
     );
