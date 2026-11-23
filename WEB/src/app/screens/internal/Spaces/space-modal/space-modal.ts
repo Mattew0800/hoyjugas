@@ -8,7 +8,8 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Observable } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
+import { concatMap, toArray } from 'rxjs/operators';
 
 import { SpaceService } from '../../../../services/SpaceService/SpaceService';
 import { ErrorHandlerService } from '../../../../services/ErrorHandlerService/error-handler.service';
@@ -63,6 +64,19 @@ export class SpaceModal implements OnInit {
     'FIN_DE_SEMANA'
   ];
 
+  private readonly weekdays = [
+    'LUNES',
+    'MARTES',
+    'MIERCOLES',
+    'JUEVES',
+    'VIERNES'
+  ];
+
+  private readonly weekend = [
+    'SABADO',
+    'DOMINGO'
+  ];
+
   space = {
     name: '',
     type: 'CANCHA',
@@ -75,7 +89,6 @@ export class SpaceModal implements OnInit {
   schedules: DaySchedule[] = [];
   days: PricingConfig[] = [];
 
-  private originalPricings: PricingConfig[] = [];
   private originalSchedules: DaySchedule[] = [];
 
   constructor(
@@ -95,11 +108,8 @@ export class SpaceModal implements OnInit {
   private loadSpace(): void {
     this.errorMessage = '';
 
-    forkJoin({
-      space: this.spaceService.getSpaceDetail(this.spaceId!),
-      schedules: this.spaceService.getSchedulesBySpace(this.spaceId!)
-    }).subscribe({
-      next: ({ space, schedules }) => {
+    this.spaceService.getSpaceDetail(this.spaceId!).subscribe({
+      next: space => {
         this.space = {
           name: space.name ?? '',
           type: space.type ?? 'CANCHA',
@@ -109,23 +119,7 @@ export class SpaceModal implements OnInit {
           photoUrl: space.photoUrl ?? ''
         };
 
-        this.schedules = schedules.map((schedule: any) => ({
-          id: schedule.id,
-          spaceId: schedule.spaceId,
-          label: this.getDayLabel(schedule.dayType),
-          dayType: schedule.dayType,
-          openingTime: this.formatTime(schedule.openingTime),
-          closingTime: this.formatTime(schedule.closingTime),
-          enabled: true
-        }));
-
-        this.originalSchedules = this.schedules.map(schedule => ({
-          ...schedule
-        }));
-
-        const pricings = space.pricings ?? [];
-
-        this.days = pricings.map((pricing: any) => ({
+        this.days = (space.pricings ?? []).map((pricing: any) => ({
           id: pricing.id,
           label: this.getDayLabel(pricing.dayType),
           dayType: pricing.dayType,
@@ -135,19 +129,35 @@ export class SpaceModal implements OnInit {
           enabled: true
         }));
 
-        this.originalPricings = this.days.map(day => ({
-          ...day
-        }));
+        this.spaceService.getSchedulesBySpace(this.spaceId!).subscribe({
+          next: schedules => {
+            this.schedules = schedules.map((schedule: any) => ({
+              id: schedule.id,
+              spaceId: schedule.spaceId,
+              label: this.getDayLabel(schedule.dayType),
+              dayType: schedule.dayType,
+              openingTime: this.formatTime(schedule.openingTime),
+              closingTime: this.formatTime(schedule.closingTime),
+              enabled: true
+            }));
 
-        if (this.schedules.length === 0) {
-          this.addSchedule();
-        }
+            this.originalSchedules = this.schedules.map(schedule => ({
+              ...schedule
+            }));
 
-        if (this.days.length === 0) {
-          this.addConfiguration();
-        }
+            if (this.schedules.length === 0) {
+              this.addSchedule();
+            }
+
+            if (this.days.length === 0) {
+              this.addConfiguration();
+            }
+          },
+          error: error => {
+            this.errorMessage = this.getSpaceErrorMessage(error);
+          }
+        });
       },
-
       error: error => {
         this.errorMessage = this.getSpaceErrorMessage(error);
       }
@@ -167,11 +177,7 @@ export class SpaceModal implements OnInit {
   }
 
   removeSchedule(index: number): void {
-    if (this.saving) {
-      return;
-    }
-
-    if (index < 0 || index >= this.schedules.length) {
+    if (this.saving || index < 0 || index >= this.schedules.length) {
       return;
     }
 
@@ -193,11 +199,7 @@ export class SpaceModal implements OnInit {
   }
 
   removeConfiguration(index: number): void {
-    if (this.saving) {
-      return;
-    }
-
-    if (index < 0 || index >= this.days.length) {
+    if (this.saving || index < 0 || index >= this.days.length) {
       return;
     }
 
@@ -221,8 +223,43 @@ export class SpaceModal implements OnInit {
     }
   }
 
+
   save(): void {
     this.errorMessage = '';
+
+    const schedules = this.getEnabledSchedules();
+    const configurations = this.getEnabledPricings();
+
+    if (schedules.length === 0 || configurations.length === 0) {
+      this.space.isActive = false;
+
+      const message =
+        'No es posible guardar un espacio sin configuraciones de horarios y precios. El espacio debe permanecer inactivo.';
+
+      if (this.spaceId === null) {
+        this.errorMessage = message;
+        return;
+      }
+
+      this.saving = true;
+
+      this.spaceService.updateSpace({
+        spaceId: this.spaceId,
+        ...this.space,
+        isActive: false
+      }).subscribe({
+        next: () => {
+          this.saving = false;
+          this.errorMessage = message;
+        },
+        error: error => {
+          this.saving = false;
+          this.errorMessage = this.getSpaceErrorMessage(error);
+        }
+      });
+
+      return;
+    }
 
     if (!this.validateForm()) {
       return;
@@ -236,24 +273,81 @@ export class SpaceModal implements OnInit {
     this.updateExistingSpace();
   }
 
+
+  private getEnabledSchedules(): DaySchedule[] {
+    return this.schedules.filter(schedule =>
+      schedule.enabled &&
+      (schedule.openingTime.trim() !== '' ||
+        schedule.closingTime.trim() !== '')
+    );
+  }
+
+  private getEnabledPricings(): PricingConfig[] {
+    return this.days.filter(day =>
+      day.enabled &&
+      (day.openingTime.trim() !== '' ||
+        day.closingTime.trim() !== '' ||
+        Number(day.price) !== 0)
+    );
+  }
+
+  private getCoveredDays(dayType: string): string[] {
+    if (dayType === 'DIA_DE_SEMANA') {
+      return [...this.weekdays];
+    }
+
+    if (dayType === 'FIN_DE_SEMANA') {
+      return [...this.weekend];
+    }
+
+    return [dayType];
+  }
+
+  private scheduleCanOwnPricing(
+    scheduleDayType: string,
+    pricingDayType: string
+  ): boolean {
+    if (scheduleDayType === pricingDayType) {
+      return true;
+    }
+
+    const scheduleDays = this.getCoveredDays(scheduleDayType);
+    const pricingDays = this.getCoveredDays(pricingDayType);
+
+    return pricingDays.every(day => scheduleDays.includes(day));
+  }
+
+  private getPricingsForSchedule(schedule: DaySchedule): PricingConfig[] {
+    return this.getEnabledPricings().filter(config =>
+      this.scheduleCanOwnPricing(schedule.dayType, config.dayType)
+    );
+  }
+
+  private buildPricingDtos(schedule: DaySchedule): any[] {
+    return this.getPricingsForSchedule(schedule).map(config => ({
+      dayType: config.dayType,
+      startTime: config.openingTime,
+      endTime: config.closingTime,
+      price: config.price
+    }));
+  }
+
   private buildPricingValidationRequest(spaceId: number): any[] {
-    return this.days
-      .filter(day => day.enabled)
-      .map(day => ({
-        spaceId,
-        pricing: {
-          dayType: day.dayType,
-          startTime: day.openingTime,
-          endTime: day.closingTime,
-          price: day.price
-        }
-      }));
+    return this.getEnabledPricings().map(day => ({
+      spaceId,
+      pricing: {
+        dayType: day.dayType,
+        startTime: day.openingTime,
+        endTime: day.closingTime,
+        price: day.price
+      }
+    }));
   }
 
   private validatePricing(spaceId: number): Observable<any> {
-    const requests = this.buildPricingValidationRequest(spaceId);
-
-    return this.spaceService.validatePricing(requests);
+    return this.spaceService.validatePricing(
+      this.buildPricingValidationRequest(spaceId)
+    );
   }
 
   private createSpace(): void {
@@ -272,7 +366,6 @@ export class SpaceModal implements OnInit {
 
         this.createSchedulesAndPricings(createdSpaceId);
       },
-
       error: error => {
         this.saving = false;
         this.errorMessage = this.getSpaceErrorMessage(error);
@@ -281,13 +374,7 @@ export class SpaceModal implements OnInit {
   }
 
   private createSchedulesAndPricings(spaceId: number): void {
-    const schedules = this.schedules.filter(
-      schedule => schedule.enabled
-    );
-
-    const configurations = this.days.filter(
-      day => day.enabled
-    );
+    const schedules = this.getEnabledSchedules();
 
     if (schedules.length === 0) {
       this.saving = false;
@@ -295,58 +382,34 @@ export class SpaceModal implements OnInit {
       return;
     }
 
-    if (configurations.length === 0) {
-      this.saving = false;
-      this.errorMessage = 'Debés agregar al menos una configuración.';
-      return;
-    }
-
     this.validatePricing(spaceId).subscribe({
       next: () => {
-        const scheduleRequests: Observable<any>[] = [];
-
-        for (const schedule of schedules) {
-          const pricings = configurations
-            .filter(config => config.dayType === schedule.dayType)
-            .map(config => ({
-              dayType: config.dayType,
-              startTime: config.openingTime,
-              endTime: config.closingTime,
-              price: config.price
-            }));
-
-          scheduleRequests.push(
-            this.spaceService.addSchedule({
-              spaceId,
-              schedule: {
-                dayType: schedule.dayType,
-                openingTime: schedule.openingTime,
-                closingTime: schedule.closingTime
-              },
-              pricings
-            })
-          );
-        }
-
-        if (scheduleRequests.length === 0) {
-          this.saving = false;
-          this.errorMessage = 'Debés agregar al menos un horario.';
-          return;
-        }
-
-        forkJoin(scheduleRequests).subscribe({
-          next: () => {
-            this.saving = false;
-            this.close.emit(true);
-          },
-
-          error: error => {
-            this.saving = false;
-            this.errorMessage = this.getSpaceErrorMessage(error);
-          }
-        });
+        from(schedules)
+          .pipe(
+            concatMap(schedule =>
+              this.spaceService.addSchedule({
+                spaceId,
+                schedule: {
+                  dayType: schedule.dayType,
+                  openingTime: schedule.openingTime,
+                  closingTime: schedule.closingTime
+                },
+                pricings: this.buildPricingDtos(schedule)
+              })
+            ),
+            toArray()
+          )
+          .subscribe({
+            next: () => {
+              this.saving = false;
+              this.close.emit(true);
+            },
+            error: error => {
+              this.saving = false;
+              this.errorMessage = this.getSpaceErrorMessage(error);
+            }
+          });
       },
-
       error: error => {
         this.saving = false;
         this.errorMessage = this.getSpaceErrorMessage(error);
@@ -375,12 +438,11 @@ export class SpaceModal implements OnInit {
 
   private updateSchedules(): void {
     if (this.spaceId === null) {
+      this.saving = false;
       return;
     }
 
-    const currentSchedules = this.schedules.filter(
-      schedule => schedule.enabled
-    );
+    const currentSchedules = this.getEnabledSchedules();
 
     const originalIds = this.originalSchedules
       .filter(schedule => schedule.id != null)
@@ -390,77 +452,68 @@ export class SpaceModal implements OnInit {
       .filter(schedule => schedule.id != null)
       .map(schedule => schedule.id!);
 
-    const requests: Observable<any>[] = [];
+    const schedulesToDelete = originalIds.filter(
+      id => !currentIds.includes(id)
+    );
 
-    for (const schedule of currentSchedules) {
-      const pricings = this.days
-        .filter(
-          day =>
-            day.enabled &&
-            day.dayType === schedule.dayType
-        )
-        .map(day => ({
-          dayType: day.dayType,
-          startTime: day.openingTime,
-          endTime: day.closingTime,
-          price: day.price
-        }));
+    const operations: Array<() => Observable<any>> = [];
 
-      if (schedule.id != null) {
-        requests.push(
-          this.spaceService.updateSchedule({
-            scheduleId: schedule.id,
-            spaceId: this.spaceId,
-            schedule: {
-              dayType: schedule.dayType,
-              openingTime: schedule.openingTime,
-              closingTime: schedule.closingTime
-            },
-            pricings
-          })
-        );
-      } else {
-        requests.push(
-          this.spaceService.addSchedule({
-            spaceId: this.spaceId,
-            schedule: {
-              dayType: schedule.dayType,
-              openingTime: schedule.openingTime,
-              closingTime: schedule.closingTime
-            },
-            pricings
-          })
-        );
-      }
-    }
-
-    for (const scheduleId of originalIds) {
-      if (currentIds.includes(scheduleId)) {
-        continue;
-      }
-
-      requests.push(
-        this.spaceService.deleteSchedule(this.spaceId, scheduleId)
+    for (const scheduleId of schedulesToDelete) {
+      operations.push(() =>
+        this.spaceService.deleteSchedule(this.spaceId!, scheduleId)
       );
     }
 
-    if (requests.length === 0) {
+    for (const schedule of currentSchedules) {
+      if (schedule.id != null) {
+        operations.push(() =>
+          this.spaceService.updateSchedule({
+            scheduleId: schedule.id!,
+            spaceId: this.spaceId!,
+            schedule: {
+              dayType: schedule.dayType,
+              openingTime: schedule.openingTime,
+              closingTime: schedule.closingTime
+            },
+            pricings: this.buildPricingDtos(schedule)
+          })
+        );
+      } else {
+        operations.push(() =>
+          this.spaceService.addSchedule({
+            spaceId: this.spaceId!,
+            schedule: {
+              dayType: schedule.dayType,
+              openingTime: schedule.openingTime,
+              closingTime: schedule.closingTime
+            },
+            pricings: this.buildPricingDtos(schedule)
+          })
+        );
+      }
+    }
+
+    if (operations.length === 0) {
       this.saving = false;
       this.close.emit(true);
       return;
     }
 
-    forkJoin(requests).subscribe({
-      next: () => {
-        this.saving = false;
-        this.close.emit(true);
-      },
-
-      error: error => {
-        this.saving = false;
-        this.errorMessage = this.getSpaceErrorMessage(error);
-      }
-    });
+    from(operations)
+      .pipe(
+        concatMap(operation => operation()),
+        toArray()
+      )
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.close.emit(true);
+        },
+        error: error => {
+          this.saving = false;
+          this.errorMessage = this.getSpaceErrorMessage(error);
+        }
+      });
   }
 
   private validateForm(): boolean {
@@ -492,12 +545,17 @@ export class SpaceModal implements OnInit {
       return false;
     }
 
-    const schedules = this.schedules.filter(
-      schedule => schedule.enabled
-    );
+    const schedules = this.getEnabledSchedules();
+    const configurations = this.getEnabledPricings();
 
-    if (schedules.length === 0) {
+    if (this.spaceId === null && schedules.length === 0) {
       this.errorMessage = 'Debés agregar al menos un horario.';
+      return false;
+    }
+
+    if (schedules.length === 0 && configurations.length > 0) {
+      this.errorMessage =
+        'No podés configurar precios si no hay horarios abiertos.';
       return false;
     }
 
@@ -515,8 +573,8 @@ export class SpaceModal implements OnInit {
       }
 
       if (
-        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.openingTime) ||
-        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.closingTime)
+        !this.isValidTime(schedule.openingTime) ||
+        !this.isValidTime(schedule.closingTime)
       ) {
         this.errorMessage =
           `Ingresá horarios válidos para ${schedule.label}.`;
@@ -540,28 +598,6 @@ export class SpaceModal implements OnInit {
       }
     }
 
-    const configurations = this.days.filter(
-      day => day.enabled
-    );
-
-    if (configurations.length === 0) {
-      this.errorMessage =
-        'Debés agregar al menos una configuración de precio.';
-      return false;
-    }
-
-    for (const schedule of schedules) {
-      const pricingConfigurations = configurations.filter(
-        config => config.dayType === schedule.dayType
-      );
-
-      if (pricingConfigurations.length === 0) {
-        this.errorMessage =
-          `Debés agregar al menos una configuración de precio para ${schedule.label}.`;
-        return false;
-      }
-    }
-
     for (const config of configurations) {
       if (!this.validDayTypes.includes(config.dayType)) {
         this.errorMessage =
@@ -576,8 +612,8 @@ export class SpaceModal implements OnInit {
       }
 
       if (
-        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.openingTime) ||
-        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.closingTime)
+        !this.isValidTime(config.openingTime) ||
+        !this.isValidTime(config.closingTime)
       ) {
         this.errorMessage =
           `Ingresá horarios válidos para ${config.label}.`;
@@ -590,12 +626,38 @@ export class SpaceModal implements OnInit {
         return false;
       }
 
-      if (
-        !Number.isFinite(config.price) ||
-        config.price <= 0
-      ) {
+      if (!Number.isFinite(config.price) || config.price <= 0) {
         this.errorMessage =
           `El precio de ${config.label} debe ser un número mayor a 0.`;
+        return false;
+      }
+
+      const schedule = schedules.find(item =>
+        this.scheduleCanOwnPricing(item.dayType, config.dayType)
+      );
+
+      if (!schedule) {
+        this.errorMessage =
+          `No hay un horario configurado que incluya ${config.label}.`;
+        return false;
+      }
+
+      if (
+        config.openingTime < schedule.openingTime ||
+        config.closingTime > schedule.closingTime
+      ) {
+        this.errorMessage =
+          `La configuración de precio de ${config.label} debe estar dentro del horario del espacio (${schedule.openingTime} - ${schedule.closingTime}).`;
+        return false;
+      }
+    }
+
+    for (const schedule of schedules) {
+      const pricingConfigurations = this.getPricingsForSchedule(schedule);
+
+      if (pricingConfigurations.length === 0) {
+        this.errorMessage =
+          `Debés agregar al menos una configuración de precio para ${schedule.label}.`;
         return false;
       }
     }
@@ -627,31 +689,11 @@ export class SpaceModal implements OnInit {
       }
     }
 
-    for (const config of configurations) {
-      const schedule = this.schedules.find(
-        item =>
-          item.dayType === config.dayType &&
-          item.enabled
-      );
-
-      if (!schedule) {
-        this.errorMessage =
-          `No hay un horario configurado para ${config.label}.`;
-        return false;
-      }
-
-      if (
-        config.openingTime < schedule.openingTime ||
-        config.closingTime > schedule.closingTime
-      ) {
-        this.errorMessage =
-          `La configuración de precio de ${config.label} debe estar dentro del horario del espacio (${schedule.openingTime} - ${schedule.closingTime}).`;
-
-        return false;
-      }
-    }
-
     return true;
+  }
+
+  private isValidTime(time: string): boolean {
+    return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time);
   }
 
   private hasTimeOverlap(
@@ -715,10 +757,9 @@ export class SpaceModal implements OnInit {
     if (missingPriceMatch) {
       const startTime = missingPriceMatch[1];
 
-      const relatedConfigIndex = this.days.findIndex(
-        day =>
-          day.enabled &&
-          day.closingTime === startTime
+      const relatedConfigIndex = this.days.findIndex(day =>
+        day.enabled &&
+        day.closingTime === startTime
       );
 
       if (relatedConfigIndex !== -1) {
