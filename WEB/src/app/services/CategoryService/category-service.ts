@@ -63,14 +63,11 @@ export class CategoryService {
     );
   }
 
-  getCategory(id: number): Observable<CategoryModel> {
-    return this.http.request<CategoryModel>(
-      'GET',
+  getCategory(id: number) {
+    return this.http.post<CategoryModel>(
       `${this.categoryApiUrl}/get`,
-      {
-        body: { id },
-        withCredentials: true
-      }
+      { id },
+      { withCredentials: true }
     );
   }
 }
