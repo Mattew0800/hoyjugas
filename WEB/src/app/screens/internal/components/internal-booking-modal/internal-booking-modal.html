@@ -49,12 +49,12 @@
     <form [formGroup]="form" (ngSubmit)="save()">
 
       <div class="form-group search-group">
-        <label for="clientSearch">Cliente (buscar por DNI)</label>
+        <label for="clientSearch">Cliente (buscar por nombre,apellido,DNI o teléfono)</label>
 
         <input
           id="clientSearch"
           type="text"
-          placeholder="Ingresá el DNI"
+          placeholder="nombre,apellido, DNI o teléfono"
           [(ngModel)]="clientSearch"
           (input)="searchClients()"
           [ngModelOptions]="{standalone: true}"

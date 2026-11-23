@@ -1,6 +1,7 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
-import{map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { InternalHeader } from '../components/internal-header/internal-header';
 import { InternalSideBar } from '../components/internal-side-bar/internal-side-bar';
@@ -12,14 +13,14 @@ import { SpaceModel } from '../models/space-column.model';
 import { BookingListModel } from '../models/booking-list.model';
 import { SpaceSlotModel } from '../models/space-slot.model';
 import { SpaceCardModel } from '../models/space-card.model';
-import{PageResponse} from '../models/page-response.model';
+import { PageResponse } from '../models/page-response.model';
 
 import { BookingService } from '../../../services/BookingService/booking-service';
 import { SpaceService } from '../../../services/SpaceService/SpaceService';
 import { BookingDetailModal } from '../components/booking-detail-modal/booking-detail-modal';
 import { InternalBookingModal } from '../components/internal-booking-modal/internal-booking-modal';
 import { RoleService } from '../../../services/RoleService/role-service';
-import { ErrorHandlerService} from '../../../services/ErrorHandlerService/error-handler.service';
+import { ErrorHandlerService } from '../../../services/ErrorHandlerService/error-handler.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,8 +37,6 @@ import { ErrorHandlerService} from '../../../services/ErrorHandlerService/error-
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
-
-
 export class Dashboard implements OnInit {
 
   spaces: SpaceModel[] = [];
@@ -54,32 +53,32 @@ export class Dashboard implements OnInit {
   bookingDetailModal?: BookingDetailModal;
 
   headerTitle = 'Turnos del día';
-
   headerSubtitle = '';
 
   selectedDate = new Date();
 
   showBookingModal = false;
-
   showInternalBookingModal = false;
 
   selectedBooking?: BookingListModel;
 
-  errorMessage = '';
+  initialBookingSpaceId: number | null = null;
+  initialBookingStartTime: string | null = null;
 
+  errorMessage = '';
 
   timelineHours: number[] = [];
 
-   timelineStartMinutes = 0;
-
-   timelineEndMinutes = 24 * 60;
+  timelineStartMinutes = 0;
+  timelineEndMinutes = 24 * 60;
 
   readonly slotHeight = 110;
   readonly slotGap = 12;
   readonly timelineIntervalMinutes = 30;
+
   pixelsPerHalfHour = 61;
-  readonly timelineRowHeight =
-    this.pixelsPerHalfHour;
+
+  readonly timelineRowHeight = this.pixelsPerHalfHour;
 
   constructor(
     private bookingService: BookingService,
@@ -94,7 +93,6 @@ export class Dashboard implements OnInit {
   }
 
   private buildTimeline(): void {
-
     this.timelineHours = [];
 
     for (
@@ -102,21 +100,15 @@ export class Dashboard implements OnInit {
       minutes <= this.timelineEndMinutes;
       minutes += 30
     ) {
-
       this.timelineHours.push(minutes);
-
     }
-
   }
 
   private updateTimelineRange(): void {
-
     const slotTimes: number[] = [];
 
     this.spaces.forEach(space => {
-
       space.slots.forEach(slot => {
-
         slotTimes.push(
           this.timeToMinutes(slot.startTime)
         );
@@ -124,25 +116,17 @@ export class Dashboard implements OnInit {
         slotTimes.push(
           this.timeToMinutes(slot.endTime)
         );
-
       });
-
     });
 
     if (slotTimes.length === 0) {
-
       this.timelineStartMinutes = 0;
-
       this.timelineEndMinutes = 24 * 60;
-
       this.buildTimeline();
-
       return;
-
     }
 
     const minimumTime = Math.min(...slotTimes);
-
     const maximumTime = Math.max(...slotTimes);
 
     this.timelineStartMinutes =
@@ -152,71 +136,54 @@ export class Dashboard implements OnInit {
       Math.ceil(maximumTime / 30) * 30;
 
     this.buildTimeline();
-
   }
 
-  private timeToMinutes(
-    time: string
-  ): number {
-
-    const [hours, minutes] =
-      time.split(':').map(Number);
-
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
-
   }
 
-  formatTimelineTime(
-    minutes: number
-  ): string {
-
-    const hours =
-      Math.floor(minutes / 60);
-
-    const remainingMinutes =
-      minutes % 60;
+  formatTimelineTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
 
     return `${String(hours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
-
   }
 
-private getAllBookings(
-  date: string,
-  firstPage: PageResponse<BookingListModel>
-): Observable<BookingListModel[]> {
+  private getAllBookings(
+    date: string,
+    firstPage: PageResponse<BookingListModel>
+  ): Observable<BookingListModel[]> {
 
-  const remainingPages = Array.from(
-    { length: Math.max(firstPage.totalPages - 1, 0) },
-    (_, index) =>
-      this.bookingService.getBookings({
-        dateFrom: `${date}T00:00:00`,
-        dateTo: `${date}T23:59:59`,
-        page: index + 1,
-        size: 100,
-        sortBy: 'startDatetime',
-        sortDirection: 'asc'
-      })
-  );
+    const remainingPages = Array.from(
+      { length: Math.max(firstPage.totalPages - 1, 0) },
+      (_, index) =>
+        this.bookingService.getBookings({
+          dateFrom: `${date}T00:00:00`,
+          dateTo: `${date}T23:59:59`,
+          page: index + 1,
+          size: 100,
+          sortBy: 'startDatetime',
+          sortDirection: 'asc'
+        })
+    );
 
-  if (remainingPages.length === 0) {
-    return of(firstPage.content);
+    if (remainingPages.length === 0) {
+      return of(firstPage.content);
+    }
+
+    return forkJoin(remainingPages).pipe(
+      map(pages => [
+        ...firstPage.content,
+        ...pages.flatMap(page => page.content)
+      ])
+    );
   }
-
-  return forkJoin(remainingPages).pipe(
-    map(pages => [
-      ...firstPage.content,
-      ...pages.flatMap(page => page.content)
-    ])
-  );
-}
 
   private loadBookings(): void {
+    this.errorMessage = '';
 
-    this.errorMessage='';
-
-    const date = this.formatLocalDate(
-      this.selectedDate
-    );
+    const date = this.formatLocalDate(this.selectedDate);
 
     forkJoin({
       spaces: this.spaceService.getSpaceCards(),
@@ -230,48 +197,40 @@ private getAllBookings(
         sortDirection: 'asc'
       })
     }).subscribe({
-
       next: ({ spaces, bookings }) => {
 
-       if (this.isPastDate(this.selectedDate)) {
+        if (this.isPastDate(this.selectedDate)) {
+          this.getAllBookings(date, bookings).subscribe({
+            next: allBookings => {
+              const historicalBookings = allBookings.filter(
+                booking => booking.status !== 'CANCELADO'
+              );
 
-         this.getAllBookings(date, bookings).subscribe({
+              this.spaces = this.mapSpaces(
+                spaces,
+                historicalBookings,
+                []
+              );
 
-           next: allBookings => {
+              this.updateTimelineRange();
 
-             const historicalBookings = allBookings.filter(
-               booking => booking.status !== 'CANCELADO'
-             );
+              this.stats = this.buildStats(
+                historicalBookings
+              );
 
-             this.spaces = this.mapSpaces(
-               spaces,
-               historicalBookings,
-               []
-             );
+              this.updateHeader(
+                historicalBookings
+              );
+            },
 
-             this.updateTimelineRange();
+            error: error => {
+              this.errorMessage =
+                this.errorHandler.getMessage(error);
+            }
+          });
 
-             this.stats = this.buildStats(
-               historicalBookings
-             );
-
-             this.updateHeader(
-               historicalBookings
-             );
-
-           },
-
-           error: error => {
-
-             this.errorMessage =
-               this.errorHandler.getMessage(error);
-
-           }
-
-         });
-
-         return;
-       }
+          return;
+        }
 
         const availabilityRequests = spaces.map(
           space =>
@@ -282,7 +241,6 @@ private getAllBookings(
         );
 
         if (availabilityRequests.length === 0) {
-
           this.spaces = [];
 
           this.updateTimelineRange();
@@ -298,12 +256,8 @@ private getAllBookings(
           return;
         }
 
-        forkJoin(
-          availabilityRequests
-        ).subscribe({
-
+        forkJoin(availabilityRequests).subscribe({
           next: availabilityResponses => {
-
             this.spaces = this.mapSpaces(
               spaces,
               bookings.content,
@@ -319,11 +273,9 @@ private getAllBookings(
             this.updateHeader(
               bookings.content
             );
-
           },
 
           error: error => {
-
             this.errorMessage =
               this.errorHandler.getMessage(error);
 
@@ -342,26 +294,18 @@ private getAllBookings(
             this.updateHeader(
               bookings.content
             );
-
           }
-
         });
-
       },
 
       error: error => {
-
         this.errorMessage =
           this.errorHandler.getMessage(error);
-
       }
-
     });
-
   }
 
-   isPastDate(date: Date): boolean {
-
+  isPastDate(date: Date): boolean {
     const selectedDate = new Date(
       date.getFullYear(),
       date.getMonth(),
@@ -370,15 +314,9 @@ private getAllBookings(
 
     const today = new Date();
 
-    today.setHours(
-      0,
-      0,
-      0,
-      0
-    );
+    today.setHours(0, 0, 0, 0);
 
     return selectedDate < today;
-
   }
 
   private mapSpaces(
@@ -391,8 +329,7 @@ private getAllBookings(
 
       const spaceBookings = bookings
         .filter(
-          booking =>
-            booking.spaceName === space.name
+          booking => booking.spaceName === space.name
         )
         .sort(
           (a, b) =>
@@ -409,224 +346,149 @@ private getAllBookings(
           : availability?.slots ?? [];
 
       if (availabilityList.length === 0) {
-
         const slots: SpaceSlotModel[] =
-          spaceBookings.map(
-            booking => {
-
-              return {
-
-                id: booking.id,
-
-                startTime: this.formatTime(
-                  booking.startDatetime
-                ),
-
-                endTime: this.formatTime(
-                  booking.endDatetime
-                ),
-
-                status: this.mapStatus(
-                  booking
-                ),
-
-                clientName: booking.clientName,
-
-                phone: booking.clientPhone,
-
-                booking
-
-              };
-
-            }
-          );
+          spaceBookings.map(booking => {
+            return {
+              id: booking.id,
+              startTime: this.formatTime(
+                booking.startDatetime
+              ),
+              endTime: this.formatTime(
+                booking.endDatetime
+              ),
+              status: this.mapStatus(booking),
+              clientName: booking.clientName,
+              phone: booking.clientPhone,
+              booking
+            };
+          });
 
         return {
-
           id: space.id,
-
           name: space.name,
-
           type: space.type,
-
           slotDuration: space.slotDuration,
-
           status: space.isActive
             ? 'AVAILABLE'
             : 'MAINTENANCE',
-
           nextBookingTime:
             slots.length > 0
               ? slots.find(
-                slot =>
-                  slot.status !== 'FREE'
+                slot => slot.status !== 'FREE'
               )?.startTime
               : undefined,
-
           slots
-
         };
-
       }
 
       const slots: SpaceSlotModel[] =
-        availabilityList.map(
-          (availableSlot: any) => {
+        availabilityList.map((availableSlot: any) => {
 
-            const startDatetime =
-              availableSlot.startDatetime ??
-              availableSlot.startTime;
+          const startDatetime =
+            availableSlot.startDatetime ??
+            availableSlot.startTime;
 
-            const endDatetime =
-              availableSlot.endDatetime ??
-              availableSlot.endTime;
+          const endDatetime =
+            availableSlot.endDatetime ??
+            availableSlot.endTime;
 
-            const booking =
-              spaceBookings.find(
-                existingBooking =>
-                  this.sameTime(
-                    existingBooking.startDatetime,
-                    startDatetime
-                  ) &&
-                  this.sameTime(
-                    existingBooking.endDatetime,
-                    endDatetime
-                  )
-              );
-
-            if (booking) {
-
-              return {
-
-                id: booking.id,
-
-                startTime: this.formatTime(
-                  booking.startDatetime
-                ),
-
-                endTime: this.formatTime(
-                  booking.endDatetime
-                ),
-
-                status: this.mapStatus(
-                  booking
-                ),
-
-                clientName: booking.clientName,
-
-                phone: booking.clientPhone,
-
-                booking
-
-              };
-
-            }
-
-            return {
-
-              id: this.createSlotId(
-                space.id,
+          const booking = spaceBookings.find(
+            existingBooking =>
+              this.sameTime(
+                existingBooking.startDatetime,
                 startDatetime
-              ),
-
-              startTime: this.formatAvailabilityTime(
-                startDatetime
-              ),
-
-              endTime: this.formatAvailabilityTime(
+              ) &&
+              this.sameTime(
+                existingBooking.endDatetime,
                 endDatetime
+              )
+          );
+
+          if (booking) {
+            return {
+              id: booking.id,
+              startTime: this.formatTime(
+                booking.startDatetime
               ),
-
-              status: 'FREE',
-
-              booking: undefined
-
+              endTime: this.formatTime(
+                booking.endDatetime
+              ),
+              status: this.mapStatus(booking),
+              clientName: booking.clientName,
+              phone: booking.clientPhone,
+              booking
             };
-
           }
-        );
+
+          return {
+            id: this.createSlotId(
+              space.id,
+              startDatetime
+            ),
+            startTime: this.formatAvailabilityTime(
+              startDatetime
+            ),
+            endTime: this.formatAvailabilityTime(
+              endDatetime
+            ),
+            status: 'FREE',
+            booking: undefined
+          };
+        });
 
       return {
-
         id: space.id,
-
         name: space.name,
-
         type: space.type,
-
         slotDuration: space.slotDuration,
-
         status: space.isActive
           ? 'AVAILABLE'
           : 'MAINTENANCE',
-
         nextBookingTime:
           slots.length > 0
             ? slots.find(
-              slot =>
-                slot.status !== 'FREE'
+              slot => slot.status !== 'FREE'
             )?.startTime
             : undefined,
-
         slots
-
       };
-
     });
-
   }
 
   private sameTime(
     first: string,
     second: string
   ): boolean {
-
     const firstDate = new Date(first);
     const secondDate = new Date(second);
 
-    return (
-      firstDate.getTime() ===
-      secondDate.getTime()
-    );
-
+    return firstDate.getTime() === secondDate.getTime();
   }
 
   private createSlotId(
     spaceId: number,
     start: string
   ): number {
-
-    const timestamp =
-      new Date(start).getTime();
+    const timestamp = new Date(start).getTime();
 
     return Math.abs(
       spaceId * 1000000000 + timestamp
     );
-
   }
 
-  private formatAvailabilityTime(
-    value: string
-  ): string {
-
+  private formatAvailabilityTime(value: string): string {
     if (!value) {
       return '--:--';
     }
 
-    if (
-      /^\d{2}:\d{2}/.test(value)
-    ) {
+    if (/^\d{2}:\d{2}/.test(value)) {
       return value.substring(0, 5);
     }
 
     return this.formatTime(value);
-
   }
 
-  private formatTime(
-    date: string
-  ): string {
-
+  private formatTime(date: string): string {
     return new Date(date).toLocaleTimeString(
       'es-AR',
       {
@@ -635,35 +497,26 @@ private getAllBookings(
         hour12: false
       }
     );
-
   }
 
   private mapStatus(
     booking: BookingListModel
   ): 'FREE' | 'PARTIAL' | 'PAID' {
 
-    if (
-      booking.status === 'CANCELADO'
-    ) {
+    if (booking.status === 'CANCELADO') {
       return 'FREE';
     }
 
-    if (
-      booking.paymentStatus === 'PAGADO'
-    ) {
+    if (booking.paymentStatus === 'PAGADO') {
       return 'PAID';
     }
 
     return 'PARTIAL';
-
   }
 
-  private buildStats(
-    bookings: BookingListModel[]
-  ) {
+  private buildStats(bookings: BookingListModel[]) {
 
     if (bookings.length === 0) {
-
       return {
         todayBookings: 0,
         occupiedSpaces: 0,
@@ -671,32 +524,22 @@ private getAllBookings(
         nextBookingSubtitle: '',
         estimatedRevenue: 0
       };
-
     }
 
     const isToday =
-      this.formatLocalDate(
-        this.selectedDate
-      ) ===
-      this.formatLocalDate(
-        new Date()
-      );
+      this.formatLocalDate(this.selectedDate) ===
+      this.formatLocalDate(new Date());
 
-    let nextBooking:
-      BookingListModel | undefined;
-
+    let nextBooking: BookingListModel | undefined;
     let nextBookingSubtitle = '';
 
     if (isToday) {
-
       const now = new Date();
 
       nextBooking = bookings
         .filter(
           booking =>
-            new Date(
-              booking.startDatetime
-            ) > now &&
+            new Date(booking.startDatetime) > now &&
             booking.status !== 'CANCELADO'
         )
         .sort(
@@ -706,43 +549,30 @@ private getAllBookings(
         )[0];
 
       if (nextBooking) {
-
         const diffMs =
-          new Date(
-            nextBooking.startDatetime
-          ).getTime() -
+          new Date(nextBooking.startDatetime).getTime() -
           now.getTime();
 
-        const diffMinutes =
-          Math.ceil(
-            diffMs / 60000
-          );
+        const diffMinutes = Math.ceil(
+          diffMs / 60000
+        );
 
         if (diffMinutes < 60) {
-
           nextBookingSubtitle =
             `En ${diffMinutes} minutos`;
-
         } else {
-
-          const hours =
-            Math.floor(
-              diffMinutes / 60
-            );
+          const hours = Math.floor(
+            diffMinutes / 60
+          );
 
           nextBookingSubtitle =
             `En ${hours} hora${hours > 1 ? 's' : ''}`;
-
         }
-
       }
-
     } else {
-
       nextBooking = bookings
         .filter(
-          booking =>
-            booking.status !== 'CANCELADO'
+          booking => booking.status !== 'CANCELADO'
         )
         .sort(
           (a, b) =>
@@ -751,19 +581,13 @@ private getAllBookings(
         )[0];
 
       if (nextBooking) {
-
-        nextBookingSubtitle =
-          'Primer turno del día';
-
+        nextBookingSubtitle = 'Primer turno del día';
       }
-
     }
 
     return {
-
       todayBookings: bookings.filter(
-        booking =>
-          booking.status !== 'CANCELADO'
+        booking => booking.status !== 'CANCELADO'
       ).length,
 
       occupiedSpaces: isToday
@@ -786,44 +610,32 @@ private getAllBookings(
 
               return start <= now && now < end;
             })
-            .map(
-              booking =>
-                booking.spaceName
-            )
+            .map(booking => booking.spaceName)
         ).size
         : 0,
 
       nextBookingTime: nextBooking
-        ? this.formatTime(
-          nextBooking.startDatetime
-        )
+        ? this.formatTime(nextBooking.startDatetime)
         : '--:--',
 
       nextBookingSubtitle,
 
-      estimatedRevenue:
-        bookings
-          .filter(
-            booking =>
-              booking.status !== 'CANCELADO'
-          )
-          .reduce(
-            (total, booking) =>
-              total +
-              booking.totalAmount,
-            0
-          )
-
+      estimatedRevenue: bookings
+        .filter(
+          booking => booking.status !== 'CANCELADO'
+        )
+        .reduce(
+          (total, booking) =>
+            total + booking.totalAmount,
+          0
+        )
     };
-
   }
 
   private updateHeader(
     bookings: BookingListModel[]
   ): void {
-
-    const date =
-      this.selectedDate;
+    const date = this.selectedDate;
 
     this.headerSubtitle =
       date.toLocaleDateString(
@@ -836,59 +648,63 @@ private getAllBookings(
       );
 
     this.headerSubtitle =
-      this.headerSubtitle
-        .charAt(0)
-        .toUpperCase() +
+      this.headerSubtitle.charAt(0).toUpperCase() +
       this.headerSubtitle.slice(1);
-
   }
 
-  onDateSelected(
-    date: Date
-  ): void {
-
-    this.selectedDate =
-      date;
-
+  onDateSelected(date: Date): void {
+    this.selectedDate = date;
     this.loadBookings();
-
   }
 
-  private formatLocalDate(
-    date: Date
-  ): string {
+  private formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
 
-    const year =
-      date.getFullYear();
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, '0');
 
-    const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, '0');
-
-    const day =
-      String(
-        date.getDate()
-      ).padStart(2, '0');
+    const day = String(
+      date.getDate()
+    ).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
-
   }
 
-  openBookingModal(
-    slot: SpaceSlotModel
-  ): void {
-
+  openBookingModal(slot: SpaceSlotModel): void {
     if (!slot.booking) {
       return;
     }
 
-    this.selectedBooking =
-      slot.booking;
+    this.selectedBooking = slot.booking;
+    this.showBookingModal = true;
+  }
 
-    this.showBookingModal =
-      true;
+  onScheduleSlotClick(event: {
+    slot: SpaceSlotModel;
+    space: SpaceModel;
+  }): void {
 
+    const { slot, space } = event;
+
+    if (slot.booking) {
+      this.openBookingModal(slot);
+      return;
+    }
+
+    if (
+      slot.status !== 'FREE' ||
+      this.isPastDate(this.selectedDate)
+    ) {
+      return;
+    }
+
+    this.errorMessage = '';
+
+    this.initialBookingSpaceId = space.id;
+    this.initialBookingStartTime = slot.startTime;
+
+    this.showInternalBookingModal = true;
   }
 
   openInternalBookingModal(
@@ -897,57 +713,33 @@ private getAllBookings(
     this.errorMessage = '';
 
     if (slot?.booking) {
-
-      this.selectedBooking =
-        slot.booking;
-
+      this.selectedBooking = slot.booking;
     }
 
-    this.showInternalBookingModal =
-      true;
-
+    this.showInternalBookingModal = true;
   }
 
   closeBookingModal(): void {
-
-    this.showBookingModal =
-      false;
-
-    this.selectedBooking =
-      undefined;
-
+    this.showBookingModal = false;
+    this.selectedBooking = undefined;
   }
 
   closeInternalBookingModal(): void {
-
-    this.showInternalBookingModal =
-      false;
-
+    this.showInternalBookingModal = false;
+    this.initialBookingSpaceId = null;
+    this.initialBookingStartTime = null;
   }
 
   onBookingCreated(): void {
-
-    this.showInternalBookingModal =
-      false;
-
+    this.closeInternalBookingModal();
     this.loadBookings();
-
   }
 
   onBookingCanceled(): void {
-
-    this.showBookingModal =
-      false;
-
-    this.selectedBooking =
-      undefined;
-
+    this.showBookingModal = false;
+    this.selectedBooking = undefined;
     this.loadBookings();
-
   }
-
-
-
 
   confirmPayment(payment: {
     booking: BookingListModel;
@@ -955,6 +747,7 @@ private getAllBookings(
     employeePin: string;
     amount: number;
   }): void {
+
     this.bookingService.completeBookingPayment({
       bookingId: payment.booking.id,
       paymentMethod: payment.paymentMethod,
@@ -965,14 +758,12 @@ private getAllBookings(
         this.closeBookingModal();
         this.loadBookings();
       },
-      error: (error) => {
-        const message = this.errorHandler.getMessage(error);
+      error: error => {
+        const message =
+          this.errorHandler.getMessage(error);
 
         this.bookingDetailModal?.setPaymentError(message);
       }
     });
   }
-
-
-
 }

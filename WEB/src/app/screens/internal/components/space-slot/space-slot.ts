@@ -16,6 +16,7 @@ export class SpaceSlot {
   @Output()
   slotClick = new EventEmitter<SpaceSlotModel>();
 
+
   get statusLabel(): string {
 
     switch (this.slot.status) {
@@ -37,13 +38,11 @@ export class SpaceSlot {
   }
 
   onSlotClick(): void {
-
-    if (this.slot.status === 'FREE') {
+    if (this.slot.status !== 'FREE') {
       return;
     }
 
     this.slotClick.emit(this.slot);
-
   }
 
 }
