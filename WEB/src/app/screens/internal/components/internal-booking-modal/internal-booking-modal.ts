@@ -29,6 +29,8 @@ import { RecurringBookingRequestModel } from '../../models/recurring-booking-req
 export class InternalBookingModal implements OnInit{
 
   @Input() selectedDate!: Date;
+  @Input() initialSpaceId: number | null = null;
+  @Input() initialStartTime: string | null = null;
 
   @Output() close = new EventEmitter<void>();
 
@@ -114,6 +116,7 @@ export class InternalBookingModal implements OnInit{
 
   ngOnInit(): void {
     this.initializeStartDate();
+    this.initializeSelectedDateTime();
     this.loadClients();
     this.loadSpaces();
   }
@@ -140,13 +143,23 @@ export class InternalBookingModal implements OnInit{
 
     this.spaceService.getAllActiveSpaces().subscribe({
       next: spaces => {
-        console.log('Espacios recibidos:', spaces);
         this.spaces = spaces;
         this.filteredSpaces = [];
         this.spacesLoading = false;
+
+        if (this.initialSpaceId !== null) {
+          const selectedSpace = this.spaces.find(
+            space => space.id === this.initialSpaceId
+          );
+
+          if (selectedSpace) {
+            this.selectSpace(selectedSpace);
+          } else {
+            this.errorMessage = 'No se encontró la cancha seleccionada.';
+          }
+        }
       },
       error: error => {
-        console.error('Error cargando espacios:', error);
         this.spacesLoading = false;
         this.errorMessage = this.errorHandler.getMessage(error);
       }
@@ -154,18 +167,30 @@ export class InternalBookingModal implements OnInit{
   }
 
   searchClients(): void {
-    const dni = this.clientSearch.trim();
+    const search = this.clientSearch.trim().toLowerCase();
 
     this.selectedClient = null;
     this.form.get('clientId')?.setValue(null);
 
-    if (!dni) {
+    if (!search) {
       this.filteredClients = [];
       return;
     }
 
+    const normalizedSearch = search.replace(/\s+/g, ' ');
+
     this.filteredClients = this.clients
-      .filter(client => client.dni.includes(dni))
+      .filter(client => {
+        const name = (client.name ?? '').toLowerCase();
+        const dni = (client.dni ?? '').toString().toLowerCase();
+        const phone = (client.phone ?? '').toString().toLowerCase();
+
+        return (
+          name.includes(normalizedSearch) ||
+          dni.includes(normalizedSearch) ||
+          phone.includes(normalizedSearch)
+        );
+      })
       .slice(0, 10);
   }
 
@@ -212,6 +237,30 @@ export class InternalBookingModal implements OnInit{
     const formattedDate = `${year}-${month}-${day}`;
 
     this.form.get('startDate')?.setValue(formattedDate);
+  }
+
+  private initializeSelectedDateTime(): void {
+    if (!this.selectedDate || !this.initialStartTime) {
+      return;
+    }
+
+    const date = this.formatDate(this.selectedDate);
+
+    const datetime = `${date}T${this.initialStartTime}`;
+
+    this.form.patchValue({
+      startDatetime: datetime,
+      startDate: date,
+      startTime: this.initialStartTime
+    });
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   closeModal(): void {

@@ -447,7 +447,7 @@
         type="button"
         class="space-save-button"
         (click)="save()"
-        [disabled]="saving">
+        [disabled]="saving || !schedulesLoaded">
 
         @if (saving) {
           Guardando...
