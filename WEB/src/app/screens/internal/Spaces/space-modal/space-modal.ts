@@ -409,7 +409,18 @@ export class SpaceModal implements OnInit {
               }).pipe(
                 tap(response => {
                   schedule.id = response?.id ?? response?.scheduleId;
-                  schedule.spaceId = spaceId;
+                  schedule.spaceId = this.spaceId!;
+
+                  if (
+                    schedule.id != null &&
+                    !this.originalSchedules.some(
+                      original => original.id === schedule.id
+                    )
+                  ) {
+                    this.originalSchedules.push({
+                      ...schedule
+                    });
+                  }
                 })
               )
             ),
