@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { Observable, from, of } from 'rxjs';
+import {Observable, from, tap} from 'rxjs';
 import { concatMap, toArray } from 'rxjs/operators';
 
 import { SpaceService } from '../../../../services/SpaceService/SpaceService';
@@ -50,6 +50,7 @@ export class SpaceModal implements OnInit {
   close = new EventEmitter<boolean>();
 
   saving = false;
+  schedulesLoaded = false;
   errorMessage = '';
 
   private readonly validDayTypes = [
@@ -100,6 +101,7 @@ export class SpaceModal implements OnInit {
     if (this.spaceId !== null) {
       this.loadSpace();
     } else {
+      this.schedulesLoaded = true;
       this.addSchedule();
       this.addConfiguration();
     }
@@ -107,6 +109,7 @@ export class SpaceModal implements OnInit {
 
   private loadSpace(): void {
     this.errorMessage = '';
+    this.schedulesLoaded = false;
 
     this.spaceService.getSpaceDetail(this.spaceId!).subscribe({
       next: space => {
@@ -152,13 +155,17 @@ export class SpaceModal implements OnInit {
             if (this.days.length === 0) {
               this.addConfiguration();
             }
+
+            this.schedulesLoaded = true;
           },
           error: error => {
+            this.schedulesLoaded = false;
             this.errorMessage = this.getSpaceErrorMessage(error);
           }
         });
       },
       error: error => {
+        this.schedulesLoaded = false;
         this.errorMessage = this.getSpaceErrorMessage(error);
       }
     });
@@ -223,16 +230,19 @@ export class SpaceModal implements OnInit {
     }
   }
 
-
   save(): void {
+    if (!this.schedulesLoaded) {
+      this.errorMessage =
+        'Esperá a que se carguen los horarios antes de guardar el espacio.';
+      return;
+    }
+
     this.errorMessage = '';
 
     const schedules = this.getEnabledSchedules();
     const configurations = this.getEnabledPricings();
 
     if (schedules.length === 0 || configurations.length === 0) {
-      this.space.isActive = false;
-
       const message =
         'No es posible guardar un espacio sin configuraciones de horarios y precios. El espacio debe permanecer inactivo.';
 
@@ -243,13 +253,13 @@ export class SpaceModal implements OnInit {
 
       this.saving = true;
 
-      this.spaceService.updateSpace({
-        spaceId: this.spaceId,
-        ...this.space,
-        isActive: false
-      }).subscribe({
+      this.spaceService.toggleSpaceStatus(
+        this.spaceId,
+        false
+      ).subscribe({
         next: () => {
           this.saving = false;
+          this.space.isActive = false;
           this.errorMessage = message;
         },
         error: error => {
@@ -272,7 +282,6 @@ export class SpaceModal implements OnInit {
 
     this.updateExistingSpace();
   }
-
 
   private getEnabledSchedules(): DaySchedule[] {
     return this.schedules.filter(schedule =>
@@ -319,7 +328,9 @@ export class SpaceModal implements OnInit {
 
   private getPricingsForSchedule(schedule: DaySchedule): PricingConfig[] {
     return this.getEnabledPricings().filter(config =>
-      this.scheduleCanOwnPricing(schedule.dayType, config.dayType)
+      this.scheduleCanOwnPricing(schedule.dayType, config.dayType) &&
+      config.openingTime >= schedule.openingTime &&
+      config.closingTime <= schedule.closingTime
     );
   }
 
@@ -460,7 +471,16 @@ export class SpaceModal implements OnInit {
 
     for (const scheduleId of schedulesToDelete) {
       operations.push(() =>
-        this.spaceService.deleteSchedule(this.spaceId!, scheduleId)
+        this.spaceService.deleteSchedule(
+          this.spaceId!,
+          scheduleId
+        ).pipe(
+          tap(() => {
+            this.originalSchedules = this.originalSchedules.filter(
+              schedule => schedule.id !== scheduleId
+            );
+          })
+        )
       );
     }
 
@@ -516,6 +536,7 @@ export class SpaceModal implements OnInit {
       });
   }
 
+
   private validateForm(): boolean {
     const name = this.space.name?.trim() ?? '';
 
@@ -548,14 +569,9 @@ export class SpaceModal implements OnInit {
     const schedules = this.getEnabledSchedules();
     const configurations = this.getEnabledPricings();
 
-    if (this.spaceId === null && schedules.length === 0) {
-      this.errorMessage = 'Debés agregar al menos un horario.';
-      return false;
-    }
-
-    if (schedules.length === 0 && configurations.length > 0) {
+    if (schedules.length === 0 || configurations.length === 0) {
       this.errorMessage =
-        'No podés configurar precios si no hay horarios abiertos.';
+        'No es posible guardar un espacio sin configuraciones de horarios y precios.';
       return false;
     }
 
@@ -632,22 +648,30 @@ export class SpaceModal implements OnInit {
         return false;
       }
 
-      const schedule = schedules.find(item =>
-        this.scheduleCanOwnPricing(item.dayType, config.dayType)
+      const matchingSchedules = schedules.filter(schedule =>
+        this.scheduleCanOwnPricing(schedule.dayType, config.dayType)
       );
 
-      if (!schedule) {
+      if (matchingSchedules.length === 0) {
         this.errorMessage =
           `No hay un horario configurado que incluya ${config.label}.`;
         return false;
       }
 
-      if (
-        config.openingTime < schedule.openingTime ||
-        config.closingTime > schedule.closingTime
-      ) {
+      const compatibleSchedules = matchingSchedules.filter(schedule =>
+        config.openingTime >= schedule.openingTime &&
+        config.closingTime <= schedule.closingTime
+      );
+
+      if (compatibleSchedules.length === 0) {
         this.errorMessage =
-          `La configuración de precio de ${config.label} debe estar dentro del horario del espacio (${schedule.openingTime} - ${schedule.closingTime}).`;
+          `La configuración de precio de ${config.label} debe estar dentro de los horarios disponibles (${matchingSchedules.map(schedule => `${schedule.openingTime} - ${schedule.closingTime}`).join(', ')}).`;
+        return false;
+      }
+
+      if (compatibleSchedules.length > 1) {
+        this.errorMessage =
+          `La configuración de precio de ${config.label} coincide con varios horarios. Modificá las franjas para que cada precio corresponda a un único horario.`;
         return false;
       }
     }
@@ -691,6 +715,7 @@ export class SpaceModal implements OnInit {
 
     return true;
   }
+
 
   private isValidTime(time: string): boolean {
     return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time);

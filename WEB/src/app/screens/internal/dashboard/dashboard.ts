@@ -687,24 +687,24 @@ export class Dashboard implements OnInit {
 
     const { slot, space } = event;
 
+    if (slot.status === 'FREE') {
+
+      if (this.isPastDate(this.selectedDate)) {
+        return;
+      }
+
+      this.errorMessage = '';
+
+      this.initialBookingSpaceId = space.id;
+      this.initialBookingStartTime = slot.startTime;
+
+      this.showInternalBookingModal = true;
+      return;
+    }
+
     if (slot.booking) {
       this.openBookingModal(slot);
-      return;
     }
-
-    if (
-      slot.status !== 'FREE' ||
-      this.isPastDate(this.selectedDate)
-    ) {
-      return;
-    }
-
-    this.errorMessage = '';
-
-    this.initialBookingSpaceId = space.id;
-    this.initialBookingStartTime = slot.startTime;
-
-    this.showInternalBookingModal = true;
   }
 
   openInternalBookingModal(

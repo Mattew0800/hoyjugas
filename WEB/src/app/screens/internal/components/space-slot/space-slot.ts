@@ -38,10 +38,6 @@ export class SpaceSlot {
   }
 
   onSlotClick(): void {
-    if (this.slot.status !== 'FREE') {
-      return;
-    }
-
     this.slotClick.emit(this.slot);
   }
 
