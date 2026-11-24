@@ -406,7 +406,12 @@ export class SpaceModal implements OnInit {
                   closingTime: schedule.closingTime
                 },
                 pricings: this.buildPricingDtos(schedule)
-              })
+              }).pipe(
+                tap(response => {
+                  schedule.id = response?.id ?? response?.scheduleId;
+                  schedule.spaceId = spaceId;
+                })
+              )
             ),
             toArray()
           )
@@ -487,8 +492,7 @@ export class SpaceModal implements OnInit {
     for (const schedule of currentSchedules) {
       if (schedule.id != null) {
         operations.push(() =>
-          this.spaceService.updateSchedule({
-            scheduleId: schedule.id!,
+          this.spaceService.addSchedule({
             spaceId: this.spaceId!,
             schedule: {
               dayType: schedule.dayType,
@@ -496,7 +500,12 @@ export class SpaceModal implements OnInit {
               closingTime: schedule.closingTime
             },
             pricings: this.buildPricingDtos(schedule)
-          })
+          }).pipe(
+            tap(response => {
+              schedule.id = response?.id ?? response?.scheduleId;
+              schedule.spaceId = this.spaceId!;
+            })
+          )
         );
       } else {
         operations.push(() =>

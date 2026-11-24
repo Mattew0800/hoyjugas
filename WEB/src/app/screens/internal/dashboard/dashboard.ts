@@ -67,6 +67,10 @@ export class Dashboard implements OnInit {
 
   errorMessage = '';
 
+  loadingBookings = false;
+
+  private loadRequestId = 0;
+
   timelineHours: number[] = [];
 
   timelineStartMinutes = 0;
@@ -181,13 +185,15 @@ export class Dashboard implements OnInit {
   }
 
   private loadBookings(): void {
+    const requestId = ++this.loadRequestId;
+
     this.errorMessage = '';
+    this.loadingBookings = true;
 
     const date = this.formatLocalDate(this.selectedDate);
 
     forkJoin({
       spaces: this.spaceService.getSpaceCards(),
-
       bookings: this.bookingService.getBookings({
         dateFrom: `${date}T00:00:00`,
         dateTo: `${date}T23:59:59`,
@@ -198,10 +204,17 @@ export class Dashboard implements OnInit {
       })
     }).subscribe({
       next: ({ spaces, bookings }) => {
+        if (requestId !== this.loadRequestId) {
+          return;
+        }
 
         if (this.isPastDate(this.selectedDate)) {
           this.getAllBookings(date, bookings).subscribe({
             next: allBookings => {
+              if (requestId !== this.loadRequestId) {
+                return;
+              }
+
               const historicalBookings = allBookings.filter(
                 booking => booking.status !== 'CANCELADO'
               );
@@ -221,11 +234,18 @@ export class Dashboard implements OnInit {
               this.updateHeader(
                 historicalBookings
               );
-            },
 
+              this.loadingBookings = false;
+            },
             error: error => {
+              if (requestId !== this.loadRequestId) {
+                return;
+              }
+
               this.errorMessage =
                 this.errorHandler.getMessage(error);
+
+              this.loadingBookings = false;
             }
           });
 
@@ -253,11 +273,16 @@ export class Dashboard implements OnInit {
             bookings.content
           );
 
+          this.loadingBookings = false;
           return;
         }
 
         forkJoin(availabilityRequests).subscribe({
           next: availabilityResponses => {
+            if (requestId !== this.loadRequestId) {
+              return;
+            }
+
             this.spaces = this.mapSpaces(
               spaces,
               bookings.content,
@@ -273,9 +298,14 @@ export class Dashboard implements OnInit {
             this.updateHeader(
               bookings.content
             );
-          },
 
+            this.loadingBookings = false;
+          },
           error: error => {
+            if (requestId !== this.loadRequestId) {
+              return;
+            }
+
             this.errorMessage =
               this.errorHandler.getMessage(error);
 
@@ -294,13 +324,20 @@ export class Dashboard implements OnInit {
             this.updateHeader(
               bookings.content
             );
+
+            this.loadingBookings = false;
           }
         });
       },
-
       error: error => {
+        if (requestId !== this.loadRequestId) {
+          return;
+        }
+
         this.errorMessage =
           this.errorHandler.getMessage(error);
+
+        this.loadingBookings = false;
       }
     });
   }
@@ -654,6 +691,8 @@ export class Dashboard implements OnInit {
 
   onDateSelected(date: Date): void {
     this.selectedDate = date;
+    this.spaces = [];
+    this.updateTimelineRange();
     this.loadBookings();
   }
 
@@ -685,6 +724,10 @@ export class Dashboard implements OnInit {
     space: SpaceModel;
   }): void {
 
+    if (this.loadingBookings) {
+      return;
+    }
+
     const { slot, space } = event;
 
     if (slot.status === 'FREE') {
@@ -710,6 +753,10 @@ export class Dashboard implements OnInit {
   openInternalBookingModal(
     slot?: SpaceSlotModel
   ): void {
+    if (this.loadingBookings) {
+      return;
+    }
+
     this.errorMessage = '';
 
     if (slot?.booking) {
