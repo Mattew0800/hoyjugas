@@ -452,6 +452,7 @@ export class SpaceModal implements OnInit {
     });
   }
 
+
   private updateSchedules(): void {
     if (this.spaceId === null) {
       this.saving = false;
@@ -492,8 +493,9 @@ export class SpaceModal implements OnInit {
     for (const schedule of currentSchedules) {
       if (schedule.id != null) {
         operations.push(() =>
-          this.spaceService.addSchedule({
+          this.spaceService.updateSchedule({
             spaceId: this.spaceId!,
+            scheduleId: schedule.id,
             schedule: {
               dayType: schedule.dayType,
               openingTime: schedule.openingTime,
@@ -502,7 +504,7 @@ export class SpaceModal implements OnInit {
             pricings: this.buildPricingDtos(schedule)
           }).pipe(
             tap(response => {
-              schedule.id = response?.id ?? response?.scheduleId;
+              schedule.id = response?.id ?? schedule.id;
               schedule.spaceId = this.spaceId!;
             })
           )
@@ -517,7 +519,12 @@ export class SpaceModal implements OnInit {
               closingTime: schedule.closingTime
             },
             pricings: this.buildPricingDtos(schedule)
-          })
+          }).pipe(
+            tap(response => {
+              schedule.id = response?.id ?? response?.scheduleId;
+              schedule.spaceId = this.spaceId!;
+            })
+          )
         );
       }
     }
@@ -544,6 +551,7 @@ export class SpaceModal implements OnInit {
         }
       });
   }
+
 
 
   private validateForm(): boolean {
