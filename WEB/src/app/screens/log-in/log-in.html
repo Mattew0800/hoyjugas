@@ -23,6 +23,7 @@
               type="text"
               placeholder="ejemplo@gmail.com"
               formControlName="email"
+              autocomplete="username"
             />
 
           </div>
@@ -87,6 +88,15 @@
 
       <form action="" [formGroup]="form" (submit)="login()">
         <div class="form-section">
+
+          <input
+            type="text"
+            formControlName="email"
+            autocomplete="username"
+            [value]="form.get('email')?.value"
+            hidden
+          />
+          
           <div class="password-input-wrapper">
             <label for="">Ingresa tu contraseña</label>
 
@@ -95,6 +105,7 @@
                 [type]="showPassword ? 'text' : 'password'"
                 placeholder="Aj#9fo1U@23"
                 formControlName="password"
+                autocomplete="current-password"
               />
               <fa-icon
                 [icon]="showPassword ? faEye : faEyeSlash"

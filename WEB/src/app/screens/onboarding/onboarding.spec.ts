@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Onboarding } from './onboarding';
 
 describe('Onboarding', () => {
@@ -9,8 +9,7 @@ describe('Onboarding', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Onboarding]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(Onboarding);
     component = fixture.componentInstance;
@@ -19,5 +18,29 @@ describe('Onboarding', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('Logo', () => {
+    it('should render the logo component', () => {
+      const logo = fixture.nativeElement.querySelector(
+        '.onboarding-logo app-svg-loader'
+      );
+
+      expect(logo).toBeTruthy();
+    });
+
+    it('should not be hidden by CSS', () => {
+      const logo = fixture.nativeElement.querySelector(
+        '.onboarding-logo'
+      );
+
+      expect(logo).toBeTruthy();
+
+      const styles = getComputedStyle(logo);
+
+      expect(styles.display).not.toBe('none');
+      expect(styles.visibility).not.toBe('hidden');
+      expect(Number(styles.opacity)).toBeGreaterThan(0);
+    });
   });
 });
