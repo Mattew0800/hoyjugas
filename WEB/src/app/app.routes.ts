@@ -36,7 +36,7 @@ export const routes: Routes = [
   {path:'field-schedule/time-selection', component: StepTimeSelection, canActivate: [authGuard]},
   {path:'field-schedule/payment-selection', component: StepPaymentSelection, canActivate: [authGuard]},
   {path:'booking-confirmation', component: BookingConfirmation, canActivate:[authGuard]},
-  {path:'booking-success', component: BookingSuccess, canActivate:[authGuard]},
+  {path:'booking-success', component: BookingSuccess},
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
