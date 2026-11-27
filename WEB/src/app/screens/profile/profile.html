@@ -37,7 +37,7 @@
 
     </div>
 
-    <h2>{{ user.fullName || 'Tu perfil' }}</h2>
+    <h2>{{ profileForm.controls.fullName.value || 'Tu perfil' }}</h2>
 
     <p>Cliente AZTK Arena</p>
 
@@ -45,8 +45,8 @@
 
   <!-- Datos personales -->
   <form
-    #profileForm="ngForm"
-    (ngSubmit)="profileForm.valid && saveProfile()"
+    [formGroup]="profileForm"
+    (ngSubmit)="saveProfile()"
     novalidate>
 
 
@@ -58,29 +58,32 @@
 
         <div
           class="input-wrapper"
-          [class.invalid]="fullNameField.invalid && fullNameField.touched">
+          [class.valid]="profileForm.controls.fullName.valid && profileForm.controls.fullName.touched"
+          [class.invalid]="profileForm.controls.fullName.invalid && profileForm.controls.fullName.touched">
 
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="8" r="3.2"></circle>
             <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"></path>
           </svg>
 
+          @if (profileForm.controls.fullName.valid && profileForm.controls.fullName.touched) {
+            <span class="valid-check" aria-label="Dato válido">✓</span>
+          }
+
           <input
             id="fullName"
             type="text"
-            name="fullName"
+            formControlName="fullName"
             placeholder="Tu nombre y apellido"
             autocomplete="name"
             required
             minlength="3"
             maxlength="60"
-            aria-describedby="fullName-error"
-            [(ngModel)]="user.fullName"
-            #fullNameField="ngModel">
+            aria-describedby="fullName-error">
 
         </div>
 
-        @if (fullNameField.invalid && fullNameField.touched) {
+        @if (profileForm.controls.fullName.invalid && profileForm.controls.fullName.touched) {
           <span id="fullName-error" class="field-error">
             Ingresá tu nombre y apellido
           </span>
@@ -94,28 +97,31 @@
 
         <div
           class="input-wrapper"
-          [class.invalid]="phoneField.invalid && phoneField.touched">
+          [class.valid]="profileForm.controls.phone.valid && profileForm.controls.phone.touched"
+          [class.invalid]="profileForm.controls.phone.invalid && profileForm.controls.phone.touched">
 
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3z"></path>
           </svg>
 
+          @if (profileForm.controls.phone.valid && profileForm.controls.phone.touched) {
+            <span class="valid-check" aria-label="Dato válido">✓</span>
+          }
+
           <input
             id="phone"
             type="tel"
-            name="phone"
+            formControlName="phone"
             inputmode="tel"
             placeholder="Ej: 11 2345 6789"
             autocomplete="tel"
             required
             pattern="^[0-9+\s()-]{8,}$"
-            aria-describedby="phone-error"
-            [(ngModel)]="user.phone"
-            #phoneField="ngModel">
+            aria-describedby="phone-error">
 
         </div>
 
-        @if (phoneField.invalid && phoneField.touched) {
+        @if (profileForm.controls.phone.invalid && profileForm.controls.phone.touched) {
           <span id="phone-error" class="field-error">
             Ingresá un teléfono válido
           </span>
@@ -129,28 +135,31 @@
 
         <div
           class="input-wrapper"
-          [class.invalid]="emailField.invalid && emailField.touched">
+          [class.valid]="profileForm.controls.email.valid && profileForm.controls.email.touched"
+          [class.invalid]="profileForm.controls.email.invalid && profileForm.controls.email.touched">
 
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3.5" y="5.5" width="17" height="13" rx="2"></rect>
             <path d="M4 6.5l8 6 8-6"></path>
           </svg>
 
+          @if (profileForm.controls.email.valid && profileForm.controls.email.touched) {
+            <span class="valid-check" aria-label="Dato válido">✓</span>
+          }
+
           <input
             id="email"
             type="email"
-            name="email"
+            formControlName="email"
             placeholder="ejemplo@gmail.com"
             autocomplete="email"
             required
             email
-            aria-describedby="email-error"
-            [(ngModel)]="user.email"
-            #emailField="ngModel">
+            aria-describedby="email-error">
 
         </div>
 
-        @if (emailField.invalid && emailField.touched) {
+        @if (profileForm.controls.email.invalid && profileForm.controls.email.touched) {
           <span id="email-error" class="field-error">
             Ingresá un email válido
           </span>
@@ -191,6 +200,17 @@
           <path d="M20 6 9 17l-5-5"></path>
         </svg>
         <span>{{ successMessage }}</span>
+      </div>
+    }
+
+    @if (infoMessage) {
+      <div class="feedback-message info" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 11v5"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
+        <span>{{ infoMessage }}</span>
       </div>
     }
 

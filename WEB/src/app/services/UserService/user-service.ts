@@ -4,6 +4,7 @@ import { getUserApiUrl, getAuthApiUrl } from '../../config/api.config';
 import { UserUpdateDTO } from '../../models/UserUpdateDTO';
 import {CustomerModel} from '../../screens/internal/models/user-response';
 import {UserDetailModel} from '../../screens/internal/models/user-detail.model';
+import {User} from '../../models/User';
 
 @Injectable({
   providedIn: 'root'
@@ -16,14 +17,14 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getMe() {
-    return this.http.get<any>(
+    return this.http.get<User>(
       `${this.USER_API_URL}/me`,
       { withCredentials: true }
     );
   }
 
   updateMe(data: UserUpdateDTO) {
-    return this.http.put(
+    return this.http.put<User>(
       `${this.USER_API_URL}/me/update`,
       data,
       { withCredentials: true }

@@ -215,7 +215,7 @@ $radius-sm: 12px;
     border: 1px solid $border;
     border-radius: $radius-sm;
 
-    padding: 0 16px 0 46px;
+    padding: 0 44px 0 46px;
 
     color: $text-primary;
     font-size: 15px;
@@ -236,6 +236,44 @@ $radius-sm: 12px;
 
   &:focus-within .field-icon {
     color: $gold;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: $text-primary;
+    caret-color: $text-primary;
+    -webkit-box-shadow: 0 0 0 1000px $input-bg inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  &.valid {
+    input {
+      border-color: #35c78a;
+    }
+
+    .field-icon {
+      color: #35c78a;
+    }
+  }
+
+  .valid-check {
+    position: absolute;
+    right: 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    color: #35c78a;
+    font-size: 17px;
+    font-weight: 800;
+
+    pointer-events: none;
   }
 
   // Estado de error — mismo rojo que se usa en toda la app
@@ -358,6 +396,13 @@ $radius-sm: 12px;
 
     background: rgba(255, 95, 95, .08);
     border: 1px solid rgba(255, 95, 95, .25);
+  }
+
+  &.info {
+    color: $gold;
+
+    background: rgba(206, 167, 100, .08);
+    border: 1px solid rgba(206, 167, 100, .25);
   }
 }
 

@@ -4,9 +4,11 @@ import { Router } from '@angular/router';
 import { Header } from '../header/header';
 import { BottomNavbar } from '../bottom-navbar/bottom-navbar';
 import { UserService } from '../../services/UserService/user-service';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {Meta} from '@angular/platform-browser';
 import {AuthService} from '../../services/AuthService/auth-service';
+import {User} from '../../models/User';
+import {CustomValidators} from '../../validators/custom-validators';
 
 
 @Component({
@@ -14,7 +16,7 @@ import {AuthService} from '../../services/AuthService/auth-service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     Header,
     BottomNavbar
   ],
@@ -23,15 +25,38 @@ import {AuthService} from '../../services/AuthService/auth-service';
 })
 export class Profile implements OnInit{
 
-  user = {
-    fullName: '',
-    phone: '',
-    email: ''
-  };
+  profileForm = new FormGroup({
+    fullName: new FormControl('',[
+    Validators.required,
+    Validators.pattern(/^(?:[A-Za-zÁÉÍÓÚáéíóúÑñ]{2,}|de|del|la|los|san)(?:\s(?:[A-Za-zÁÉÍÓÚáéíóúÑñ]{2,}|de|del|la|los|san))+$/i),
+    // Solo letras (con tildes/ñ), al menos dos palabras (espacio en medio)
+    // Permite "de", "del", "la", "los", "san" | Sin simbolos o espacios extra.
+    Validators.maxLength(50),
+    CustomValidators.maxWordsValidator(5)
+    ]),
+    phone: new FormControl('',[
+      Validators.required,
+      Validators.pattern(/^([0-9]{2,4})\s?([0-9]{7,8})$|^([0-9]{2,4})\s?([0-9]{3})\s?([0-9]{4,5})$/),
+      CustomValidators.argentinePhoneValidator()
+    ]),
+    email: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^(?!.*\.{2})[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/),
+      Validators.maxLength(254)
+      //Prohíbe puntos consecutivos
+      //Exige que el local-part no empiece/termine con punto
+      //Controla que los guiones en el dominio no estén al inicio/final
+      //Requiere TLD de al menos 2 letras
+      //Permite subdominios
+    ]),
+  });
 
   selectedPhotoPreview: string | null = null;
   successMessage = '';
   errorMessage = '';
+  infoMessage = '';
+
+  private originalProfile: { name: string; phone: string; email: string } | null = null;
 
   constructor(
     private meta: Meta,
@@ -62,11 +87,18 @@ export class Profile implements OnInit{
 
     this.userService.getMe()
       .subscribe({
-        next: (user: any) => {
+        next: (user: User) => {
 
-          this.user.fullName = user.name;
-          this.user.phone = user.phone;
-          this.user.email = user.email;
+          this.profileForm.patchValue({
+            fullName: user.name,
+            phone: user.phone,
+            email: user.email
+          });
+          this.originalProfile = {
+            name: user.name,
+            phone: user.phone,
+            email: user.email
+          };
 
         },
         error: err => console.error(err)
@@ -78,16 +110,51 @@ export class Profile implements OnInit{
 
     this.successMessage = '';
     this.errorMessage = '';
+    this.infoMessage = '';
 
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.profileForm.getRawValue();
     const payload = {
-      name: this.user.fullName,
-      phone: this.user.phone,
-      email: this.user.email
+      name: value.fullName ?? '',
+      phone: value.phone ?? '',
+      email: value.email ?? ''
     };
 
-    this.userService.updateMe(payload)
-      .subscribe({
-        next: () => {
+    if (
+      this.originalProfile &&
+      payload.name === this.originalProfile.name &&
+      payload.phone === this.originalProfile.phone &&
+      payload.email === this.originalProfile.email
+    ) {
+      this.profileForm.markAsPristine();
+      this.infoMessage = 'No realizaste cambios en el perfil';
+
+      setTimeout(() => {
+        this.infoMessage = '';
+      }, 3000);
+      return;
+    }
+
+    this.userService.updateMe(payload).subscribe({
+
+        next: (user: User) => {
+
+          this.profileForm.patchValue({
+            fullName: user.name,
+            phone: user.phone,
+            email: user.email
+          });
+          this.profileForm.markAsPristine();
+          this.originalProfile = {
+            name: user.name,
+            phone: user.phone,
+            email: user.email
+          };
+          this.authService.setCurrentUser(user);
 
           this.successMessage =
             'Perfil actualizado correctamente';
@@ -95,13 +162,14 @@ export class Profile implements OnInit{
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);
+
         },
         error: (err) => {
 
           this.errorMessage = err.error;
 
           setTimeout(() => {
-            this.successMessage = '';
+            this.errorMessage = '';
           }, 3000);
         }
       });

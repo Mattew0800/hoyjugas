@@ -80,7 +80,7 @@ export class Home implements OnInit, OnDestroy {
     return this.bService.getAvailableSlotsToday().subscribe({
       next: (r) => {
         this.avaliableSlotsToday = r["Turnos disponibles totales:"];
-        console.log(r);
+
       },
       error: (e) => {
         console.log(e);
@@ -92,7 +92,6 @@ export class Home implements OnInit, OnDestroy {
     return this.bService.getComplexSchedule().subscribe({
       next: (r) => {
 
-        console.log(r);
 
         const noScheduleConfigured =
           Object.keys(r).length === 1 && 'open' in r;
