@@ -34,17 +34,17 @@ export class AuthService {
     );
   }
 
-  logUser(user: LoginRequestDTO) {
+  logUser(user: LoginRequestDTO): Observable<LoginResponseDTO> {
     return this.http.post<LoginResponseDTO>(`${this.API_URL}/login`, user, { withCredentials: true }).pipe(
-      tap(loggedUser => {
-        this.setCurrentUser(loggedUser);
+      tap(() => {
+        this.checkBackendSession().subscribe();
       })
     );
   }
 
 
 
-  private setCurrentUser(user: User): void {
+  setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);
   }
 

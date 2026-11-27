@@ -1,0 +1,51 @@
+<div class="modal-backdrop" [class.closing]="isClosing" (click)="close()">
+  <div class="modal-sheet" [class.closing]="isClosing" (click)="$event.stopPropagation()">
+    <div class="drag-handle"></div>
+
+    <div class="modal-header">
+      <h2>Seleccionar Fecha</h2>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+    <!-- Navegación de mes -->
+    <div class="month-navigation">
+      <button class="nav-arrow" (click)="prevMonth()">&lt;</button>
+      <span class="month-title">{{ monthLabel }}</span>
+      <button class="nav-arrow" (click)="nextMonth()">&gt;</button>
+    </div>
+
+    <!-- Grilla del calendario -->
+    <div class="calendar-grid">
+      <div class="weekdays">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="days-grid">
+        @for (cell of calendarDays; track $index) {
+          @if (cell.day === null) {
+            <span class="day empty"></span>
+          } @else {
+            <span
+              class="day"
+              [class.selected]="isSelected(cell.day)"
+              [class.past]="isPast(cell.day)"
+              (click)="selectDay(cell.day)">
+              {{ cell.day }}
+              @if (cell.hasSlots && !isPast(cell.day)) {
+                <span class="dot"></span>
+              }
+            </span>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="btn-primary"
+        [disabled]="!selectedDay"
+        (click)="confirm()">
+        Confirmar Fecha
+      </button>
+    </div>
+  </div>
+</div>

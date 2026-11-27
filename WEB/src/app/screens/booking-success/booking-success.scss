@@ -1,0 +1,136 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background-color: #050505;
+  overflow: hidden;
+}
+
+.success-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 2dvh 20px 85px 20px;
+  gap: 16px;
+  text-align: center;
+}
+
+.success-icon-container {
+  width: clamp(100px, 16dvh, 135px);
+  height: clamp(100px, 16dvh, 135px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: -2rem;
+
+  ::ng-deep svg {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.success-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h2 {
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    color: #707070;
+    font-size: 13px;
+    margin: 0;
+  }
+}
+
+.reservation-summary-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: #1C1C1E;
+  border: 1px solid #2c2c2e;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.field-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.field-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: url('WEB/public/cancha1.png') center/cover no-repeat;
+  flex-shrink: 0;
+}
+
+.field-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field-name {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-date {
+  margin: 0;
+  color: #8E8E93;
+  font-size: 11px;
+}
+
+.chevron-icon {
+  flex-shrink: 0;
+}
+
+.fixed-bottom-action {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background-color: #FFFFFF;
+  color: #050505;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: #707070;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px;
+
+  &:hover {
+    color: #FFFFFF;
+  }
+}

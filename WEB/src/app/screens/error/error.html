@@ -1,1 +1,53 @@
-<h1>ERROR</h1>
+@if (isLoggedIn$ | async) {
+  <app-header></app-header>
+}
+
+<main class="error-screen-container" [class.has-bottom-nav]="isLoggedIn$ | async">
+  <div class="error-layout">
+
+    <!-- Hero Illustration / 404 Section -->
+    <section class="hero-section">
+      <div class="glow-backdrop" aria-hidden="true"></div>
+
+      <div class="digits-wrapper" aria-label="Error 404">
+        <span class="digit">4</span>
+        <div class="ball-digit-container">
+          <img src="/AZTK_ARENA_BALL.svg" alt="Pelota fuera de la cancha" class="ball-graphic">
+          
+        </div>
+        <span class="digit">4</span>
+      </div>
+
+      <div class="error-text">
+        <h1 class="error-title">Esta página no existe.</h1>
+        <p class="error-desc">
+          No encontramos la pantalla que estás buscando. Es posible que el enlace haya cambiado o ya no esté disponible.
+        </p>
+      </div>
+    </section>
+
+    <!-- Main Recovery Buttons -->
+    <section class="action-buttons-group">
+      <button type="button" class="btn-primary" (click)="goHome()">
+        <div class="icon">
+            <img src="assets/icons/bottom-navbar/home.svg" alt="Inicio">
+        </div>
+        <span>Volver al inicio</span>
+      </button>
+
+      <button type="button" class="btn-outline" (click)="goBack()">
+        <svg class="backScreen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span class="backScreen">Volver a la pantalla anterior</span>
+      </button>
+    </section>    
+
+  </div>
+</main>
+
+<p class="supportContact">Si consideras que esto es un error <a [href]="mailto" target="_blank">contacta a Soporte</a></p>
+
+@if (isLoggedIn$ | async) {
+  <app-bottom-navbar></app-bottom-navbar>
+}

@@ -5,6 +5,7 @@ export interface SpaceCardDTO{
   type: string,
   slotDuration: number,
   isActive: boolean,
-  imageUrl: string
+  imageUrl: string,
+  depositValue?: number
 
 }

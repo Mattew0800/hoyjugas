@@ -60,6 +60,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "gauze-online-gents.ngrok-free.dev"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "WEB:build:production"

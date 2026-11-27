@@ -5,4 +5,5 @@ export interface SpaceCardModel {
   slotDuration: number;
   isActive: boolean;
   imageUrl: string;
+  depositValue?: number;
 }

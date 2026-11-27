@@ -1,8 +1,8 @@
+
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-
 import { ErrorHandlerService } from '../services/ErrorHandlerService/error-handler.service';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
@@ -12,40 +12,31 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
 
-      if (
-        error.status === 401 &&
-        !req.url.endsWith('/login')
-      ) {
+      console.error(
+        `[HTTP ${error.status}] ${req.method} ${req.url}`,
+        error.error
+      );
+
+      if (error.status === 401 && !req.url.endsWith('/login')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         sessionStorage.clear();
-
         router.navigate(['/sign-in']);
       }
 
       if (error.status === 403) {
-        console.error('Acceso denegado:', req.url);
+        console.error('Backend: Acceso denegado');
       }
 
       if (error.status === 0) {
-        console.error('Error de conexión:', req.url);
+        console.error('Error de conexión con el servidor');
       }
 
       if (error.status >= 500) {
-        console.error(
-          'Error del servidor:',
-          req.url,
-          error.status
-        );
+        console.error(`Error interno del servidor: ${error.status}`);
       }
 
       const message = errorHandler.getMessage(error);
-
-      console.error('HTTP Error:', {
-        status: error.status,
-        url: req.url,
-        message
-      });
 
       return throwError(() => error);
     })

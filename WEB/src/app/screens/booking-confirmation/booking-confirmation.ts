@@ -35,13 +35,13 @@ export class BookingConfirmation implements OnInit {
     this.booking = history.state.bookingData;
 
     if (!this.booking) {
-      this.router.navigate(['/field-schedule']);
+      this.router.navigate(['/field-schedule/date-selection']);
       return;
     }
   }
 
   editBooking(): void {
-    this.router.navigate(['/field-schedule']);
+    this.router.navigate(['/field-schedule/date-selection']);
   }
 
   continueToPayment(): void {

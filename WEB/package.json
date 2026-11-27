@@ -32,13 +32,15 @@
     "@fortawesome/free-brands-svg-icons": "^7.2.0",
     "@fortawesome/free-regular-svg-icons": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "lottie-web": "^5.13.0",
+    "ngx-lottie": "^20.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@angular/build": "^20.3.12",
-    "@angular/cli": "^20.3.12",
+    "@angular/cli": "^17.3.17",
     "@angular/compiler-cli": "^20.3.0",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.9.0",

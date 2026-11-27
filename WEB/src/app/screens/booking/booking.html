@@ -5,7 +5,7 @@
 
 
   <div class="fields-list">
-    @if (availableFieldTypes.length > 0) {
+    @if (availableFieldTypes.length > 1) {
       <div class="filters">
         <div class="slider"
              [style.width]="'calc((100% - 6px) / ' + availableFieldTypes.length + ')'"
@@ -16,16 +16,20 @@
             class="filter-button"
             [class.active]="selectedFieldType === type"
             (click)="selectFieldType(type)">
-            {{ type }}
+            {{ formatFieldType(type) }}
           </button>
         }
+      </div>
+    }@else{
+      <div class="section-title">
+        Seleccioná un espacio
       </div>
     }
 
         @if(!emptySpacesCard){
           @for (space of filteredSpacesCardList; track space.id) {
 
-            <div class="field-card" (click)="goToFieldSchedule()">
+            <div class="field-card" (click)="goToFieldSchedule(space.id)">
 
               @if (space.imageUrl) {
                 <img
@@ -57,9 +61,9 @@
 
                 <button
                   class="view-button"
-                  (click)="goToFieldSchedule()">
+                  (click)="goToFieldSchedule(space.id)">
 
-                  Ver turnos
+                  Reservar
 
                 </button>
               </div>
@@ -74,10 +78,6 @@
             <p>Por el momento no tenemos canchas activas en el sistema.</p>
           </div>
         }
-
-
-
-
 
   </div>
 

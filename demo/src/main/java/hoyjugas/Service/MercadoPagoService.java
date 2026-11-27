@@ -60,6 +60,7 @@ public class MercadoPagoService {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(List.of(item))
                     .backUrls(backUrls)
+                    .autoReturn("approved")
                     .externalReference(String.valueOf(booking.getId()))
                     .notificationUrl(webhookUrl)
                     .build();
