@@ -1,0 +1,283 @@
+
+<app-internal-header></app-internal-header>
+
+<div class="sales-layout">
+  <app-internal-side-bar></app-internal-side-bar>
+
+  <main class="sales-content">
+    <header class="sales-page-header">
+      <div>
+        <h1>Punto de venta</h1>
+        <p>Seleccioná productos y registrá una nueva venta.</p>
+      </div>
+
+      <div class="sales-header-info">
+        <span>Productos en carrito</span>
+        <strong>{{ totalItems }}</strong>
+      </div>
+    </header>
+
+    @if (errorMessage) {
+      <div class="sales-alert error-alert">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <div class="sales-columns">
+
+      <section class="products-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Productos</h2>
+            <p>Buscá y agregá productos a la venta.</p>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <span>⌕</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Buscar por nombre o código..."
+            [disabled]="submitting"
+          >
+        </div>
+
+        @if (loadingProducts) {
+          <div class="empty-state">Buscando productos...</div>
+        } @else if (products.length === 0) {
+          <div class="empty-state">
+            No se encontraron productos.
+          </div>
+        } @else {
+          <div class="products-grid">
+            @for (product of products; track product.id) {
+              <article class="product-card">
+                <div class="product-card-info">
+                  <span class="product-code">{{ product.internalCode }}</span>
+                  <h3>{{ product.name }}</h3>
+                  <span class="product-category">{{ product.categoryName }}</span>
+                </div>
+
+                <div class="product-card-footer">
+                  <div>
+                    <strong>{{ product.salePrice | currency:'ARS':'symbol':'1.2-2' }}</strong>
+                    <span
+                      class="stock-label"
+                      [class.no-stock]="product.stock <= 0"
+                    >
+                      Stock: {{ product.stock }}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="add-product-button"
+                    [disabled]="product.stock <= 0 || submitting"
+                    (click)="addToCart(product)"
+                  >
+                    +
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
+      <aside class="cart-panel">
+        <div class="cart-header">
+          <div>
+            <h2>Venta actual</h2>
+            <p>{{ totalItems }} unidades</p>
+          </div>
+          <span class="cart-icon">🛒</span>
+        </div>
+
+        <div class="cart-items">
+          @if (cart.length === 0) {
+            <div class="empty-cart">
+              <span>🛒</span>
+              <strong>El carrito está vacío</strong>
+              <p>Agregá productos para comenzar.</p>
+            </div>
+          } @else {
+            @for (item of cart; track item.product.id) {
+              <article class="cart-item">
+                <div class="cart-item-info">
+                  <strong>{{ item.product.name }}</strong>
+                  <span>
+                    {{ item.product.salePrice | currency:'ARS':'symbol':'1.2-2' }}
+                    por unidad
+                  </span>
+                  <b>
+                    {{ getSubtotal(item) | currency:'ARS':'symbol':'1.2-2' }}
+                  </b>
+                </div>
+
+                <div class="cart-item-actions">
+                  <div class="quantity-control">
+                    <button
+                      type="button"
+                      [disabled]="submitting"
+                      (click)="decreaseQuantity(item)"
+                    >
+                      −
+                    </button>
+
+                    <span>{{ item.quantity }}</span>
+
+                    <button
+                      type="button"
+                      [disabled]="item.quantity >= item.product.stock || submitting"
+                      (click)="increaseQuantity(item)"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="remove-item"
+                    [disabled]="submitting"
+                    (click)="removeFromCart(item)"
+                    aria-label="Eliminar producto"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </article>
+            }
+          }
+        </div>
+
+        <div class="cart-form">
+          <div class="form-group">
+            <label for="sale-client">Cliente</label>
+            <select
+              id="sale-client"
+              [(ngModel)]="selectedClientId"
+              [disabled]="submitting"
+            >
+              <option [ngValue]="null">Mostrador</option>
+
+              @for (client of clients; track client.id) {
+                <option [ngValue]="client.id">
+                  {{ client.name }} - {{ client.dni }}
+                </option>
+              }
+            </select>
+
+            @if (loadingClients) {
+              <small>Cargando clientes...</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="payment-method">Medio de pago</label>
+            <select
+              id="payment-method"
+              [(ngModel)]="paymentMethod"
+              [disabled]="submitting"
+            >
+              @for (method of paymentMethods; track method.value) {
+                <option [value]="method.value">
+                  {{ method.label }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sale-notes">Observaciones</label>
+            <textarea
+              id="sale-notes"
+              [(ngModel)]="notes"
+              rows="2"
+              placeholder="Observaciones opcionales..."
+              [disabled]="submitting"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="employee-pin">PIN del empleado</label>
+            <input
+              id="employee-pin"
+              type="password"
+              [(ngModel)]="employeePin"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="Ingresá tu PIN"
+              [disabled]="submitting"
+            >
+          </div>
+        </div>
+
+        <div class="cart-total">
+          <span>Total</span>
+          <strong>{{ totalAmount | currency:'ARS':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <button
+          type="button"
+          class="confirm-sale-button"
+          [disabled]="cart.length === 0 || submitting"
+          (click)="confirmSale()"
+        >
+          {{ submitting ? 'Procesando venta...' : 'Confirmar venta' }}
+        </button>
+      </aside>
+    </div>
+  </main>
+</div>
+
+@if (completedSale) {
+  <div class="sale-success-overlay">
+    <div class="sale-success-modal">
+      <div class="success-icon">✓</div>
+      <h2>Venta registrada</h2>
+      <p class="sale-number">{{ completedSale.saleNumber }}</p>
+
+      <div class="success-details">
+        <div>
+          <span>Cliente</span>
+          <strong>{{ completedSale.clientName }}</strong>
+        </div>
+
+        <div>
+          <span>Medio de pago</span>
+          <strong>{{ completedSale.paymentMethod }}</strong>
+        </div>
+
+        <div>
+          <span>Fecha</span>
+          <strong>{{ completedSale.date | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </div>
+
+        <div>
+          <span>Total</span>
+          <strong>{{ completedSale.totalAmount | currency:'ARS':'symbol':'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      @if (completedSale.stockAlerts?.length) {
+        <div class="stock-alerts">
+          @for (alert of completedSale.stockAlerts; track alert) {
+            <p>{{ alert }}</p>
+          }
+        </div>
+      }
+
+      <div class="success-actions">
+        <button type="button" (click)="closeCompletedSale()">
+          Cerrar
+        </button>
+
+        <button type="button" class="new-sale-button" (click)="newSale()">
+          Nueva venta
+        </button>
+      </div>
+    </div>
+  </div>
+}

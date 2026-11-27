@@ -1,0 +1,194 @@
+
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2>Registrar gasto</h2>
+        <p>Completá los datos para registrar un nuevo egreso.</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-close"
+        (click)="cancel()"
+        [disabled]="saving">
+        ×
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="saveExpense()">
+
+      <div class="modal-body">
+
+        @if (errorMessage) {
+          <div class="error-message">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <div class="form-section">
+          <h3>Información del gasto</h3>
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+              <label for="expenseConcept">Concepto *</label>
+              <select
+                id="expenseConcept"
+                name="conceptId"
+                [(ngModel)]="conceptId"
+                required
+                [disabled]="saving">
+
+                <option [ngValue]="null" disabled>
+                  Seleccioná un concepto
+                </option>
+
+                @for (concept of activeConcepts; track concept.id) {
+                  <option [ngValue]="concept.id">
+                    {{ concept.name }}
+                    {{ concept.isExtra ? '(Extraordinario)' : '' }}
+                  </option>
+                }
+              </select>
+
+              @if (activeConcepts.length === 0) {
+                <span class="field-hint">
+                  No hay conceptos activos disponibles.
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="expenseAmount">Importe *</label>
+              <input
+                id="expenseAmount"
+                type="number"
+                name="amount"
+                [(ngModel)]="amount"
+                min="0.01"
+                step="0.01"
+                placeholder="0,00"
+                required
+                [disabled]="saving" />
+            </div>
+
+            <div class="form-group">
+              <label for="expensePaymentMethod">Método de pago *</label>
+              <select
+                id="expensePaymentMethod"
+                name="paymentMethod"
+                [(ngModel)]="paymentMethod"
+                required
+                [disabled]="saving">
+
+                @for (method of paymentMethods; track method.value) {
+                  <option [value]="method.value">
+                    {{ method.label }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="expenseSupplier">Proveedor</label>
+              <select
+                id="expenseSupplier"
+                name="supplierId"
+                [(ngModel)]="supplierId"
+                [disabled]="saving">
+
+                <option [ngValue]="null">
+                  Sin proveedor
+                </option>
+
+                @for (supplier of suppliers; track supplier.id) {
+                  <option [ngValue]="supplier.id">
+                    {{ supplier.name }}
+                  </option>
+                }
+              </select>
+
+              <span class="field-hint">
+                Seleccioná un proveedor si el gasto está asociado a uno.
+              </span>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="expenseDetail">Detalle *</label>
+              <textarea
+                id="expenseDetail"
+                name="detail"
+                [(ngModel)]="detail"
+                rows="3"
+                maxlength="500"
+                placeholder="Describí el motivo del gasto..."
+                required
+                [disabled]="saving">
+              </textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="expenseVoucher">Número de comprobante</label>
+              <input
+                id="expenseVoucher"
+                type="text"
+                name="voucher"
+                [(ngModel)]="voucher"
+                maxlength="100"
+                placeholder="Factura, recibo, ticket..."
+                [disabled]="saving" />
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Confirmación</h3>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="expensePin">PIN del empleado *</label>
+              <input
+                id="expensePin"
+                type="password"
+                name="employeePin"
+                [(ngModel)]="employeePin"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="Ingresá tu PIN"
+                required
+                [disabled]="saving" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="cancel()"
+          [disabled]="saving">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="saving || activeConcepts.length === 0">
+
+          @if (saving) {
+            Registrando...
+          } @else {
+            Confirmar gasto
+          }
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>

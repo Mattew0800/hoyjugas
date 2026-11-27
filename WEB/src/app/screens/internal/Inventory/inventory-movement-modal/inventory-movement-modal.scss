@@ -1,0 +1,279 @@
+
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: block;
+  font-family: inherit;
+}
+
+.inventory-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(3px);
+}
+
+.inventory-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: #1A1C1F;
+  border: 1px solid #34383F;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: #F3F4F6;
+}
+
+.inventory-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 24px;
+  border-bottom: 1px solid #2A2D33;
+
+  h2 {
+    margin: 0;
+    color: white;
+    font-size: 21px;
+    font-weight: 700;
+  }
+}
+
+.inventory-modal-subtitle {
+  margin: 6px 0 0;
+  color: #8B949E;
+  font-size: 13px;
+}
+
+.inventory-modal-close {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #292D32;
+  color: #D1D5DB;
+  border: 1px solid #3A3F46;
+  border-radius: 8px;
+  font-size: 17px;
+  cursor: pointer;
+
+  &:hover {
+    background: #442929;
+    color: #F29A9A;
+  }
+}
+
+.inventory-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.inventory-section {
+  h3 {
+    margin: 0 0 16px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #22262B;
+  border: 1px solid #34383F;
+  border-radius: 10px;
+
+  > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  strong {
+    color: white;
+    font-size: 15px;
+  }
+
+  span {
+    color: #8B949E;
+    font-size: 12px;
+  }
+}
+
+.current-stock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+
+  strong {
+    color: #72D6A0;
+    font-size: 24px;
+  }
+}
+
+.inventory-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+
+  label {
+    color: #D1D5DB;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    background: #111315;
+    color: white;
+    border: 1px solid #34383F;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+
+    &:focus {
+      border-color: #2B7FFF;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 85px;
+  }
+}
+
+.inventory-divider {
+  height: 1px;
+  margin: 22px 0;
+  background: #2A2D33;
+}
+
+.movement-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 15px;
+  margin: 0 0 18px;
+  background: #202D3E;
+  border: 1px solid #304766;
+  border-radius: 9px;
+
+  span {
+    color: #AFC5E8;
+    font-size: 13px;
+  }
+
+  strong {
+    color: #8AB4F8;
+    font-size: 20px;
+  }
+}
+
+.inventory-warning-message,
+.inventory-error-message {
+  padding: 12px 14px;
+  margin-top: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.inventory-warning-message {
+  background: #49371E;
+  color: #F5B85C;
+}
+
+.inventory-error-message {
+  background: #442929;
+  color: #F29A9A;
+}
+
+.inventory-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid #2A2D33;
+  background: #1A1C1F;
+}
+
+.inventory-cancel-button,
+.inventory-save-button {
+  padding: 11px 17px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.inventory-cancel-button {
+  background: #30343A;
+  color: #D1D5DB;
+
+  &:hover:not(:disabled) {
+    background: #41464E;
+  }
+}
+
+.inventory-save-button {
+  background: #2B7FFF;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #2469D4;
+  }
+}
+
+@media (max-width: 600px) {
+  .inventory-modal-overlay {
+    padding: 12px;
+  }
+
+  .inventory-modal {
+    max-height: calc(100vh - 24px);
+  }
+
+  .inventory-modal-header,
+  .inventory-modal-body {
+    padding: 18px;
+  }
+
+  .inventory-modal-footer {
+    padding: 16px 18px;
+  }
+}

@@ -25,6 +25,12 @@ import {Contact} from './screens/contact/contact';
 import {CustomersScreen} from './screens/internal/Customers/customers-screen/customers-screen';
 import {SystemConfigScreen} from './screens/internal/SystemConfig/system-config/system-config';
 import {BookingDetailsComponent} from './screens/booking-details/booking-details.component';
+import { ProductsScreen } from './screens/internal/Products/products-screen/products-screen';
+import {CategoriesScreen} from'./screens/internal/Categories/categories-screen/categories-screen';
+import {SuppliersScreen} from'./screens/internal/Suppliers/suppliers-screen/suppliers-screen';
+import { InventoryScreen } from './screens/internal/Inventory/inventory-screen/inventory-screen';
+import { SalesScreen } from './screens/internal/Sales/sales-screen/sales-screen';
+import { ExpensesScreen } from './screens/internal/Expenses/expenses-screen/expenses-screen';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -51,6 +57,12 @@ export const routes: Routes = [
   {path:'internal/employees', component:EmployeesScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN'] }},
   {path:'internal/customers', component:CustomersScreen, canActivate:[internalAuthGuard]},
   {path:'internal/config', component:SystemConfigScreen, canActivate:[internalAuthGuard], data: { roles: ['ADMIN']}},
-  {path:'**', component:Error}
+  {path: 'internal/products', component: ProductsScreen, canActivate: [internalAuthGuard], data: { roles: ['ADMIN'] }},
+  {path: 'internal/categories', component: CategoriesScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
+  {path: 'internal/suppliers', component: SuppliersScreen,canActivate: [internalAuthGuard], data: {roles:['ADMIN']}},
+  {path: 'internal/inventory', component: InventoryScreen,canActivate:[internalAuthGuard], data:{roles:['ADMIN']}},
+  {path:'internal/sales', component:SalesScreen,canActivate:[internalAuthGuard]},
+  {path:'internal/expenses', component:ExpensesScreen,canActivate:[internalAuthGuard],data:{roles: ['ADMIN']}},
+  {path:'**', component: Error}
 
 ];

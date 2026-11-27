@@ -29,7 +29,10 @@ export class SpaceColumn {
   @Input() isPastDate = false;
 
   @Output()
-  slotClick = new EventEmitter<SpaceSlotModel>();
+  slotClick = new EventEmitter<{
+    slot: SpaceSlotModel;
+    space: SpaceModel;
+  }>();
 
   get timelineHeight(): number {
 
@@ -94,9 +97,10 @@ export class SpaceColumn {
   }
 
   onSlotClick(slot: SpaceSlotModel): void {
-
-    this.slotClick.emit(slot);
-
+    this.slotClick.emit({
+      slot,
+      space: this.space
+    });
   }
 
 }

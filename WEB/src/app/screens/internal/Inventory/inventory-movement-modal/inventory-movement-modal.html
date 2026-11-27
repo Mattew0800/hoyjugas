@@ -1,0 +1,162 @@
+<div class="inventory-modal-overlay">
+  <div class="inventory-modal">
+
+    <div class="inventory-modal-header">
+      <div>
+        <h2>Registrar movimiento</h2>
+        <p class="inventory-modal-subtitle">
+          Actualización de stock del artículo
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="inventory-modal-close"
+        (click)="closeModal()"
+        [disabled]="saving">
+        ✕
+      </button>
+    </div>
+
+    <div class="inventory-modal-body">
+
+      <section class="inventory-section">
+        <h3>Artículo seleccionado</h3>
+
+        <div class="selected-item">
+          <div>
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.categoryName || 'Sin categoría' }}</span>
+          </div>
+
+          <div class="current-stock">
+            <strong>{{ item.quantity }}</strong>
+            <span>Unidades actuales</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="inventory-divider"></div>
+
+      <section class="inventory-section">
+        <h3>Datos del movimiento</h3>
+
+        <div class="inventory-form-group inventory-form-full">
+          <label for="movement-type">Tipo de movimiento</label>
+
+          <select
+            id="movement-type"
+            [(ngModel)]="form.type"
+            [disabled]="saving">
+
+            <option value="INGRESO">Ingreso</option>
+            <option value="EGRESO">Egreso</option>
+            <option value="AJUSTE">Ajuste de stock</option>
+          </select>
+        </div>
+
+        <div class="inventory-form-group inventory-form-full">
+          <label for="movement-quantity">
+            {{ form.type === 'AJUSTE' ? 'Stock final' : 'Cantidad' }}
+          </label>
+
+          <input
+            id="movement-quantity"
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="form.quantity"
+            placeholder="Ej. 10"
+            [disabled]="saving">
+        </div>
+
+        @if (form.quantity && form.quantity > 0) {
+          <div class="movement-preview">
+            <span>Stock resultante estimado</span>
+
+            <strong>
+              {{
+                form.type === 'INGRESO'
+                  ? item.quantity + form.quantity
+                  : form.type === 'EGRESO'
+                    ? item.quantity - form.quantity
+                    : form.quantity
+              }}
+            </strong>
+          </div>
+        }
+
+        <div class="inventory-form-group inventory-form-full">
+          <label for="movement-reason">Motivo</label>
+
+          <textarea
+            id="movement-reason"
+            [(ngModel)]="form.reason"
+            placeholder="Ej. Compra de nuevas pelotas..."
+            rows="3"
+            maxlength="250"
+            [disabled]="saving">
+          </textarea>
+        </div>
+
+        <div class="inventory-form-group inventory-form-full">
+          <label for="movement-pin">PIN de empleado</label>
+
+          <input
+            id="movement-pin"
+            type="password"
+            inputmode="numeric"
+            [(ngModel)]="form.employeePin"
+            placeholder="Ingresá tu PIN"
+            [disabled]="saving">
+        </div>
+      </section>
+
+      @if (form.type === 'AJUSTE') {
+        <div class="inventory-warning-message">
+          El ajuste establece directamente el stock final del artículo.
+        </div>
+      }
+
+      @if (form.type === 'EGRESO' &&
+      form.quantity !== null &&
+      form.quantity > item.quantity) {
+        <div class="inventory-error-message">
+          No hay suficiente stock para realizar este egreso.
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="inventory-error-message">
+          {{ errorMessage }}
+        </div>
+      }
+
+    </div>
+
+    <div class="inventory-modal-footer">
+      <button
+        type="button"
+        class="inventory-cancel-button"
+        (click)="closeModal()"
+        [disabled]="saving">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="inventory-save-button"
+        (click)="save()"
+        [disabled]="saving">
+
+        @if (saving) {
+          Registrando...
+        } @else {
+          Registrar movimiento
+        }
+
+      </button>
+    </div>
+
+  </div>
+</div>

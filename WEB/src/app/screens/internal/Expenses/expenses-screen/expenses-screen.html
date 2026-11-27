@@ -1,0 +1,346 @@
+
+<app-internal-header />
+
+<div class="layout">
+  <app-internal-side-bar />
+
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <h1>Gastos</h1>
+        <p>Registrá y consultá los gastos del complejo.</p>
+      </div>
+
+      <div class="header-actions">
+        <button
+          class="btn-secondary"
+          (click)="showConceptManagement = !showConceptManagement">
+          {{ showConceptManagement ? 'Ocultar conceptos' : 'Gestionar conceptos' }}
+        </button>
+
+        <button class="btn-primary" (click)="openExpenseModal()">
+          <span>+</span>
+          Registrar gasto
+        </button>
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+        <button (click)="successMessage = ''">×</button>
+      </div>
+    }
+
+    @if (errorMessage && !showExpenseModal && !showConceptModal) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <section class="summary-card">
+      <div>
+        <span class="summary-label">Gastos de esta página</span>
+        <strong>{{ formatCurrency(pageAmountTotal) }}</strong>
+        <small>
+          {{ expenses.length }} registros visibles de {{ totalElements }} totales
+        </small>
+      </div>
+
+      <div class="summary-icon">−$</div>
+    </section>
+
+    @if (showConceptManagement) {
+      <section class="concepts-container">
+        <div class="section-header">
+          <div>
+            <h2>Conceptos de gastos</h2>
+            <p>Administrá las categorías disponibles para registrar gastos.</p>
+          </div>
+
+          <button class="btn-primary small" (click)="openConceptModal()">
+            + Nuevo concepto
+          </button>
+        </div>
+
+        @if (concepts.length === 0) {
+          <div class="empty-state">No hay conceptos registrados.</div>
+        } @else {
+          <div class="concept-list">
+            @for (concept of concepts; track concept.id) {
+              <div class="concept-item">
+                <div>
+                  <strong>{{ concept.name }}</strong>
+
+                  <div class="concept-tags">
+                    <span
+                      class="status-badge"
+                      [class.active]="concept.isActive"
+                      [class.inactive]="!concept.isActive">
+                      {{ concept.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+
+                    @if (concept.isExtra) {
+                      <span class="extra-badge">Extraordinario</span>
+                    } @else {
+                      <span class="regular-badge">Habitual</span>
+                    }
+                  </div>
+                </div>
+
+                <button
+                  class="btn-action"
+                  [class.activate]="!concept.isActive"
+                  [class.deactivate]="concept.isActive"
+                  (click)="toggleConceptStatus(concept)">
+                  {{ concept.isActive ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <section class="expenses-container">
+
+      <div class="filters">
+        <div class="filter-field">
+          <label>Desde</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="dateFrom" />
+        </div>
+
+        <div class="filter-field">
+          <label>Hasta</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="dateTo" />
+        </div>
+
+        <div class="filter-field">
+          <label>Concepto</label>
+          <select [(ngModel)]="selectedConceptId">
+            <option [ngValue]="null">Todos los conceptos</option>
+
+            @for (concept of concepts; track concept.id) {
+              <option [ngValue]="concept.id">
+                {{ concept.name }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label>Proveedor</label>
+          <select [(ngModel)]="selectedSupplierId">
+            <option [ngValue]="null">Todos los proveedores</option>
+
+            @for (supplier of suppliers; track supplier.id) {
+              <option [ngValue]="supplier.id">
+                {{ supplier.name }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn-primary" (click)="applyFilters()">
+            Filtrar
+          </button>
+
+          <button class="btn-secondary" (click)="clearFilters()">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="table-header">
+        <div>
+          <h2>Gastos registrados</h2>
+          <p>Historial de movimientos de egreso.</p>
+        </div>
+
+        <span class="results-count">
+          {{ totalElements }} registros
+        </span>
+      </div>
+
+      @if (loading) {
+        <div class="empty-state">
+          Cargando gastos...
+        </div>
+      } @else if (expenses.length === 0) {
+        <div class="empty-state">
+          No hay gastos para los filtros seleccionados.
+        </div>
+      } @else {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+            <tr>
+              <th>NÚMERO</th>
+              <th>FECHA</th>
+              <th>CONCEPTO</th>
+              <th>ORIGEN</th>
+              <th>DETALLE</th>
+              <th>PROVEEDOR</th>
+              <th>MÉTODO DE PAGO</th>
+              <th>REGISTRADO POR</th>
+              <th class="amount-column">IMPORTE</th>
+            </tr>
+            </thead>
+
+            <tbody>
+              @for (expense of expenses; track expense.id) {
+                <tr>
+                  <td>
+                    <span class="movement-number">
+                      {{ expense.movementNumber }}
+                    </span>
+                  </td>
+
+                  <td>
+                    {{ formatDate(expense.date) }}
+                  </td>
+
+                  <td class="concept-name">
+                    {{ expense.conceptName }}
+                  </td>
+
+                  <td>
+                    <span
+                      class="origin-badge"
+                      [class.merchandise]="getExpenseOrigin(expense) === 'Ingreso de mercadería'"
+                      [class.manual]="getExpenseOrigin(expense) === 'Gasto manual'">
+                      {{ getExpenseOrigin(expense) }}
+                    </span>
+                  </td>
+
+                  <td
+                    class="detail-cell"
+                    [title]="expense.detail">
+                    {{ expense.detail }}
+                  </td>
+
+                  <td>
+                    {{ expense.supplierName || 'Sin proveedor' }}
+                  </td>
+
+                  <td>
+                    <span class="payment-badge">
+                      {{ paymentMethodLabel(expense.paymentMethod) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    {{ expense.registeredByName }}
+                  </td>
+
+                  <td class="amount-column amount">
+                    {{ formatCurrency(expense.amount) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span>
+            Página {{ page + 1 }} de {{ totalPages || 1 }}
+          </span>
+
+          <div>
+            <button
+              class="btn-secondary"
+              [disabled]="page === 0 || loading"
+              (click)="previousPage()">
+              Anterior
+            </button>
+
+            <button
+              class="btn-secondary"
+              [disabled]="page + 1 >= totalPages || loading"
+              (click)="nextPage()">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+
+  </main>
+</div>
+
+@if (showExpenseModal) {
+  <app-expenses-modal
+    [concepts]="activeConcepts"
+    [suppliers]="suppliers"
+    (close)="onExpenseModalClose($event)">
+  </app-expenses-modal>
+}
+
+@if (showConceptModal) {
+  <div class="modal-backdrop" (click)="closeConceptModal()">
+    <section
+      class="modal concept-modal"
+      (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h2>Nuevo concepto</h2>
+          <p>Agregá una categoría para clasificar gastos.</p>
+        </div>
+
+        <button
+          class="close-button"
+          (click)="closeConceptModal()">
+          ×
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message modal-error">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <div class="form-field">
+        <label>Nombre *</label>
+        <input
+          type="text"
+          maxlength="100"
+          placeholder="Ej. Mantenimiento"
+          [(ngModel)]="conceptName" />
+      </div>
+
+      <label class="checkbox-field">
+        <input
+          type="checkbox"
+          [(ngModel)]="conceptIsExtra" />
+        <span>Es un gasto extraordinario</span>
+      </label>
+
+      <div class="modal-footer">
+        <button
+          class="btn-secondary"
+          [disabled]="saving"
+          (click)="closeConceptModal()">
+          Cancelar
+        </button>
+
+        <button
+          class="btn-primary"
+          [disabled]="saving"
+          (click)="saveConcept()">
+          {{ saving ? 'Guardando...' : 'Crear concepto' }}
+        </button>
+      </div>
+
+    </section>
+  </div>
+}
+

@@ -47,10 +47,6 @@
         </app-stat-card>
       }
 
-      <button class="change-date-btn" (click)="openInternalBookingModal()">
-        Cargar turno
-      </button>
-
     </div>
 
     <div class="dashboard-body">
@@ -103,7 +99,7 @@
                   [timelineEndMinutes]="timelineEndMinutes"
                   [pixelsPerHalfHour]="61"
                   [isPastDate]="isPastDate(selectedDate)"
-                  (slotClick)="openBookingModal($event)">
+                  (slotClick)="onScheduleSlotClick($event)">
                 </app-space-column>
 
               }
@@ -140,13 +136,13 @@
   }
 
   @if (showInternalBookingModal) {
-
     <app-internal-booking-modal
       [selectedDate]="selectedDate"
+      [initialSpaceId]="initialBookingSpaceId"
+      [initialStartTime]="initialBookingStartTime"
       (close)="closeInternalBookingModal()"
       (bookingCreated)="onBookingCreated()">
     </app-internal-booking-modal>
-
   }
 
 </div>
