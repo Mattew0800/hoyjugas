@@ -1,0 +1,79 @@
+<app-header></app-header>
+
+<div class="history-container" *ngIf="booking as b">
+  <div class="page-header-row">
+    <div class="page-header">
+      <h1 class="title">Detalle de reserva</h1>
+    </div>
+  </div>
+
+  <div class="bookings-list">
+    <div class="booking-card">
+      <div class="card-stripe" [class.stripe--paid]="b.paymentStatus?.toLowerCase() === 'paid'"
+        [class.stripe--deposit]="b.paymentStatus?.toLowerCase() === 'deposit'"
+        [class.stripe--pending]="b.paymentStatus?.toLowerCase() !== 'paid' && b.paymentStatus?.toLowerCase() !== 'deposit'">
+      </div>
+      <div class="card-body">
+        <div class="booking-header">
+          <div class="date-box">
+            <span class="month">{{ b.startDatetime | date:'MMM' | uppercase }}</span>
+            <span class="day">{{ b.startDatetime | date:'d' }}</span>
+          </div>
+          <div class="booking-info">
+            <div class="primary-line">
+              <span class="space-name">{{ b.spaceName }}</span>
+
+            </div>
+            <div class="secondary-line">
+              <span class="time-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="#CEA764" stroke-width="2" />
+                  <path d="M12 7v5l3 3" stroke="#CEA764" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span class="time">{{ b.startDatetime | date:'HH:mm' }} – {{ b.endDatetime | date:'HH:mm' }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="label">Número</span>
+            <span class="value">#{{ b.bookingNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Estado</span>
+            <span class="value green">
+              @if(b.status === 'CANCELADO'){
+                <span class="red">CANCELADO</span>
+              }
+              @else{
+                <span class="green">{{b.status}}</span>
+
+              }
+
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Inicio</span>
+            <span class="value">{{ startLabel }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Fin</span>
+            <span class="value">{{ endLabel }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Precio del turno</span>
+            <span class="value amount">{{ b.totalAmount | currency:'ARS':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Falta pagar</span>
+            <span class="value amount red">{{ b.remainingAmount | currency:'ARS':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-bottom-navbar></app-bottom-navbar>

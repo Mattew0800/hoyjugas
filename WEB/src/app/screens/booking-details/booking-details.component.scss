@@ -1,0 +1,228 @@
+.history-container {
+  background: #000000;
+  min-height: 100vh;
+  padding: 24px 20px 140px;
+}
+
+.page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.page-header {
+  flex: 1;
+}
+
+.title {
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #8a8a8a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.booking-card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  background: rgba(17, 17, 17, 0.9);
+  border: 1px solid rgba(31, 31, 31, 0.8);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.card-stripe {
+  width: 3px;
+  flex-shrink: 0;
+  background: #555555;
+
+  &.stripe--paid {
+    background: #00d084;
+  }
+
+  &.stripe--deposit {
+    background: #cea764;
+  }
+
+  &.stripe--pending {
+    background: #555555;
+  }
+}
+
+.card-body {
+  flex: 1;
+  padding: 14px 14px 16px;
+  min-width: 0;
+}
+
+.booking-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.date-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #1a1a1a;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.month {
+  color: #8a8a8a;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.day {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.booking-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.primary-line,
+.secondary-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.space-name {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.time-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(138, 138, 138, 0.9);
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+}
+
+.time {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(138, 138, 138, 0.9);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: #8a8a8a;
+  flex-shrink: 0;
+  text-transform: capitalize;
+
+  &::before {
+    content: '•';
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  &.badge--paid::before {
+    color: #00d084;
+  }
+
+  &.badge--deposit::before {
+    color: #cea764;
+  }
+
+  &.badge--pending::before {
+    color: #555555;
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detail-item {
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  color: #8a8a8a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.value {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.amount {
+  color: #cea764;
+}
+
+@media (max-width: 420px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.green{
+  color: #00d084;
+}
+
+.red{
+  color: #ff4d4f;
+}

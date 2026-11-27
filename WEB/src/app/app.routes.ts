@@ -24,6 +24,7 @@ import {internalAuthGuard} from './auth/InternalAuthGuard';
 import {Contact} from './screens/contact/contact';
 import {CustomersScreen} from './screens/internal/Customers/customers-screen/customers-screen';
 import {SystemConfigScreen} from './screens/internal/SystemConfig/system-config/system-config';
+import {BookingDetailsComponent} from './screens/booking-details/booking-details.component';
 
 export const routes: Routes = [
   {path:'', component:SplashComponent},
@@ -40,6 +41,7 @@ export const routes: Routes = [
   {path:'profile', component:Profile, canActivate:[authGuard]},
   {path:'change-password', component:ChangePassword, canActivate:[authGuard]},
   {path:'my-bookings', component:HistoryBookings, canActivate:[authGuard]},
+  {path:'booking-details', component:BookingDetailsComponent, canActivate:[authGuard]},
   {path:'internal/login', component:InternalLogin},
   {path:'internal/dashboard', component: Dashboard, canActivate:[internalAuthGuard]},
   {path:'internal/spaces',component: SpacesScreen, canActivate:[internalAuthGuard]},

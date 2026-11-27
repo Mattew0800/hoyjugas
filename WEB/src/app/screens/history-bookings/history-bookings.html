@@ -25,7 +25,7 @@
       [class.is-cancelled]="isCancelledBooking(booking)"
       [class.selection-mode]="selectionMode"
       [class.selected]="selectionMode && selectedBookingId === booking.id"
-      (click)="selectionMode ? toggleBookingSelection(booking.id) : null"
+      (click)="openBookingDetails(booking)"
     >
       <div class="card-stripe" [class.stripe--paid]="getPaymentClass(booking) === 'paid'"
         [class.stripe--deposit]="getPaymentClass(booking) === 'deposit'"

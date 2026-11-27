@@ -128,8 +128,18 @@ export class HistoryBookings implements OnInit, OnDestroy {
       return;
     }
 
+
     this.selectedBookingId = this.selectedBookingId === bookingId ? null : bookingId;
     this.cancelError = '';
+  }
+
+  openBookingDetails(booking: BookingListDTO): void {
+    if (this.selectionMode) {
+      this.toggleBookingSelection(booking.id);
+      return;
+    }
+
+    this.router.navigate(['/booking-details'], { state: { booking } });
   }
 
   openCancelConfirmation(): void {
@@ -206,10 +216,5 @@ export class HistoryBookings implements OnInit, OnDestroy {
   isCancelledBooking(booking: BookingListDTO): boolean {
     return booking.status === 'CANCELADO';
   }
-
-  viewDetails(id: number) {
-    // navegar a detalle, ej: this.router.navigate(['/bookings', id]);
-  }
-
 
 }
